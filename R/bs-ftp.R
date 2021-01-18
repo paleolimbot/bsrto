@@ -83,22 +83,11 @@ bs_ftp_list <- function(x, pattern = NULL, recursive = FALSE,
   result <- curl::curl_fetch_memory(ftp_address)
 
   # parse the results
-  con <- textConnection(rawToChar(result$content), encoding = "UTF-8")
-  on.exit(close(con))
-  items <- readLines(con)
-  items <- items[items != ""]
+  listing <- stringr::str_split_fixed(readr::read_lines(result$content), pattern = "\\s+", 9)
 
-  if (length(items) == 0) {
-    return(character(0))
-  }
-
-  # filenames can contain whitespace but fields can't (?)
-  # which makes parsing this complicated (could also use stringr::str_split())
-  name <- paste0(x, gsub("([A-Za-z0-9.-]+\\s+){8}", "", items))
-  is_dir <- substr(items, 1, 1) == "d"
-
-  files <- name[!is_dir]
-  dirs <- name[is_dir]
+  is_dir <- grepl("^d", listing[, 1])
+  files <- if (any(!is_dir)) paste0(x, listing[, 9][!is_dir]) else character()
+  dirs <- if (any(is_dir)) paste0(x, listing[, 9][is_dir]) else character()
 
   # filter by pattern
   if (!is.null(pattern)) {
