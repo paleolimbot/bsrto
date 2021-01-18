@@ -1,0 +1,16 @@
+Package: bsrto
+Title: Access Data from the Barrow Strait Real Time Observatory
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Dewey",
+           family = "Dunnington",
+           role = c("aut", "cre"),
+           email = "dewey.dunnington@dfo-mpo.gc.ca",
+           comment = c(ORCID = "0000-0002-9415-4582"))
+Description: Provides functions to access data from the Barrow Strait
+  Real Time Observatory.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
