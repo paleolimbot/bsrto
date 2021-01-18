@@ -23,3 +23,5 @@ Imports:
     stringr
 Suggests: 
     testthat
+URL: https://github.com/paleolimbot/bsrto
+BugReports: https://github.com/paleolimbot/bsrto/issues
