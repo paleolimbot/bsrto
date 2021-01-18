@@ -9,6 +9,14 @@
 Provides functions to access data from the Barrow Strait
   Real Time Observatory.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/paleolimbot/bsrto}
+  \item Report bugs at \url{https://github.com/paleolimbot/bsrto/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Dewey Dunnington \email{dewey.dunnington@dfo-mpo.gc.ca} (\href{https://orcid.org/0000-0002-9415-4582}{ORCID})
 

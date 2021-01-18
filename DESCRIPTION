@@ -20,7 +20,8 @@ Imports:
     readr,
     tibble,
     vctrs,
-    stringr
+    stringr,
+    curl
 Suggests: 
     testthat
 URL: https://github.com/paleolimbot/bsrto
