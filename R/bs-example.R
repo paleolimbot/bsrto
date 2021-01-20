@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-#' bs_example("CTD_98911_10P_11_DN.ODF")
+#' bs_example("odf/CTD_98911_10P_11_DN.ODF")
 #'
 bs_example <- function(example_file) {
   stopifnot(length(example_file) == 1)

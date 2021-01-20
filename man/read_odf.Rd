@@ -37,7 +37,7 @@ ODF (Ocean Data) files are whitespace-delimited files
 whose column names and are specified in a loosely formatted header.
 }
 \examples{
-odf_file <- bs_example("CTD_98911_10P_11_DN.ODF")
+odf_file <- bs_example("odf/CTD_98911_10P_11_DN.ODF")
 read_odf(odf_file)
 read_odf_colmeta(odf_file)
 str(read_odf_header(odf_file))

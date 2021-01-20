@@ -17,6 +17,6 @@ An absolute path to the file
 Example files
 }
 \examples{
-bs_example("CTD_98911_10P_11_DN.ODF")
+bs_example("odf/CTD_98911_10P_11_DN.ODF")
 
 }
