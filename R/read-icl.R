@@ -52,7 +52,7 @@ read_icl_header <- function(file, header_lines = read_icl_header_lines(file)) {
 
 #' @rdname read_icl
 #' @export
-read_icl_header_lines <- function(file, n_header = 100) {
+read_icl_header_lines <- function(file, n_header = 29) {
   header_lines(
     file,
     function(x) grepl("^Data:\\s*$", x),

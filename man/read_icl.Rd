@@ -10,7 +10,7 @@ read_icl(file, skip = length(read_icl_header_lines(file)) + 1, n_max = Inf)
 
 read_icl_header(file, header_lines = read_icl_header_lines(file))
 
-read_icl_header_lines(file, n_header = 100)
+read_icl_header_lines(file, n_header = 29)
 }
 \arguments{
 \item{file}{A file, URL, or connection. Files ending in .gz, .bz2, .xz, or

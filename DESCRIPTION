@@ -21,7 +21,8 @@ Imports:
     tibble,
     vctrs,
     stringr,
-    curl
+    curl,
+    hms
 Suggests: 
     testthat
 URL: https://github.com/paleolimbot/bsrto

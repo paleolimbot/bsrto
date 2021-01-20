@@ -3,6 +3,7 @@
 export(bs_example)
 export(bs_ftp_cached)
 export(bs_ftp_list)
+export(read_hpb)
 export(read_icl)
 export(read_icl_header)
 export(read_icl_header_lines)
