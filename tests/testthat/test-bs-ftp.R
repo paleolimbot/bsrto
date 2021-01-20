@@ -3,7 +3,7 @@ test_that("bs_ftp_list works", {
   skip_if_offline()
   skip_if_not(interactive())
 
-  expect_is(bs_ftp_list("barrow", quiet = TRUE), "character")
+  expect_is(bs_ftp_list("barrow", quiet = TRUE), "tbl_df")
   expect_message(bs_ftp_list("barrow", quiet = FALSE), "Listing directory")
   expect_output(bs_ftp_list("barrow", print = TRUE, quiet = TRUE), "barrow/")
 
@@ -24,8 +24,11 @@ test_that("bs_ftp_list works", {
     quiet = TRUE
   )
 
-  expect_true(all(grepl("\\.ASC$", mctd_files_asc)))
-  expect_identical(bs_ftp_list(character()), character())
+  expect_true(all(grepl("\\.ASC$", mctd_files_asc$file)))
+  expect_identical(
+    bs_ftp_list(character()),
+    tibble::tibble(file = character(), size = numeric())
+  )
 })
 
 test_that("bs_ftp_cached() works", {

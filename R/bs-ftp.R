@@ -58,7 +58,9 @@ bs_ftp_cached <- function(x,
 bs_ftp_list <- function(x, pattern = NULL, recursive = FALSE,
                         ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
                         print = FALSE, quiet = FALSE) {
-  if (length(x) != 1) {
+  if (length(x) == 0) {
+    return(tibble::tibble(file = character(), size = numeric()))
+  } else if (length(x) != 1) {
     results <- lapply(
       x,
       bs_ftp_list,
@@ -69,7 +71,7 @@ bs_ftp_list <- function(x, pattern = NULL, recursive = FALSE,
       print = print
     )
 
-    return(as.character(unlist(results)))
+    return(do.call(rbind, results))
   }
 
   # make sure x and ftp end with a trailing slash
@@ -87,17 +89,22 @@ bs_ftp_list <- function(x, pattern = NULL, recursive = FALSE,
 
   is_dir <- grepl("^d", listing[, 1])
   files <- if (any(!is_dir)) paste0(x, listing[, 9][!is_dir]) else character()
+  file_sizes <- as.numeric(listing[, 5][!is_dir])
   dirs <- if (any(is_dir)) paste0(x, listing[, 9][is_dir]) else character()
 
   # filter by pattern
   if (!is.null(pattern)) {
-    files <- files[grepl(pattern, basename(files))]
+    files_match <- grepl(pattern, basename(files))
+    files <- files[files_match]
+    file_sizes <- file_sizes[files_match]
   }
 
   if (print) {
-    cat(paste0(files, collapse = "\n"))
+    cat(paste0(glue::glue("{ files } [{ file_sizes } bytes]"), collapse = "\n"))
     cat("\n")
   }
+
+  files_df <- tibble::tibble(file = files, size = file_sizes)
 
   if (recursive && (length(dirs) > 0)) {
     subdirectory_listings <- lapply(
@@ -109,12 +116,12 @@ bs_ftp_list <- function(x, pattern = NULL, recursive = FALSE,
       print = FALSE
     )
 
-    files <- c(files, unlist(subdirectory_listings))
+    files_df <- rbind(files_df, do.call(rbind, subdirectory_listings))
   }
 
   if (print) {
-    invisible(files)
+    invisible(files_df)
   } else {
-    files
+    files_df
   }
 }
