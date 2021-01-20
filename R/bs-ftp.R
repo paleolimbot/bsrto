@@ -8,7 +8,8 @@
 #' @param quiet Use `TRUE` to suppress progress messages
 #' @param recursive Use `TRUE` to recurse directories
 #' @param pattern A regular expression against which files are matched
-#'   or `NULL` to match all files.
+#'   or `NULL` to match all files. See [stringr::str_detect()] for how
+#'   this argument is interpreted.
 #' @param print Use `TRUE` to print out matching files as the listings are
 #'   downloaded.
 #'
@@ -94,7 +95,7 @@ bs_ftp_list <- function(x, pattern = NULL, recursive = FALSE,
 
   # filter by pattern
   if (!is.null(pattern)) {
-    files_match <- grepl(pattern, basename(files))
+    files_match <- stringr::str_detect(basename(files), pattern)
     files <- files[files_match]
     file_sizes <- file_sizes[files_match]
   }

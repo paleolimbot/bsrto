@@ -32,7 +32,8 @@ or written.}
 \item{quiet}{Use \code{TRUE} to suppress progress messages}
 
 \item{pattern}{A regular expression against which files are matched
-or \code{NULL} to match all files.}
+or \code{NULL} to match all files. See \code{\link[stringr:str_detect]{stringr::str_detect()}} for how
+this argument is interpreted.}
 
 \item{recursive}{Use \code{TRUE} to recurse directories}
 
