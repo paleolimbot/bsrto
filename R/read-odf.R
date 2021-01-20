@@ -8,7 +8,7 @@
 #'   .zip will be automatically uncompressed; URLs will be automatically
 #'   downloaded. See [readr::read_lines()] for a full description of how
 #'   this parameter is interpreted.
-#' @param skip Number of non-header rows to skip.
+#' @param skip_data Number of non-header rows to skip.
 #' @param n_max Maximum number of rows to read.
 #' @param header A previously read value obtained from [read_odf_header()].
 #' @param header_lines A previously read value obtained from
@@ -23,7 +23,7 @@
 #' read_odf_colmeta(odf_file)
 #' str(read_odf_header(odf_file))
 #'
-read_odf <- function(file, skip = 0, n_max = Inf) {
+read_odf <- function(file, skip_data = 0, n_max = Inf) {
   header_lines <- read_odf_header_lines(file)
   header <- read_odf_header(file, header_lines)
   col_header <- header$PARAMETER_HEADER
@@ -44,11 +44,11 @@ read_odf <- function(file, skip = 0, n_max = Inf) {
     col_positions = readr::fwf_empty(
       file,
       col_names = col_names,
-      skip = length(header_lines) + 1 + skip,
+      skip = length(header_lines) + 1 + skip_data,
       n = 100L
     ),
     col_types = col_types,
-    skip = length(header_lines) + 1 + skip,
+    skip = length(header_lines) + 1 + skip_data,
     n_max = n_max,
   )
 }
@@ -97,22 +97,11 @@ read_odf_header <- function(file, header_lines = read_odf_header_lines(file)) {
 #' @rdname read_odf
 #' @export
 read_odf_header_lines <- function(file, n_header = 1000) {
-  stopifnot(n_header > 0)
-
-  lines <- readr::read_lines(file, n_max = n_header)
-  end_header <- grepl("\\s*-- DATA --\\s*", lines)
-
-  while ((length(lines) == n_header) && !any(end_header)) {
-    n_header <- n_header * 2
-    lines <- readr::read_lines(file, n_max = n_header)
-    end_header <- grepl("\\s*-- DATA --\\s*", lines)
-  }
-
-  if (!any(end_header)) {
-    abort(glue("Can't find '-- DATA --' at end of header in '{ file }'.\nIs it an ODF file?"))
-  }
-
-  lines[seq_len(which(end_header)[1] - 1)]
+  header_lines(
+    file,
+    function(x) grepl("\\s*-- DATA --\\s*", x),
+    n_header = n_header
+  )
 }
 
 collapse_by_name <- function(x) {
