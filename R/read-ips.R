@@ -11,17 +11,14 @@
 #' read_ips_bn(bn_file)
 #'
 read_ips_bn <- function(file_vector) {
-  pb <- progress::progress_bar$new(
-    "[:bar] :file",
-    total = length(file_vector)
-  )
+  pb <- bs_progress(file_vector)
+  on.exit(bs_progress_finish(pb))
   results <- lapply(file_vector, read_ips_bn_single, pb = pb)
   vctrs::vec_rbind(!!! results, .ptype = ips_bn_empty())
 }
 
 read_ips_bn_single <- function(file, pb = NULL) {
-  if (!is.null(pb)) pb$tick(tokens = list(file = basename(file)))
-
+  bs_tick(pb, file)
   content <- readr::read_file(file)
 
   # strip leading and trailing whitespace

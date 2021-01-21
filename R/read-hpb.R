@@ -11,7 +11,9 @@
 #' read_hpb(hpb_files)
 #'
 read_hpb <- function(file_vector) {
-  results <- lapply(file_vector, read_hpb_single)
+  pb <- bs_progress(file_vector)
+  on.exit(bs_progress_finish(pb))
+  results <- lapply(file_vector, read_hpb_single, pb = pb)
   vctrs::vec_rbind(
     !!! results,
     .ptype = tibble::tibble(
@@ -23,7 +25,8 @@ read_hpb <- function(file_vector) {
   )
 }
 
-read_hpb_single <- function(file) {
+read_hpb_single <- function(file, pb = NULL) {
+  bs_tick(pb, file)
   readr::read_table(
     file,
     col_names = c("date", "time", "atm_pres_mbar", "temp_c"),
