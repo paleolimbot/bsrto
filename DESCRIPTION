@@ -24,7 +24,8 @@ Imports:
     curl,
     hms
 Suggests: 
-    testthat
+    testthat,
+    withr
 URL: https://github.com/paleolimbot/bsrto
 BugReports: https://github.com/paleolimbot/bsrto/issues
 Depends: 
