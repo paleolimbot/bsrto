@@ -11,11 +11,17 @@
 #' read_ips_bn(bn_file)
 #'
 read_ips_bn <- function(file_vector) {
-  results <- lapply(file_vector, read_ips_bn_single)
+  pb <- progress::progress_bar$new(
+    "[:bar] :file",
+    total = length(file_vector)
+  )
+  results <- lapply(file_vector, read_ips_bn_single, pb = pb)
   vctrs::vec_rbind(!!! results, .ptype = ips_bn_empty())
 }
 
-read_ips_bn_single <- function(file) {
+read_ips_bn_single <- function(file, pb = NULL) {
+  if (!is.null(pb)) pb$tick(tokens = list(file = basename(file)))
+
   content <- readr::read_file(file)
 
   # strip leading and trailing whitespace
@@ -29,7 +35,10 @@ read_ips_bn_single <- function(file) {
     )[[1]]
   )
 
-  parsed <- lapply(records, read_ips_bn_record, ips_bn_empty()[NA_integer_, ])
+  parsed <- lapply(
+    records,
+    read_ips_bn_record, ips_bn_empty()[NA_integer_, ]
+  )
   vctrs::vec_rbind(!!! parsed)
 }
 

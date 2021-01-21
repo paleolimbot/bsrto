@@ -22,7 +22,8 @@ Imports:
     vctrs,
     stringr,
     curl,
-    hms
+    hms,
+    progress
 Suggests: 
     testthat,
     withr

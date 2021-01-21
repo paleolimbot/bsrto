@@ -5,9 +5,12 @@
 \alias{bs_has_cache}
 \title{Find a local cache of the BSRTO FTP server}
 \usage{
-bs_cache()
+bs_cache(...)
 
 bs_has_cache()
+}
+\arguments{
+\item{...}{Passed to \code{\link[=file.path]{file.path()}}}
 }
 \description{
 Find a local cache of the BSRTO FTP server
