@@ -27,3 +27,5 @@ Suggests:
     testthat
 URL: https://github.com/paleolimbot/bsrto
 BugReports: https://github.com/paleolimbot/bsrto/issues
+Depends: 
+    R (>= 2.10)
