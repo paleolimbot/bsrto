@@ -25,8 +25,11 @@
 #' }
 bs_ftp_cached <- function(x,
                           ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
-                          cache = getOption("bsrto.cache", file.path(getwd(), "bsrto_cache")),
-                          quiet = FALSE) {
+                          cache = bs_cache(), quiet = FALSE) {
+  if (is.null(cache)) {
+    abort("Can't use `NULL` cache.\nDid you forget to set `options(bsrto.cache = '')`?")
+  }
+
   if (length(x) != 1) {
     results <-  vapply(
       x,

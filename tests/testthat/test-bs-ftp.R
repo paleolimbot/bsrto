@@ -46,3 +46,10 @@ test_that("bs_ftp_cached() works", {
 
   unlink(cache, recursive = TRUE)
 })
+
+test_that("bs_ftp_cached() errors when there is no default cache", {
+  expect_error(
+    bs_ftp_cached("not a file", cache = NULL),
+    "`NULL` cache"
+  )
+})

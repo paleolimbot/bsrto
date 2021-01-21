@@ -8,7 +8,7 @@
 bs_ftp_cached(
   x,
   ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
-  cache = getOption("bsrto.cache", file.path(getwd(), "bsrto_cache")),
+  cache = bs_cache(),
   quiet = FALSE
 )
 
