@@ -7,7 +7,7 @@
 read_ips_bn(file_vector)
 }
 \arguments{
-\item{file_vector}{One ore more paths to local or remote .bn\link{0-9} files.}
+\item{file_vector}{One ore more paths to local or remote .bnX files.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}}

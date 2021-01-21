@@ -1,7 +1,7 @@
 
 #' Read IPS files
 #'
-#' @param file_vector One ore more paths to local or remote .bn[0-9] files.
+#' @param file_vector One ore more paths to local or remote .bnX files.
 #'
 #' @return A [tibble::tibble()]
 #' @export
