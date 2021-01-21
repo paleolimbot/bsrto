@@ -11,6 +11,9 @@
 #' read_hpb(hpb_files)
 #'
 read_hpb <- function(file_vector) {
+  # dd: vroom::vroom_fwf() is about 1.5 times faster but has
+  # no opportunity for progress reporting
+  # (for faster but more depressing reading)
   pb <- bs_progress(file_vector)
   on.exit(bs_progress_finish(pb))
   results <- lapply(file_vector, read_hpb_single, pb = pb)

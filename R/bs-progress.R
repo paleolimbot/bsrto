@@ -14,7 +14,6 @@ bs_progress <- function(along, total = length(along)) {
 
 bs_tick <- function(pb, file) {
   if (!is.null(pb)) pb$tick(tokens = list(file = basename(file)))
-  invisible(pb)
 }
 
 bs_progress_finish <- function(pb) {
