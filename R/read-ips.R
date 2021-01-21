@@ -12,7 +12,7 @@
 #'
 read_ips_bn <- function(file_vector) {
   results <- lapply(file_vector, read_ips_bn_single)
-  vctrs::vec_rbind(!!! results)
+  vctrs::vec_rbind(!!! results, .ptype = ips_bn_empty())
 }
 
 read_ips_bn_single <- function(file) {
@@ -29,14 +29,66 @@ read_ips_bn_single <- function(file) {
     )[[1]]
   )
 
-  parsed <- lapply(records, read_ips_bn_record)
+  parsed <- lapply(records, read_ips_bn_record, ips_bn_empty()[NA_integer_, ])
   vctrs::vec_rbind(!!! parsed)
 }
 
-read_ips_bn_record <- function(content) {
-  t <- tibble::tibble(
+read_ips_bn_record <- function(record, t = ips_bn_empty()[NA_integer_, ]) {
+  tryCatch({
+    lines <- readr::read_lines(record)
+
+    stopifnot(length(lines) == 7)
+
+    # line 1
+    s1 <- stringr::str_match(lines[1], "^([0-9]+)\\s+(.*)$")
+    t$measurement_id <- s1[2]
+    t$date_time <- readr::parse_datetime(
+      s1[3],
+      "%a %b %d %H:%M:%S %Y",
+      locale = readr::locale(tz = "UTC")
+    )
+
+    # line 2
+    t$station_id <- lines[2]
+
+    s <- strsplit(lines[3:6], "\\s+")
+    s <- lapply(s, function(x) suppressWarnings(as.numeric(x)))
+
+    # line 3
+    t$draft_max <- s[[c(1, 1)]]; t$draft_min <- s[[c(1, 2)]]
+    t$draft_mean <- s[[c(1, 3)]]; t$draft_sd <- s[[c(1, 4)]]
+
+    # line 4
+    t$n_ranges <- s[[c(2, 1)]]; t$n_partial_ranges <- s[[c(2, 2)]]
+    t$sound_speed <- s[[c(2, 3)]]; t$density <- s[[c(2, 4)]]
+    t$gravity <- s[[c(2, 5)]]
+
+    # line 5
+    t$pressure_max <- s[[c(3, 1)]]; t$pressure_min <- s[[c(3, 2)]]
+    t$temp_max <- s[[c(3, 3)]]; t$temp_min <- s[[c(3, 4)]]
+
+    # line 6
+    t$max_pitch <- s[[c(4, 1)]]; t$max_roll_pitch <- s[[c(4, 2)]]
+    t$max_roll <- s[[c(4, 3)]]; t$max_pitch_roll <- s[[c(4, 4)]]
+    t$max_inclination <- s[[c(4, 5)]]
+
+    bins <- suppressWarnings(as.numeric(strsplit(lines[7], ",", fixed = TRUE)[[1]]))
+    if (any(is.na(bins))) {
+      abort(glue("Unexpected text in bins: '{ lines[7] }'"))
+    }
+
+    t$bins <- list(bins)
+  }, error = function(e) {
+    t$error <<- paste0(e, collapse = "\n")
+  })
+
+  t
+}
+
+ips_bn_empty <- function() {
+  tibble::tibble(
     error = character(),
-    some_number = double(),
+    measurement_id = character(),
     date_time = as.POSIXct(character()),
     # line 2
     station_id = character(),
@@ -63,23 +115,8 @@ read_ips_bn_record <- function(content) {
     max_pitch_roll = double(),
     max_inclination = double(),
     # line 7 (histogram)
-    list()
-  )[NA_integer_, ]
-
-  tryCatch({
-    lines <- readr::read_lines(content)
-
-    stopifnot(length(lines) != 7)
-    lines_split_ws <- strsplit(lines[1:6], "\\s+")
-
-
-    bins <- suppressWarnings(as.numeric(strsplit(lines[7], ",", fixed = TRUE)[[1]]))
-    abort(glue("Unexpected text in bins: '{ lines[7] }'"))
-  }, error = function(e) {
-    t$error <<- paste0(e, collapse = "\n")
-  })
-
-  t
+    bins = list()
+  )
 }
 
 # sample entry:
