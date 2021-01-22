@@ -3,6 +3,8 @@
 #'
 #' @inheritParams read_odf
 #' @param skip The number of header rows to skip
+#' @param file_vector A vector of files or URLs
+#' @param pb A [progress bar][progress::progress_bar] or `NULL`.
 #'
 #' @return A [tibble::tibble()]
 #' @export
@@ -10,11 +12,14 @@
 #' @examples
 #' icl_file <- bs_example("icl/SAF2564_20191010_19.txt")
 #' read_icl(icl_file)
+#' read_icl_vector(icl_file)
 #' read_icl_header(icl_file)
 #' read_icl_header_lines(icl_file)
 #'
 read_icl <- function(file, skip = length(read_icl_header_lines(file)) + 1,
-                     n_max = Inf) {
+                     n_max = Inf, pb = NULL) {
+  bs_tick(pb, file)
+
   readr::read_tsv(
     file,
     col_types = readr::cols(
@@ -26,6 +31,21 @@ read_icl <- function(file, skip = length(read_icl_header_lines(file)) + 1,
     ),
     skip = skip,
     n_max = n_max
+  )
+}
+
+#' @rdname read_icl
+#' @export
+read_icl_vector <- function(file_vector) {
+  pb <- bs_progress(file_vector)
+  on.exit(bs_progress_finish(pb))
+
+  results <- lapply(file_vector, read_icl, pb = pb)
+  lengths <- vapply(results, nrow, integer(1))
+  results_all <- vctrs::vec_rbind(!!! results)
+  vctrs::vec_cbind(
+    file = vctrs::vec_rep_each(file_vector, lengths),
+    results_all
   )
 }
 

@@ -1,7 +1,8 @@
 
 #' Read hpb files
 #'
-#' @param file_vector A vector of filenames
+#' @inheritParams read_icl
+#' @param tz Timezone for which date times are representative.
 #'
 #' @return A [tibble::tibble()]
 #' @export
@@ -9,15 +10,24 @@
 #' @examples
 #' hpb_files <- list.files(bs_example("hpb"), "\\.hpb$", full.names = TRUE)
 #' read_hpb(hpb_files)
+#' read_hpb_vector(hpb_files)
 #'
-read_hpb <- function(file_vector, tz = "UTC") {
-  # dd: vroom::vroom_fwf() is about 1.5 times faster but has
+read_hpb <- function(file, tz = "UTC") {
+  stopifnot(length(file) == 1)
+  read_hpb_vector(file, tz = tz)[-1]
+}
+
+#' @rdname read_hpb
+#' @export
+read_hpb_vector <- function(file_vector, tz = "UTC") {
+  # vroom::vroom_fwf() is about 1.5 times faster but has
   # no opportunity for progress reporting
   # (for faster but more depressing reading)
   pb <- bs_progress(file_vector)
   on.exit(bs_progress_finish(pb))
 
   results <- lapply(file_vector, read_hpb_single, pb = pb)
+  lengths <- vapply(results, nrow, integer(1))
 
   results_all <- vctrs::vec_rbind(
     !!! results,
@@ -33,11 +43,14 @@ read_hpb <- function(file_vector, tz = "UTC") {
   attr(results_all$date, "tzone") <- tz
 
   tibble::tibble(
+    file = vctrs::vec_rep_each(file_vector, lengths),
     date_time = results_all$date + results_all$time,
     atm_pres_mbar = results_all$atm_pres_mbar,
     temp_c = results_all$temp_c
   )
 }
+
+read_hpb_vector
 
 read_hpb_single <- function(file, pb = NULL) {
   bs_tick(pb, file)

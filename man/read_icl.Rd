@@ -2,11 +2,19 @@
 % Please edit documentation in R/read-icl.R
 \name{read_icl}
 \alias{read_icl}
+\alias{read_icl_vector}
 \alias{read_icl_header}
 \alias{read_icl_header_lines}
 \title{Read icl files}
 \usage{
-read_icl(file, skip = length(read_icl_header_lines(file)) + 1, n_max = Inf)
+read_icl(
+  file,
+  skip = length(read_icl_header_lines(file)) + 1,
+  n_max = Inf,
+  pb = NULL
+)
+
+read_icl_vector(file_vector)
 
 read_icl_header(file, header_lines = read_icl_header_lines(file))
 
@@ -22,6 +30,10 @@ this parameter is interpreted.}
 
 \item{n_max}{Maximum number of rows to read.}
 
+\item{pb}{A \link[progress:progress_bar]{progress bar} or \code{NULL}.}
+
+\item{file_vector}{A vector of files or URLs}
+
 \item{header_lines}{A previously read value obtained from
 \code{\link[=read_odf_header_lines]{read_odf_header_lines()}}.}
 
@@ -36,6 +48,7 @@ Read icl files
 \examples{
 icl_file <- bs_example("icl/SAF2564_20191010_19.txt")
 read_icl(icl_file)
+read_icl_vector(icl_file)
 read_icl_header(icl_file)
 read_icl_header_lines(icl_file)
 

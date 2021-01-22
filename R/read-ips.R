@@ -1,8 +1,8 @@
 
 #' Read IPS files
 #'
-#' @param file_vector One ore more paths to local or remote .bnX files.
-#' @param tz The timezone for which date/time measurements are assumed.
+#' @inheritParams read_icl
+#' @inheritParams read_hpb
 #'
 #' @return A [tibble::tibble()]
 #' @export
@@ -10,8 +10,16 @@
 #' @examples
 #' bn_file <- bs_example("ips/191010AA.bn1")
 #' read_ips_bn(bn_file)
+#' read_ips_bn_vector(bn_file)
 #'
-read_ips_bn <- function(file_vector, tz = "UTC") {
+read_ips_bn <- function(file, tz = "UTC") {
+  stopifnot(length(file) == 1)
+  read_ips_bn_vector(file, tz = tz)[-1]
+}
+
+#' @rdname read_ips_bn
+#' @export
+read_ips_bn_vector <- function(file_vector, tz = "UTC") {
   empty <- ips_bn_empty()
 
   if (length(file_vector) == 0) {
@@ -27,6 +35,7 @@ read_ips_bn <- function(file_vector, tz = "UTC") {
     regex = ips_bn_entry_regex(),
     pb = pb
   )
+  lengths <- vapply(results, nrow, integer(1))
 
   results_all <- do.call(rbind, results)
   colnames(results_all) <- colnames(empty)
@@ -41,13 +50,16 @@ read_ips_bn <- function(file_vector, tz = "UTC") {
   results_all$bins <- strsplit(results_all$bins, ",", fixed = TRUE)
   results_all$bins <- lapply(results_all$bins, readr::parse_double)
 
-  results_all
+  vctrs::vec_cbind(
+    file = vctrs::vec_rep_each(file_vector, lengths),
+    results_all
+  )
 }
 
 read_ips_bn_single <- function(file, regex = ips_bn_entry_regex(), pb = NULL) {
   bs_tick(pb, file)
   content <- readr::read_file(file)
-  stringr::str_match_all(content, regex)[[1]][, -1]
+  stringr::str_match_all(content, regex)[[1]][, -1, drop = FALSE]
 }
 
 ips_bn_empty <- function() {
@@ -83,6 +95,7 @@ ips_bn_empty <- function() {
   )
 }
 
+# using a regex here is ~100x faster than parsing each record line by line
 # sample entry:
 # 1570903201 Sat Oct 12 18:00:01 2019
 # BSRTO 51061

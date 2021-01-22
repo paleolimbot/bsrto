@@ -2,12 +2,22 @@
 % Please edit documentation in R/read-hpb.R
 \name{read_hpb}
 \alias{read_hpb}
+\alias{read_hpb_vector}
 \title{Read hpb files}
 \usage{
-read_hpb(file_vector)
+read_hpb(file, tz = "UTC")
+
+read_hpb_vector(file_vector, tz = "UTC")
 }
 \arguments{
-\item{file_vector}{A vector of filenames}
+\item{file}{A file, URL, or connection. Files ending in .gz, .bz2, .xz, or
+.zip will be automatically uncompressed; URLs will be automatically
+downloaded. See \code{\link[readr:read_lines]{readr::read_lines()}} for a full description of how
+this parameter is interpreted.}
+
+\item{tz}{Timezone for which date times are representative.}
+
+\item{file_vector}{A vector of files or URLs}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -18,5 +28,6 @@ Read hpb files
 \examples{
 hpb_files <- list.files(bs_example("hpb"), "\\\\.hpb$", full.names = TRUE)
 read_hpb(hpb_files)
+read_hpb_vector(hpb_files)
 
 }

@@ -7,6 +7,12 @@ test_that("read_icl() works", {
     c("Time", "Comment", "Temperature [C]", "Humidity [%]",
       "Sequence #", "Data Points", "0")
   )
+
+  # read_icl() carries spec attribute from readr
+  expect_equivalent(
+    read_icl(file),
+    read_icl_vector(file)[-1]
+  )
 })
 
 test_that("read_icl_header() works", {

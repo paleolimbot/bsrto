@@ -11,6 +11,11 @@ test_that("read_hpb() works", {
     hpb$date_time,
     readr::parse_datetime("2019-08-28 20:30:37", locale = readr::locale(tz = "UTC"))
   )
+
+  expect_identical(
+    read_hpb(hpb_files),
+    read_hpb_vector(hpb_files)[-1]
+  )
 })
 
 test_that("read_hpb() works for all files in the cache", {
@@ -21,7 +26,7 @@ test_that("read_hpb() works for all files in the cache", {
   cached <- bs_cache(files)
   cached <- cached[file.exists(cached)]
 
-  all <- read_hpb(cached[1:300])
+  all <- read_hpb_vector(cached[1:300])
   expect_true(all(!is.na(all)))
 })
 
