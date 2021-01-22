@@ -17,3 +17,9 @@ header_lines <- function(file, end_header_function, n_header = 100) {
 
   lines[seq_len(which(end_header)[1] - 1)]
 }
+
+date_time <- function(date, time, tz = "UTC") {
+  date <- as.POSIXct(date)
+  attr(date, "tzone") <- tz
+  date + time
+}

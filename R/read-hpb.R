@@ -39,12 +39,9 @@ read_hpb_vector <- function(file_vector, tz = "UTC") {
     )
   )
 
-  results_all$date <- as.POSIXct(results_all$date)
-  attr(results_all$date, "tzone") <- tz
-
   tibble::tibble(
     file = vctrs::vec_rep_each(file_vector, lengths),
-    date_time = results_all$date + results_all$time,
+    date_time = date_time(results_all$date, results_all$time, tz = tz),
     atm_pres_mbar = results_all$atm_pres_mbar,
     temp_c = results_all$temp_c
   )
