@@ -5,7 +5,7 @@
 \alias{read_imm_vector}
 \title{Read IMM files}
 \usage{
-read_imm(file)
+read_imm(file, tz = "UTC")
 
 read_imm_vector(file_vector, tz = "UTC")
 }
@@ -15,9 +15,9 @@ read_imm_vector(file_vector, tz = "UTC")
 downloaded. See \code{\link[readr:read_lines]{readr::read_lines()}} for a full description of how
 this parameter is interpreted.}
 
-\item{file_vector}{A vector of files or URLs}
-
 \item{tz}{Timezone for which date times are representative.}
+
+\item{file_vector}{A vector of files or URLs}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}}

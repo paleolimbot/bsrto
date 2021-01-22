@@ -11,9 +11,9 @@
 #' read_imm(imm_file)
 #' read_imm_vector(imm_file)
 #'
-read_imm <- function(file) {
+read_imm <- function(file, tz = "UTC") {
   stopifnot(length(file) == 1)
-  read_imm_vector(file)[-1]
+  read_imm_vector(file, tz = tz)[-1]
 }
 
 #' @rdname read_imm
