@@ -2,6 +2,7 @@
 #' Read IPS files
 #'
 #' @param file_vector One ore more paths to local or remote .bnX files.
+#' @param tz The timezone for which date/time measurements are assumed.
 #'
 #' @return A [tibble::tibble()]
 #' @export
@@ -10,90 +11,47 @@
 #' bn_file <- bs_example("ips/191010AA.bn1")
 #' read_ips_bn(bn_file)
 #'
-read_ips_bn <- function(file_vector) {
+read_ips_bn <- function(file_vector, tz = "UTC") {
+  empty <- ips_bn_empty()
+
+  if (length(file_vector) == 0) {
+    return(empty)
+  }
+
   pb <- bs_progress(file_vector)
   on.exit(bs_progress_finish(pb))
-  results <- lapply(file_vector, read_ips_bn_single, pb = pb)
-  vctrs::vec_rbind(!!! results, .ptype = ips_bn_empty())
+
+  results <- lapply(
+    file_vector,
+    read_ips_bn_single,
+    regex = ips_bn_entry_regex(),
+    pb = pb
+  )
+
+  results_all <- do.call(rbind, results)
+  colnames(results_all) <- colnames(empty)
+  results_all <- tibble::as_tibble(results_all)
+
+  results_all$date_time <- readr::parse_datetime(
+    results_all$date_time,
+    "%a %b %d %H:%M:%S %Y",
+    locale = readr::locale(tz = tz)
+  )
+  results_all[4:21] <- lapply(results_all[4:21], readr::parse_double)
+  results_all$bins <- strsplit(results_all$bins, ",", fixed = TRUE)
+  results_all$bins <- lapply(results_all$bins, readr::parse_double)
+
+  results_all
 }
 
-read_ips_bn_single <- function(file, pb = NULL) {
+read_ips_bn_single <- function(file, regex = ips_bn_entry_regex(), pb = NULL) {
   bs_tick(pb, file)
   content <- readr::read_file(file)
-
-  # strip leading and trailing whitespace
-  content <- stringr::str_trim(content)
-
-  # split by one or more blank lines
-  records <- stringr::str_trim(
-    stringr::str_split(
-      content,
-      stringr::regex("\n(\\s*\n)+", multiline = TRUE)
-    )[[1]]
-  )
-
-  parsed <- lapply(
-    records,
-    read_ips_bn_record, ips_bn_empty()[NA_integer_, ]
-  )
-  vctrs::vec_rbind(!!! parsed)
-}
-
-read_ips_bn_record <- function(record, t = ips_bn_empty()[NA_integer_, ]) {
-  tryCatch({
-    lines <- readr::read_lines(record)
-
-    stopifnot(length(lines) == 7)
-
-    # line 1
-    s1 <- stringr::str_match(lines[1], "^([0-9]+)\\s+(.*)$")
-    t$measurement_id <- s1[2]
-    t$date_time <- readr::parse_datetime(
-      s1[3],
-      "%a %b %d %H:%M:%S %Y",
-      locale = readr::locale(tz = "UTC")
-    )
-
-    # line 2
-    t$station_id <- lines[2]
-
-    s <- strsplit(lines[3:6], "\\s+")
-    s <- lapply(s, function(x) suppressWarnings(as.numeric(x)))
-
-    # line 3
-    t$draft_max <- s[[c(1, 1)]]; t$draft_min <- s[[c(1, 2)]]
-    t$draft_mean <- s[[c(1, 3)]]; t$draft_sd <- s[[c(1, 4)]]
-
-    # line 4
-    t$n_ranges <- s[[c(2, 1)]]; t$n_partial_ranges <- s[[c(2, 2)]]
-    t$sound_speed <- s[[c(2, 3)]]; t$density <- s[[c(2, 4)]]
-    t$gravity <- s[[c(2, 5)]]
-
-    # line 5
-    t$pressure_max <- s[[c(3, 1)]]; t$pressure_min <- s[[c(3, 2)]]
-    t$temp_max <- s[[c(3, 3)]]; t$temp_min <- s[[c(3, 4)]]
-
-    # line 6
-    t$max_pitch <- s[[c(4, 1)]]; t$max_roll_pitch <- s[[c(4, 2)]]
-    t$max_roll <- s[[c(4, 3)]]; t$max_pitch_roll <- s[[c(4, 4)]]
-    t$max_inclination <- s[[c(4, 5)]]
-
-    bins <- suppressWarnings(as.numeric(strsplit(lines[7], ",", fixed = TRUE)[[1]]))
-    if (any(is.na(bins))) {
-      abort(glue("Unexpected text in bins: '{ lines[7] }'"))
-    }
-
-    t$bins <- list(bins)
-  }, error = function(e) {
-    t$error <<- paste0(e, collapse = "\n")
-  })
-
-  t
+  stringr::str_match_all(content, regex)[[1]][, -1]
 }
 
 ips_bn_empty <- function() {
   tibble::tibble(
-    error = character(),
     measurement_id = character(),
     date_time = as.POSIXct(character()),
     # line 2
@@ -133,4 +91,27 @@ ips_bn_empty <- function() {
 # 55.78 55.20 0.00 -1.58
 # 0.00 0.00 1.56 0.71 1.56
 # 0,0,0,0,0,0,0,2,163,1922,311,1,0,0,0,0,0
-# <separated by blank lines>
+#
+ips_bn_entry_regex <- function() {
+  nl <- "\r?\n"
+  ws <- "\\s+"
+  int <- "[0-9]+"
+  dbl <- "[0-9.eE-]+"
+  whatever <- ".*?"
+
+  raw_regex <- glue("
+    ({int}) ({whatever})
+    ({whatever})
+    ({dbl}) ({dbl}) ({dbl}) ({dbl})
+    ({dbl}) ({dbl}) ({dbl}) ({dbl}) ({dbl})
+    ({dbl}) ({dbl}) ({dbl}) ({dbl})
+    ({dbl}) ({dbl}) ({dbl}) ({dbl}) ({dbl})
+    ([0-9,]+)
+  ")
+
+  esc <- function(x) gsub("\\\\", "\\\\\\\\", x)
+  compiled_regex <- stringr::str_trim(raw_regex)
+  compiled_regex <- gsub("\r?\n\\s+", esc(nl), compiled_regex)
+  compiled_regex <- gsub(" ", esc(ws), compiled_regex)
+  compiled_regex
+}

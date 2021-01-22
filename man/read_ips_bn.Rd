@@ -4,10 +4,12 @@
 \alias{read_ips_bn}
 \title{Read IPS files}
 \usage{
-read_ips_bn(file_vector)
+read_ips_bn(file_vector, tz = "UTC")
 }
 \arguments{
 \item{file_vector}{One ore more paths to local or remote .bnX files.}
+
+\item{tz}{The timezone for which date/time measurements are assumed.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}}
