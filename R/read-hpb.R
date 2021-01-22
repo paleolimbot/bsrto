@@ -50,8 +50,6 @@ read_hpb_vector <- function(file_vector, tz = "UTC") {
   )
 }
 
-read_hpb_vector
-
 read_hpb_single <- function(file, pb = NULL) {
   bs_tick(pb, file)
   readr::read_table(
