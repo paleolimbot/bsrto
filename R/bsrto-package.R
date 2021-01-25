@@ -6,5 +6,6 @@
 ## usethis namespace: start
 #' @importFrom rlang abort %||%
 #' @importFrom glue glue
+#' @useDynLib bsrto, .registration = TRUE
 ## usethis namespace: end
 NULL
