@@ -1,0 +1,2532 @@
+
+ **********************************************
+ **  2017 Bedford Institute of Oceanography
+ **  BSRTO  v2.16 id20191
+ **  MODE:  HUB
+ **   Build Date:   May 22 2019 15:34:54
+ **   Current Date: Thu Oct 10 01:00:15 2019
+ **********************************************
+
+010015: #########   NEW SESSION   ##########
+010015: SDCARD mounted ...
+010015: Port:/dev/ttyS1 opened (fd:3)
+010015: BOOT_TS: Thu Oct 10 01:00:15 2019
+
+010015: Init gpio...
+010016: '/sdcard/data/pc/19100922.pcm.gz' loaded in UQ.
+010016: '/sdcard/data/adcp/19100922.rdi.gz' loaded in UQ.
+010016: '/sdcard/data/sbe/19100922.mcA.gz' loaded in UQ.
+010016: '/sdcard/data/sbe/19100923.mcH' loaded in UQ.
+010016: '/sdcard/data/icl/SAF2564_20191009_23.txt.gz' loaded in UQ.
+010016: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+010016: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+010016: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+010017: >> SPV: (<HB_ON /><CR>).
+010019: HB_ON
+010020: WWM: 0:SLEEP_TIMEOUT
+010021: PWR_USED = 11.52
+010023: VOLT = 6.85
+010024: AMPS = 76.5
+010025: CTEMP = -1
+010027: ========  EVENT LOG  ========
+010027: 1. [ 0] - 10/09/2019 23:11:18
+010027: 2. [ 1] - 10/10/2019 01:00:08
+010027: OP_MODE = 0
+010027: Thu Oct 10 01:00:27 2019
+
+010027: > in autonomous mode...
+010027: Loaded NST=1570669200 (Thu Oct 10 01:00:00 2019<LF>)
+010027: Upload Queue Emptied.
+010027: Entering HUB<-->NODE session...
+010027: Port:/dev/ttyS4 opened (fd:4)
+010027: Enable UART Driver: F (p98)
+010027: >> Collect data from ADCP NODE.
+010027: >> AM_LOCAL: (AT<CR>).
+010028: Local AM awake.
+010028: >> AM_LOCAL: (ATJ<CR>).
+010029: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+010029: >> AM_LOCAL: (ATV<CR>).
+010031: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+010031: >> AM_REMOTE: (#2 ATJ<CR>).
+010037: AM_REMOTE (2): (<CR><LF>TILT=1 (178 deg)user:)
+010037: >> AM_REMOTE: (#2 ATV<CR>).
+010044: AM_REMOTE (2): (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 20.6V<CR><LF>Board Temp = -01.5Cuser:)
+010044: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+010049: Link Established with remote modem (addr2).
+010050: Waiting for READY from node...
+010050: HUB>>NODE: waiting for READY
+010111: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+010111: ACK<CR> sent.
+010114: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+010114: Command Queue 0 Emptied.
+010115: HUB>>NODE: (GID<CR>)
+010123: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+010125: HUB>>NODE: (GFN<CR>)
+010133: HUB<<NODE: (FILE=/sdcard/data/pc/19101000.pcm.gz<CR>).
+010133: Opening file: '/sdcard/data/pc/19101000.pcm.gz'
+010135: HUB>>NODE: 'GNB<CR>'
+010143: HUB<<NODE: 'BLOCKSIZE=122'
+010144: HUB>>NODE: 'TXB<CR>'
+010159: Block upload complete [122]
+010200: SPV HB (3).
+010200: '/sdcard/data/pc/19101000.pcm.gz' added to UQ.
+010202: SPV HB (5).
+010203: HUB>>NODE: (GFN<CR>)
+010211: HUB<<NODE: (FILE=/sdcard/data/adcp/19101000.rdi.gz<CR>).
+010211: Opening file: '/sdcard/data/adcp/19101000.rdi.gz'
+010213: HUB>>NODE: 'GNB<CR>'
+010221: HUB<<NODE: 'BLOCKSIZE=630'
+010222: HUB>>NODE: 'TXB<CR>'
+010257: Block upload complete [630]
+010258: SPV HB (7).
+010258: '/sdcard/data/adcp/19101000.rdi.gz' added to UQ.
+010259: SPV HB (9).
+010300: HUB>>NODE: (GFN<CR>)
+010309: HUB<<NODE: (FILE=/sdcard/data/sbe/19101000.mcA.gz<CR>).
+010309: Opening file: '/sdcard/data/sbe/19101000.mcA.gz'
+010311: HUB>>NODE: 'GNB<CR>'
+010319: HUB<<NODE: 'BLOCKSIZE=82'
+010320: HUB>>NODE: 'TXB<CR>'
+010333: Block upload complete [82]
+010334: SPV HB (11).
+010334: '/sdcard/data/sbe/19101000.mcA.gz' added to UQ.
+010336: SPV HB (13).
+010337: HUB>>NODE: (GFN<CR>)
+010345: HUB<<NODE: (FILE=NONE<CR>).
+010345: No more data to upload.
+010345: HUB>>NODE: (&CLK=1570669425<CR>)
+010353: HUB<<NODE: (&CLK=1570669425_NONEED<CR>).
+010354: HUB>>NODE: (REL<CR>)
+010401: HUB>>NODE: Node Released.
+010401: ADCP NODE SESSION COMPLETE.
+010402: >> AM_LOCAL: (+++).
+010405: Local AM in Command Mode.
+010406: >> AM_LOCAL: (ATH<CR>).
+010407: AM Hang Up message sent.
+010409: SPV HB (15).
+010414:  >> Collect data from IPS NODE.
+010414: >> AM_LOCAL: (AT<CR>).
+010416: Local AM awake.
+010416: >> AM_LOCAL: (ATJ<CR>).
+010417: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+010417: >> AM_LOCAL: (ATV<CR>).
+010418: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = 00.0C<CR><LF>user:)
+010418: >> AM_REMOTE: (#3 ATJ<CR>).
+010424: AM_REMOTE (3): (<CR><LF>TILT=1 (178 deg)user:)
+010424: >> AM_REMOTE: (#3 ATV<CR>).
+010432: AM_REMOTE (3): (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 20.2V<CR><LF>Board Temp = -01.0Cuser:)
+010432: >> AM_LOCAL: (ATD3<CR>) attempt 1.
+010437: Link Established with remote modem (addr3).
+010437: Waiting for READY from node...
+010437: HUB>>NODE: waiting for READY
+010458: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+010458: ACK<CR> sent.
+010501: ERROR: failed to delete '/sdcard/cfg/cmd_q_1.txt'  (err2)
+010501: Command Queue 0 Emptied.
+010503: SPV HB (17).
+010504: HUB>>NODE: (GID<CR>)
+010512: HUB<<NODE: (BSRTO-IPS_20191<CR>).
+010514: HUB>>NODE: (GFN<CR>)
+010522: HUB<<NODE: (FILE=/sdcard/data/sbe/19100923.mcI.gz<CR>).
+010522: Opening file: '/sdcard/data/sbe/19100923.mcI.gz'
+010524: HUB>>NODE: 'GNB<CR>'
+010532: HUB<<NODE: 'BLOCKSIZE=383'
+010533: HUB>>NODE: 'TXB<CR>'
+010558: Block upload complete [383]
+010559: SPV HB (19).
+010559: '/sdcard/data/sbe/19100923.mcI.gz' added to UQ.
+010600: SPV HB (21).
+010601: HUB>>NODE: (GFN<CR>)
+010610: HUB<<NODE: (FILE=/sdcard/data/ips/191009AA.bn1.gz<CR>).
+010610: Opening file: '/sdcard/data/ips/191009AA.bn1.gz'
+010612: HUB>>NODE: 'GNB<CR>'
+010620: HUB<<NODE: 'BLOCKSIZE=272'
+010621: HUB>>NODE: 'TXB<CR>'
+010641: Block upload complete [272]
+010643: SPV HB (23).
+010643: '/sdcard/data/ips/191009AA.bn1.gz' added to UQ.
+010644: SPV HB (25).
+010645: HUB>>NODE: (GFN<CR>)
+010654: HUB<<NODE: (FILE=/sdcard/data/ips/191009AA.bn2.gz<CR>).
+010654: Opening file: '/sdcard/data/ips/191009AA.bn2.gz'
+010656: HUB>>NODE: 'GNB<CR>'
+010703: HUB<<NODE: 'BLOCKSIZE=264'
+010704: HUB>>NODE: 'TXB<CR>'
+010725: Block upload complete [264]
+010726: SPV HB (27).
+010726: '/sdcard/data/ips/191009AA.bn2.gz' added to UQ.
+010727: SPV HB (29).
+010728: HUB>>NODE: (GFN<CR>)
+010737: HUB<<NODE: (FILE=/sdcard/data/ips/191009AA.bn3.gz<CR>).
+010737: Opening file: '/sdcard/data/ips/191009AA.bn3.gz'
+010739: HUB>>NODE: 'GNB<CR>'
+010746: HUB<<NODE: 'BLOCKSIZE=250'
+010747: HUB>>NODE: 'TXB<CR>'
+010807: Block upload complete [250]
+010809: SPV HB (31).
+010809: '/sdcard/data/ips/191009AA.bn3.gz' added to UQ.
+010810: SPV HB (33).
+010811: HUB>>NODE: (GFN<CR>)
+010819: HUB<<NODE: (FILE=/sdcard/data/ips/191009AA.bn4.gz<CR>).
+010819: Opening file: '/sdcard/data/ips/191009AA.bn4.gz'
+010822: HUB>>NODE: 'GNB<CR>'
+010829: HUB<<NODE: 'BLOCKSIZE=260'
+010830: HUB>>NODE: 'TXB<CR>'
+010850: Block upload complete [260]
+010852: SPV HB (35).
+010852: '/sdcard/data/ips/191009AA.bn4.gz' added to UQ.
+010853: SPV HB (37).
+010854: HUB>>NODE: (GFN<CR>)
+010902: HUB<<NODE: (FILE=NONE<CR>).
+010902: No more data to upload.
+010902: HUB>>NODE: (&CLK=1570669742<CR>)
+010910: HUB<<NODE: (&CLK=1570669742_NONEED<CR>).
+010911: HUB>>NODE: (REL<CR>)
+010918: HUB>>NODE: Node Released.
+010918: IPS NODE SESSION COMPLETE.
+010919: >> AM_LOCAL: (+++).
+010922: Local AM in Command Mode.
+010923: >> AM_LOCAL: (ATH<CR>).
+010924: AM Hang Up message sent.
+010926: SPV HB (39).
+010926: >> AM_LOCAL: (ATL<CR>).
+010928: Local AM in low Power state.
+010928: Port:4 is closed.
+010928: HUB <-> NODE session completed.
+010929: SPV HB (41).
+010929: Port:/dev/ttyS5 opened (fd:4)
+010929: Enable UART Driver: F (p98)
+010930: >> SBE: [<CR><CR><CR>].
+010931: SBE microcat awake.
+010931: >> SBE: [SL<CR>].
+010933: SBE Microcat sample collected.
+010933: SBE Sample: '  -0.9609,  2.71453,  157.931,  33.4457, 1445.138, 10 Oct 2019, 00:00:01<CR><LF>'
+010933: '/sdcard/data/sbe/19101001.mcH' added to UQ.
+010933: >> SBE: [qs<CR>].
+010934: SBE microcat sleeping.
+010934: Port:5 is closed.
+010934: SBE Sample Complete.
+010934:  # icListen powered up.
+010954: Connected to icListen.
+010956: icListen Set Time: 1570669795 (1570669795)
+010956: icListen Set Time match.
+010956:  # icListen clock updated.
+010957: icListen Start Logging at: (58) 1570669811
+010957:  # icListen logging STARTED.
+010957:  # Waiting for data collection to complete...
+011113: icListen Logging Stopped.
+011113:  # icListen logging STOPPED.
+011116: Download Attempt 1 (1570669811)
+011116: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_011011.txt.
+011119: File compressed '/sdcard/data/icl/SAF2564_20191010_011011.txt.gz'
+011119: [/sdcard/data/icl/SAF2564_20191010_011011.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_011011.txt.gz]
+011119: File '/sdcard/data/icl/SAF2564_20191010_011011.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_01.txt.gz'.
+011119: '/sdcard/data/icl/SAF2564_20191010_01.txt.gz' added to UQ.
+011119:  # icListen data DOWNLOADED.
+011119: icListen Standby
+011119:  # icListen in Standby mode.
+011120:  # icListen socket closed.
+011123:  # icListen shutting down....
+011131:  # icListen shutdown.
+011131: icListen Sample Completed Successfully.
+011131: Entering HUB<-->SHORE session...
+011131: Port:/dev/ttyS0 opened (fd:4)
+011131: Enable UART Driver: D (p175)
+011131: HUB<-->SHORE sending wake signal...
+011134: File compressed '/sdcard/logs/20191009.lgH.gz'
+011134: [/sdcard/logs/20191009.lgH] compressed to [/sdcard/logs/20191009.lgH.gz]
+011134: '/sdcard/logs/20191009.lgH.gz' added to UQ.
+011134: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+011134: Stored Upload Queue Emptied.
+011135: SPV HB (43).
+011135: ***   HUB passing control to SHORE...
+011135: ***   HUB COMMAND MODE ...<CR><LF>
+011235: ** Remote Command Timeout!
+011237: SPV HB (45).
+011336: ** Remote Command Timeout!
+011337: SPV HB (47).
+011436: ** Remote Command Timeout!
+011437: SPV HB (49).
+011536: ** Remote Command Timeout!
+011537: SPV HB (51).
+011636: ** Remote Command Timeout!
+011637: SPV HB (53).
+011637: ** Max Consecutive Command Timeouts [5].  End session!
+011637: Port:0 is closed.
+011637: Error: HUB <-> SHORE session completed with error.
+011637: Next Sample Time Stored: NST=1570676400 (Thu Oct 10 03:00:00 2019<LF>)
+011637: >> SPV: (<CLOCK :1570670197 /><CR>).
+011638: SPV Clock set: 1570670197.
+011640: ========  EVENT LOG  ========
+011640: 1. [29] - 10/10/2019 01:00:36
+011641: PWR_USED = 579.33
+011642: VOLT = 6.75
+011644: AMPS = 80.9
+011645: CTEMP = 3
+011645:  >> Attempt sleep for 6203 seconds...
+011645: >> SPV: (<SLEEP :6203 /><CR>).
+011646: ... Sleep Executed Successfully.
+011646: POWERING OFF...
+
+
+011647: 
+ ***   END OF MAIN  ***
+ ***    Quitting Now !!   ***
+
+030016: #########   NEW SESSION   ##########
+030016: SDCARD mounted ...
+030016: Port:/dev/ttyS1 opened (fd:3)
+030016: BOOT_TS: Thu Oct 10 03:00:16 2019
+
+030016: Init gpio...
+030017: '/sdcard/data/pc/19101000.pcm.gz' loaded in UQ.
+030017: '/sdcard/data/adcp/19101000.rdi.gz' loaded in UQ.
+030017: '/sdcard/data/sbe/19101000.mcA.gz' loaded in UQ.
+030017: '/sdcard/data/sbe/19100923.mcI.gz' loaded in UQ.
+030017: '/sdcard/data/ips/191009AA.bn1.gz' loaded in UQ.
+030017: '/sdcard/data/ips/191009AA.bn2.gz' loaded in UQ.
+030017: '/sdcard/data/ips/191009AA.bn3.gz' loaded in UQ.
+030017: '/sdcard/data/ips/191009AA.bn4.gz' loaded in UQ.
+030017: '/sdcard/data/sbe/19101001.mcH' loaded in UQ.
+030017: '/sdcard/data/icl/SAF2564_20191010_01.txt.gz' loaded in UQ.
+030017: '/sdcard/logs/20191009.lgH.gz' loaded in UQ.
+030017: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+030017: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+030017: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+030018: >> SPV: (<HB_ON /><CR>).
+030020: HB_ON
+030021: WWM: 0:SLEEP_TIMEOUT
+030022: PWR_USED = 11.40
+030024: VOLT = 6.85
+030025: AMPS = 76.5
+030026: CTEMP = -1
+030028: ========  EVENT LOG  ========
+030028: 1. [ 0] - 10/10/2019 01:16:50
+030028: 2. [ 1] - 10/10/2019 03:00:08
+030028: OP_MODE = 0
+030028: Thu Oct 10 03:00:28 2019
+
+030028: > in autonomous mode...
+030028: Loaded NST=1570676400 (Thu Oct 10 03:00:00 2019<LF>)
+030028: Upload Queue Emptied.
+030028: Entering HUB<-->NODE session...
+030028: Port:/dev/ttyS4 opened (fd:4)
+030028: Enable UART Driver: F (p98)
+030028: >> Collect data from ADCP NODE.
+030028: >> AM_LOCAL: (AT<CR>).
+030029: Local AM awake.
+030029: >> AM_LOCAL: (ATJ<CR>).
+030030: AM_LOCAL: (<CR><LF>TILT=0 (4 deg))
+030030: >> AM_LOCAL: (ATV<CR>).
+030032: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.8V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+030032: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+030036: Link Established with remote modem (addr2).
+030037: Waiting for READY from node...
+030037: HUB>>NODE: waiting for READY
+030058: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+030058: ACK<CR> sent.
+030101: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+030101: Command Queue 0 Emptied.
+030102: HUB>>NODE: (GID<CR>)
+030110: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+030112: HUB>>NODE: (GFN<CR>)
+030121: HUB<<NODE: (FILE=/sdcard/data/pc/19101002.pcm.gz<CR>).
+030121: Opening file: '/sdcard/data/pc/19101002.pcm.gz'
+030123: HUB>>NODE: 'GNB<CR>'
+030130: HUB<<NODE: 'BLOCKSIZE=109'
+030131: HUB>>NODE: 'TXB<CR>'
+030146: Block upload complete [109]
+030147: SPV HB (3).
+030147: '/sdcard/data/pc/19101002.pcm.gz' added to UQ.
+030148: SPV HB (5).
+030149: HUB>>NODE: (GFN<CR>)
+030158: HUB<<NODE: (FILE=/sdcard/data/adcp/19101002.rdi.gz<CR>).
+030158: Opening file: '/sdcard/data/adcp/19101002.rdi.gz'
+030200: HUB>>NODE: 'GNB<CR>'
+030208: HUB<<NODE: 'BLOCKSIZE=608'
+030209: HUB>>NODE: 'TXB<CR>'
+030242: Block upload complete [608]
+030244: SPV HB (7).
+030244: '/sdcard/data/adcp/19101002.rdi.gz' added to UQ.
+030245: SPV HB (9).
+030246: HUB>>NODE: (GFN<CR>)
+030255: HUB<<NODE: (FILE=/sdcard/data/sbe/19101002.mcA.gz<CR>).
+030255: Opening file: '/sdcard/data/sbe/19101002.mcA.gz'
+030257: HUB>>NODE: 'GNB<CR>'
+030304: HUB<<NODE: 'BLOCKSIZE=83'
+030305: HUB>>NODE: 'TXB<CR>'
+030319: Block upload complete [83]
+030320: SPV HB (11).
+030320: '/sdcard/data/sbe/19101002.mcA.gz' added to UQ.
+030322: SPV HB (13).
+030323: HUB>>NODE: (GFN<CR>)
+030330: HUB<<NODE: (FILE=NONE<CR>).
+030330: No more data to upload.
+030330: HUB>>NODE: (&CLK=1570676610<CR>)
+030339: HUB<<NODE: (&CLK=1570676610_NONEED<CR>).
+030340: HUB>>NODE: (REL<CR>)
+030347: HUB>>NODE: Node Released.
+030347: ADCP NODE SESSION COMPLETE.
+030348: >> AM_LOCAL: (+++).
+030350: Local AM in Command Mode.
+030351: >> AM_LOCAL: (ATH<CR>).
+030353: AM Hang Up message sent.
+030355: SPV HB (15).
+030355: Not yet time to collect data from IPS NODE.
+030355: >> AM_LOCAL: (ATL<CR>).
+030356: Local AM in low Power state.
+030356: Port:4 is closed.
+030356: HUB <-> NODE session completed.
+030358: SPV HB (18).
+030358: Port:/dev/ttyS5 opened (fd:4)
+030358: Enable UART Driver: F (p98)
+030359: >> SBE: [<CR><CR><CR>].
+030400: SBE microcat awake.
+030400: >> SBE: [SL<CR>].
+030402: SBE Microcat sample collected.
+030402: SBE Sample: '  -0.9659,  2.71345,  158.521,  33.4362, 1445.112, 10 Oct 2019, 02:00:01<CR><LF>'
+030402: '/sdcard/data/sbe/19101003.mcH' added to UQ.
+030402: >> SBE: [qs<CR>].
+030403: SBE microcat sleeping.
+030403: Port:5 is closed.
+030403: SBE Sample Complete.
+030403:  # icListen powered up.
+030423: Connected to icListen.
+030424: icListen Set Time: 1570676664 (1570676664)
+030424: icListen Set Time match.
+030424:  # icListen clock updated.
+030425: icListen Start Logging at: (58) 1570676679
+030425:  # icListen logging STARTED.
+030425:  # Waiting for data collection to complete...
+030541: icListen Logging Stopped.
+030541:  # icListen logging STOPPED.
+030544: Download Attempt 1 (1570676679)
+030545: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_030439.txt.
+030548: File compressed '/sdcard/data/icl/SAF2564_20191010_030439.txt.gz'
+030548: [/sdcard/data/icl/SAF2564_20191010_030439.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_030439.txt.gz]
+030548: File '/sdcard/data/icl/SAF2564_20191010_030439.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_03.txt.gz'.
+030548: '/sdcard/data/icl/SAF2564_20191010_03.txt.gz' added to UQ.
+030548:  # icListen data DOWNLOADED.
+030548: icListen Standby
+030548:  # icListen in Standby mode.
+030549:  # icListen socket closed.
+030552:  # icListen shutting down....
+030600:  # icListen shutdown.
+030600: icListen Sample Completed Successfully.
+030600: Entering HUB<-->SHORE session...
+030600: Port:/dev/ttyS0 opened (fd:4)
+030600: Enable UART Driver: D (p175)
+030600: HUB<-->SHORE sending wake signal...
+030603: Not time to queue logfile. (ssm=11163)
+030603: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+030603: Stored Upload Queue Emptied.
+030604: SPV HB (20).
+030604: ***   HUB passing control to SHORE...
+030604: ***   HUB COMMAND MODE ...<CR><LF>
+030704: ** Remote Command Timeout!
+030706: SPV HB (22).
+030804: ** Remote Command Timeout!
+030806: SPV HB (24).
+030904: ** Remote Command Timeout!
+030906: SPV HB (26).
+031004: ** Remote Command Timeout!
+031006: SPV HB (28).
+031104: ** Remote Command Timeout!
+031106: SPV HB (30).
+031106: ** Max Consecutive Command Timeouts [5].  End session!
+031106: Port:0 is closed.
+031106: Error: HUB <-> SHORE session completed with error.
+031106: Next Sample Time Stored: NST=1570683600 (Thu Oct 10 05:00:00 2019<LF>)
+031106: >> SPV: (<CLOCK :1570677066 /><CR>).
+031107: SPV Clock set: 1570677066.
+031108: ========  EVENT LOG  ========
+031108: 1. [29] - 10/10/2019 03:00:56
+031110: PWR_USED = 375.69
+031111: VOLT = 6.75
+031112: AMPS = 83.3
+031114: CTEMP = 3
+031114:  >> Attempt sleep for 6534 seconds...
+031114: >> SPV: (<SLEEP :6534 /><CR>).
+031115: ... Sleep Executed Successfully.
+031115: POWERING OFF...
+
+
+050014: #########   NEW SESSION   ##########
+050014: SDCARD mounted ...
+050014: Port:/dev/ttyS1 opened (fd:3)
+050014: BOOT_TS: Thu Oct 10 05:00:14 2019
+
+050014: Init gpio...
+050015: '/sdcard/data/pc/19101002.pcm.gz' loaded in UQ.
+050015: '/sdcard/data/adcp/19101002.rdi.gz' loaded in UQ.
+050015: '/sdcard/data/sbe/19101002.mcA.gz' loaded in UQ.
+050015: '/sdcard/data/sbe/19101003.mcH' loaded in UQ.
+050015: '/sdcard/data/icl/SAF2564_20191010_03.txt.gz' loaded in UQ.
+050015: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+050015: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+050015: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+050016: >> SPV: (<HB_ON /><CR>).
+050018: HB_ON
+050019: WWM: 0:SLEEP_TIMEOUT
+050020: PWR_USED = 11.96
+050022: VOLT = 6.85
+050023: AMPS = 76.5
+050024: CTEMP = -1
+050026: ========  EVENT LOG  ========
+050026: 1. [ 0] - 10/10/2019 03:11:19
+050026: 2. [ 1] - 10/10/2019 05:00:08
+050026: OP_MODE = 0
+050026: Thu Oct 10 05:00:26 2019
+
+050026: > in autonomous mode...
+050026: Loaded NST=1570683600 (Thu Oct 10 05:00:00 2019<LF>)
+050026: Upload Queue Emptied.
+050026: Entering HUB<-->NODE session...
+050026: Port:/dev/ttyS4 opened (fd:4)
+050026: Enable UART Driver: F (p98)
+050026: >> Collect data from ADCP NODE.
+050026: >> AM_LOCAL: (AT<CR>).
+050027: Local AM awake.
+050027: >> AM_LOCAL: (ATJ<CR>).
+050028: AM_LOCAL: (<CR><LF>TILT=0 (3 deg))
+050028: >> AM_LOCAL: (ATV<CR>).
+050030: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.8V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+050030: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+050034: Link Established with remote modem (addr2).
+050035: Waiting for READY from node...
+050035: HUB>>NODE: waiting for READY
+050056: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+050056: ACK<CR> sent.
+050059: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+050059: Command Queue 0 Emptied.
+050100: HUB>>NODE: (GID<CR>)
+050108: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+050110: HUB>>NODE: (GFN<CR>)
+050118: HUB<<NODE: (FILE=/sdcard/data/pc/19101004.pcm.gz<CR>).
+050118: Opening file: '/sdcard/data/pc/19101004.pcm.gz'
+050120: HUB>>NODE: 'GNB<CR>'
+050128: HUB<<NODE: 'BLOCKSIZE=113'
+050129: HUB>>NODE: 'TXB<CR>'
+050144: Block upload complete [113]
+050145: SPV HB (3).
+050145: '/sdcard/data/pc/19101004.pcm.gz' added to UQ.
+050146: SPV HB (5).
+050147: HUB>>NODE: (GFN<CR>)
+050156: HUB<<NODE: (FILE=/sdcard/data/adcp/19101004.rdi.gz<CR>).
+050156: Opening file: '/sdcard/data/adcp/19101004.rdi.gz'
+050158: HUB>>NODE: 'GNB<CR>'
+050206: HUB<<NODE: 'BLOCKSIZE=617'
+050207: HUB>>NODE: 'TXB<CR>'
+050241: Block upload complete [617]
+050242: SPV HB (7).
+050242: '/sdcard/data/adcp/19101004.rdi.gz' added to UQ.
+050243: SPV HB (9).
+050244: HUB>>NODE: (GFN<CR>)
+050253: HUB<<NODE: (FILE=/sdcard/data/sbe/19101004.mcA.gz<CR>).
+050253: Opening file: '/sdcard/data/sbe/19101004.mcA.gz'
+050255: HUB>>NODE: 'GNB<CR>'
+050303: HUB<<NODE: 'BLOCKSIZE=82'
+050304: HUB>>NODE: 'TXB<CR>'
+050317: Block upload complete [82]
+050318: SPV HB (11).
+050318: '/sdcard/data/sbe/19101004.mcA.gz' added to UQ.
+050320: SPV HB (13).
+050321: HUB>>NODE: (GFN<CR>)
+050329: HUB<<NODE: (FILE=NONE<CR>).
+050329: No more data to upload.
+050329: HUB>>NODE: (&CLK=1570683809<CR>)
+050337: HUB<<NODE: (&CLK=1570683809_NONEED<CR>).
+050338: HUB>>NODE: (REL<CR>)
+050345: HUB>>NODE: Node Released.
+050345: ADCP NODE SESSION COMPLETE.
+050346: >> AM_LOCAL: (+++).
+050349: Local AM in Command Mode.
+050350: >> AM_LOCAL: (ATH<CR>).
+050351: AM Hang Up message sent.
+050353: SPV HB (15).
+050353: Not yet time to collect data from IPS NODE.
+050353: >> AM_LOCAL: (ATL<CR>).
+050355: Local AM in low Power state.
+050355: Port:4 is closed.
+050355: HUB <-> NODE session completed.
+050356: SPV HB (18).
+050356: Port:/dev/ttyS5 opened (fd:4)
+050356: Enable UART Driver: F (p98)
+050357: >> SBE: [<CR><CR><CR>].
+050359: SBE microcat awake.
+050359: >> SBE: [SL<CR>].
+050400: SBE Microcat sample collected.
+050400: SBE Sample: '  -0.9820,  2.71045,  158.763,  33.4132, 1445.008, 10 Oct 2019, 04:00:01<CR><LF>'
+050400: '/sdcard/data/sbe/19101005.mcH' added to UQ.
+050400: >> SBE: [qs<CR>].
+050401: SBE microcat sleeping.
+050401: Port:5 is closed.
+050401: SBE Sample Complete.
+050401:  # icListen powered up.
+050421: Connected to icListen.
+050423: icListen Set Time: 1570683862 (1570683862)
+050423: icListen Set Time match.
+050423:  # icListen clock updated.
+050424: icListen Start Logging at: (58) 1570683878
+050424:  # icListen logging STARTED.
+050424:  # Waiting for data collection to complete...
+050540: icListen Logging Stopped.
+050540:  # icListen logging STOPPED.
+050543: Download Attempt 1 (1570683878)
+050543: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_050438.txt.
+050547: File compressed '/sdcard/data/icl/SAF2564_20191010_050438.txt.gz'
+050547: [/sdcard/data/icl/SAF2564_20191010_050438.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_050438.txt.gz]
+050547: File '/sdcard/data/icl/SAF2564_20191010_050438.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_05.txt.gz'.
+050547: '/sdcard/data/icl/SAF2564_20191010_05.txt.gz' added to UQ.
+050547:  # icListen data DOWNLOADED.
+050547: icListen Standby
+050547:  # icListen in Standby mode.
+050548:  # icListen socket closed.
+050551:  # icListen shutting down....
+050558:  # icListen shutdown.
+050558: icListen Sample Completed Successfully.
+050558: Entering HUB<-->SHORE session...
+050558: Port:/dev/ttyS0 opened (fd:4)
+050558: Enable UART Driver: D (p175)
+050558: HUB<-->SHORE sending wake signal...
+050601: Not time to queue logfile. (ssm=18361)
+050601: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+050601: Stored Upload Queue Emptied.
+050602: SPV HB (20).
+050602: ***   HUB passing control to SHORE...
+050602: ***   HUB COMMAND MODE ...<CR><LF>
+050702: ** Remote Command Timeout!
+050704: SPV HB (22).
+050802: ** Remote Command Timeout!
+050804: SPV HB (24).
+050902: ** Remote Command Timeout!
+050904: SPV HB (26).
+051002: ** Remote Command Timeout!
+051004: SPV HB (28).
+051103: ** Remote Command Timeout!
+051104: SPV HB (30).
+051104: ** Max Consecutive Command Timeouts [5].  End session!
+051104: Port:0 is closed.
+051104: Error: HUB <-> SHORE session completed with error.
+051104: Next Sample Time Stored: NST=1570690800 (Thu Oct 10 07:00:00 2019<LF>)
+051104: >> SPV: (<CLOCK :1570684264 /><CR>).
+051105: SPV Clock set: 1570684264.
+051107: ========  EVENT LOG  ========
+051107: 1. [29] - 10/10/2019 05:00:56
+051108: PWR_USED = 376.06
+051109: VOLT = 6.75
+051111: AMPS = 80.9
+051112: CTEMP = 3
+051112:  >> Attempt sleep for 6536 seconds...
+051112: >> SPV: (<SLEEP :6536 /><CR>).
+051113: ... Sleep Executed Successfully.
+051113: POWERING OFF...
+
+
+070016: #########   NEW SESSION   ##########
+070016: SDCARD mounted ...
+070016: Port:/dev/ttyS1 opened (fd:3)
+070016: BOOT_TS: Thu Oct 10 07:00:16 2019
+
+070016: Init gpio...
+070017: '/sdcard/data/pc/19101004.pcm.gz' loaded in UQ.
+070017: '/sdcard/data/adcp/19101004.rdi.gz' loaded in UQ.
+070017: '/sdcard/data/sbe/19101004.mcA.gz' loaded in UQ.
+070017: '/sdcard/data/sbe/19101005.mcH' loaded in UQ.
+070017: '/sdcard/data/icl/SAF2564_20191010_05.txt.gz' loaded in UQ.
+070017: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+070017: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+070017: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+070018: >> SPV: (<HB_ON /><CR>).
+070020: HB_ON
+070021: WWM: 0:SLEEP_TIMEOUT
+070022: PWR_USED = 11.40
+070024: VOLT = 6.85
+070025: AMPS = 76.5
+070026: CTEMP = -1
+070028: ========  EVENT LOG  ========
+070028: 1. [ 0] - 10/10/2019 05:11:17
+070028: 2. [ 1] - 10/10/2019 07:00:08
+070028: OP_MODE = 0
+070028: Thu Oct 10 07:00:28 2019
+
+070028: > in autonomous mode...
+070028: Loaded NST=1570690800 (Thu Oct 10 07:00:00 2019<LF>)
+070028: Upload Queue Emptied.
+070028: Entering HUB<-->NODE session...
+070028: Port:/dev/ttyS4 opened (fd:4)
+070028: Enable UART Driver: F (p98)
+070028: >> Collect data from ADCP NODE.
+070028: >> AM_LOCAL: (AT<CR>).
+070029: Local AM awake.
+070029: >> AM_LOCAL: (ATJ<CR>).
+070030: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+070030: >> AM_LOCAL: (ATV<CR>).
+070032: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+070032: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+070036: Link Established with remote modem (addr2).
+070037: Waiting for READY from node...
+070037: HUB>>NODE: waiting for READY
+070058: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+070058: ACK<CR> sent.
+070101: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+070101: Command Queue 0 Emptied.
+070102: HUB>>NODE: (GID<CR>)
+070110: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+070112: HUB>>NODE: (GFN<CR>)
+070121: HUB<<NODE: (FILE=/sdcard/data/pc/19101006.pcm.gz<CR>).
+070121: Opening file: '/sdcard/data/pc/19101006.pcm.gz'
+070123: HUB>>NODE: 'GNB<CR>'
+070130: HUB<<NODE: 'BLOCKSIZE=111'
+070131: HUB>>NODE: 'TXB<CR>'
+070146: Block upload complete [111]
+070147: SPV HB (3).
+070147: '/sdcard/data/pc/19101006.pcm.gz' added to UQ.
+070148: SPV HB (5).
+070149: HUB>>NODE: (GFN<CR>)
+070158: HUB<<NODE: (FILE=/sdcard/data/adcp/19101006.rdi.gz<CR>).
+070158: Opening file: '/sdcard/data/adcp/19101006.rdi.gz'
+070200: HUB>>NODE: 'GNB<CR>'
+070208: HUB<<NODE: 'BLOCKSIZE=633'
+070209: HUB>>NODE: 'TXB<CR>'
+070243: Block upload complete [633]
+070245: SPV HB (7).
+070245: '/sdcard/data/adcp/19101006.rdi.gz' added to UQ.
+070246: SPV HB (9).
+070247: HUB>>NODE: (GFN<CR>)
+070256: HUB<<NODE: (FILE=/sdcard/data/sbe/19101006.mcA.gz<CR>).
+070256: Opening file: '/sdcard/data/sbe/19101006.mcA.gz'
+070258: HUB>>NODE: 'GNB<CR>'
+070305: HUB<<NODE: 'BLOCKSIZE=82'
+070306: HUB>>NODE: 'TXB<CR>'
+070320: Block upload complete [82]
+070321: SPV HB (11).
+070321: '/sdcard/data/sbe/19101006.mcA.gz' added to UQ.
+070322: SPV HB (13).
+070323: HUB>>NODE: (GFN<CR>)
+070331: HUB<<NODE: (FILE=NONE<CR>).
+070331: No more data to upload.
+070331: HUB>>NODE: (&CLK=1570691011<CR>)
+070340: HUB<<NODE: (&CLK=1570691011_NONEED<CR>).
+070341: HUB>>NODE: (REL<CR>)
+070348: HUB>>NODE: Node Released.
+070348: ADCP NODE SESSION COMPLETE.
+070349: >> AM_LOCAL: (+++).
+070351: Local AM in Command Mode.
+070352: >> AM_LOCAL: (ATH<CR>).
+070354: AM Hang Up message sent.
+070356: SPV HB (15).
+070356: Not yet time to collect data from IPS NODE.
+070356: >> AM_LOCAL: (ATL<CR>).
+070357: Local AM in low Power state.
+070357: Port:4 is closed.
+070357: HUB <-> NODE session completed.
+070359: SPV HB (18).
+070359: Port:/dev/ttyS5 opened (fd:4)
+070359: Enable UART Driver: F (p98)
+070400: >> SBE: [<CR><CR><CR>].
+070401: SBE microcat awake.
+070401: >> SBE: [SL<CR>].
+070403: SBE Microcat sample collected.
+070403: SBE Sample: '  -0.9917,  2.70790,  158.493,  33.3895, 1444.926, 10 Oct 2019, 06:00:01<CR><LF>'
+070403: '/sdcard/data/sbe/19101007.mcH' added to UQ.
+070403: >> SBE: [qs<CR>].
+070404: SBE microcat sleeping.
+070404: Port:5 is closed.
+070404: SBE Sample Complete.
+070404:  # icListen powered up.
+070424: Connected to icListen.
+070425: icListen Set Time: 1570691065 (1570691065)
+070425: icListen Set Time match.
+070425:  # icListen clock updated.
+070426: icListen Start Logging at: (58) 1570691080
+070426:  # icListen logging STARTED.
+070426:  # Waiting for data collection to complete...
+070542: icListen Logging Stopped.
+070542:  # icListen logging STOPPED.
+070545: Download Attempt 1 (1570691080)
+070545: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_070440.txt.
+070549: File compressed '/sdcard/data/icl/SAF2564_20191010_070440.txt.gz'
+070549: [/sdcard/data/icl/SAF2564_20191010_070440.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_070440.txt.gz]
+070549: File '/sdcard/data/icl/SAF2564_20191010_070440.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_07.txt.gz'.
+070549: '/sdcard/data/icl/SAF2564_20191010_07.txt.gz' added to UQ.
+070549:  # icListen data DOWNLOADED.
+070549: icListen Standby
+070549:  # icListen in Standby mode.
+070550:  # icListen socket closed.
+070553:  # icListen shutting down....
+070601:  # icListen shutdown.
+070601: icListen Sample Completed Successfully.
+070601: Entering HUB<-->SHORE session...
+070601: Port:/dev/ttyS0 opened (fd:4)
+070601: Enable UART Driver: D (p175)
+070601: HUB<-->SHORE sending wake signal...
+070604: Not time to queue logfile. (ssm=25564)
+070604: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+070604: Stored Upload Queue Emptied.
+070605: SPV HB (20).
+070605: ***   HUB passing control to SHORE...
+070605: ***   HUB COMMAND MODE ...<CR><LF>
+070705: ** Remote Command Timeout!
+070707: SPV HB (22).
+070805: ** Remote Command Timeout!
+070807: SPV HB (24).
+070905: ** Remote Command Timeout!
+070907: SPV HB (26).
+071005: ** Remote Command Timeout!
+071007: SPV HB (28).
+071105: ** Remote Command Timeout!
+071107: SPV HB (30).
+071107: ** Max Consecutive Command Timeouts [5].  End session!
+071107: Port:0 is closed.
+071107: Error: HUB <-> SHORE session completed with error.
+071107: Next Sample Time Stored: NST=1570698000 (Thu Oct 10 09:00:00 2019<LF>)
+071107: >> SPV: (<CLOCK :1570691467 /><CR>).
+071108: SPV Clock set: 1570691467.
+071109: ========  EVENT LOG  ========
+071109: 1. [29] - 10/10/2019 07:00:56
+071111: PWR_USED = 376.41
+071112: VOLT = 6.77
+071113: AMPS = 83.3
+071115: CTEMP = 3
+071115:  >> Attempt sleep for 6533 seconds...
+071115: >> SPV: (<SLEEP :6533 /><CR>).
+071116: ... Sleep Executed Successfully.
+071116: POWERING OFF...
+
+
+090014: #########   NEW SESSION   ##########
+090014: SDCARD mounted ...
+090014: Port:/dev/ttyS1 opened (fd:3)
+090014: BOOT_TS: Thu Oct 10 09:00:14 2019
+
+090014: Init gpio...
+090015: '/sdcard/data/pc/19101006.pcm.gz' loaded in UQ.
+090015: '/sdcard/data/adcp/19101006.rdi.gz' loaded in UQ.
+090015: '/sdcard/data/sbe/19101006.mcA.gz' loaded in UQ.
+090015: '/sdcard/data/sbe/19101007.mcH' loaded in UQ.
+090015: '/sdcard/data/icl/SAF2564_20191010_07.txt.gz' loaded in UQ.
+090015: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+090015: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+090015: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+090016: >> SPV: (<HB_ON /><CR>).
+090018: HB_ON
+090019: WWM: 0:SLEEP_TIMEOUT
+090020: PWR_USED = 11.98
+090022: VOLT = 6.85
+090023: AMPS = 76.5
+090024: CTEMP = -1
+090026: ========  EVENT LOG  ========
+090026: 1. [ 0] - 10/10/2019 07:11:20
+090026: 2. [ 1] - 10/10/2019 09:00:08
+090026: OP_MODE = 0
+090026: Thu Oct 10 09:00:26 2019
+
+090026: > in autonomous mode...
+090026: Loaded NST=1570698000 (Thu Oct 10 09:00:00 2019<LF>)
+090026: Upload Queue Emptied.
+090026: Entering HUB<-->NODE session...
+090026: Port:/dev/ttyS4 opened (fd:4)
+090026: Enable UART Driver: F (p98)
+090026: >> Collect data from ADCP NODE.
+090026: >> AM_LOCAL: (AT<CR>).
+090027: Local AM awake.
+090027: >> AM_LOCAL: (ATJ<CR>).
+090028: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+090028: >> AM_LOCAL: (ATV<CR>).
+090030: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+090030: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+090034: Link Established with remote modem (addr2).
+090035: Waiting for READY from node...
+090035: HUB>>NODE: waiting for READY
+090056: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+090056: ACK<CR> sent.
+090059: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+090059: Command Queue 0 Emptied.
+090100: HUB>>NODE: (GID<CR>)
+090108: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+090110: HUB>>NODE: (GFN<CR>)
+090118: HUB<<NODE: (FILE=/sdcard/data/pc/19101008.pcm.gz<CR>).
+090118: Opening file: '/sdcard/data/pc/19101008.pcm.gz'
+090120: HUB>>NODE: 'GNB<CR>'
+090128: HUB<<NODE: 'BLOCKSIZE=113'
+090129: HUB>>NODE: 'TXB<CR>'
+090144: Block upload complete [113]
+090145: SPV HB (3).
+090145: '/sdcard/data/pc/19101008.pcm.gz' added to UQ.
+090146: SPV HB (5).
+090147: HUB>>NODE: (GFN<CR>)
+090156: HUB<<NODE: (FILE=/sdcard/data/adcp/19101008.rdi.gz<CR>).
+090156: Opening file: '/sdcard/data/adcp/19101008.rdi.gz'
+090158: HUB>>NODE: 'GNB<CR>'
+090206: HUB<<NODE: 'BLOCKSIZE=642'
+090207: HUB>>NODE: 'TXB<CR>'
+090241: Block upload complete [642]
+090243: SPV HB (7).
+090243: '/sdcard/data/adcp/19101008.rdi.gz' added to UQ.
+090244: SPV HB (9).
+090245: HUB>>NODE: (GFN<CR>)
+090254: HUB<<NODE: (FILE=/sdcard/data/sbe/19101008.mcA.gz<CR>).
+090254: Opening file: '/sdcard/data/sbe/19101008.mcA.gz'
+090256: HUB>>NODE: 'GNB<CR>'
+090303: HUB<<NODE: 'BLOCKSIZE=81'
+090304: HUB>>NODE: 'TXB<CR>'
+090318: Block upload complete [81]
+090319: SPV HB (11).
+090319: '/sdcard/data/sbe/19101008.mcA.gz' added to UQ.
+090320: SPV HB (13).
+090321: HUB>>NODE: (GFN<CR>)
+090329: HUB<<NODE: (FILE=NONE<CR>).
+090329: No more data to upload.
+090329: HUB>>NODE: (&CLK=1570698209<CR>)
+090337: HUB<<NODE: (&CLK=1570698209_NONEED<CR>).
+090338: HUB>>NODE: (REL<CR>)
+090346: HUB>>NODE: Node Released.
+090346: ADCP NODE SESSION COMPLETE.
+090347: >> AM_LOCAL: (+++).
+090349: Local AM in Command Mode.
+090350: >> AM_LOCAL: (ATH<CR>).
+090351: AM Hang Up message sent.
+090354: SPV HB (15).
+090354: Not yet time to collect data from IPS NODE.
+090354: >> AM_LOCAL: (ATL<CR>).
+090355: Local AM in low Power state.
+090355: Port:4 is closed.
+090355: HUB <-> NODE session completed.
+090356: SPV HB (18).
+090356: Port:/dev/ttyS5 opened (fd:4)
+090356: Enable UART Driver: F (p98)
+090357: >> SBE: [<CR><CR><CR>].
+090359: SBE microcat awake.
+090359: >> SBE: [SL<CR>].
+090400: SBE Microcat sample collected.
+090400: SBE Sample: '  -1.0450,  2.69633,  157.902,  33.2917, 1444.532, 10 Oct 2019, 08:00:01<CR><LF>'
+090400: '/sdcard/data/sbe/19101009.mcH' added to UQ.
+090400: >> SBE: [qs<CR>].
+090402: SBE microcat sleeping.
+090402: Port:5 is closed.
+090402: SBE Sample Complete.
+090402:  # icListen powered up.
+090422: Connected to icListen.
+090423: icListen Set Time: 1570698263 (1570698263)
+090423: icListen Set Time match.
+090423:  # icListen clock updated.
+090424: icListen Start Logging at: (58) 1570698278
+090424:  # icListen logging STARTED.
+090424:  # Waiting for data collection to complete...
+090540: icListen Logging Stopped.
+090540:  # icListen logging STOPPED.
+090543: Download Attempt 1 (1570698278)
+090543: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_090438.txt.
+090547: File compressed '/sdcard/data/icl/SAF2564_20191010_090438.txt.gz'
+090547: [/sdcard/data/icl/SAF2564_20191010_090438.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_090438.txt.gz]
+090547: File '/sdcard/data/icl/SAF2564_20191010_090438.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_09.txt.gz'.
+090547: '/sdcard/data/icl/SAF2564_20191010_09.txt.gz' added to UQ.
+090547:  # icListen data DOWNLOADED.
+090547: icListen Standby
+090547:  # icListen in Standby mode.
+090548:  # icListen socket closed.
+090551:  # icListen shutting down....
+090558:  # icListen shutdown.
+090558: icListen Sample Completed Successfully.
+090558: Entering HUB<-->SHORE session...
+090558: Port:/dev/ttyS0 opened (fd:4)
+090558: Enable UART Driver: D (p175)
+090558: HUB<-->SHORE sending wake signal...
+090601: Not time to queue logfile. (ssm=32761)
+090601: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+090601: Stored Upload Queue Emptied.
+090603: SPV HB (20).
+090603: ***   HUB passing control to SHORE...
+090603: ***   HUB COMMAND MODE ...<CR><LF>
+090703: ** Remote Command Timeout!
+090704: SPV HB (22).
+090803: ** Remote Command Timeout!
+090804: SPV HB (24).
+090903: ** Remote Command Timeout!
+090904: SPV HB (26).
+091003: ** Remote Command Timeout!
+091004: SPV HB (28).
+091103: ** Remote Command Timeout!
+091104: SPV HB (30).
+091104: ** Max Consecutive Command Timeouts [5].  End session!
+091104: Port:0 is closed.
+091104: Error: HUB <-> SHORE session completed with error.
+091104: Next Sample Time Stored: NST=1570705200 (Thu Oct 10 11:00:00 2019<LF>)
+091104: >> SPV: (<CLOCK :1570698664 /><CR>).
+091106: SPV Clock set: 1570698664.
+091107: ========  EVENT LOG  ========
+091107: 1. [29] - 10/10/2019 09:00:56
+091108: PWR_USED = 376.43
+091110: VOLT = 6.75
+091111: AMPS = 80.9
+091112: CTEMP = 3
+091112:  >> Attempt sleep for 6536 seconds...
+091112: >> SPV: (<SLEEP :6536 /><CR>).
+091114: ... Sleep Executed Successfully.
+091114: POWERING OFF...
+
+
+110016: #########   NEW SESSION   ##########
+110016: SDCARD mounted ...
+110016: Port:/dev/ttyS1 opened (fd:3)
+110016: BOOT_TS: Thu Oct 10 11:00:16 2019
+
+110016: Init gpio...
+110017: '/sdcard/data/pc/19101008.pcm.gz' loaded in UQ.
+110017: '/sdcard/data/adcp/19101008.rdi.gz' loaded in UQ.
+110017: '/sdcard/data/sbe/19101008.mcA.gz' loaded in UQ.
+110017: '/sdcard/data/sbe/19101009.mcH' loaded in UQ.
+110017: '/sdcard/data/icl/SAF2564_20191010_09.txt.gz' loaded in UQ.
+110017: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+110017: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+110017: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+110018: >> SPV: (<HB_ON /><CR>).
+110020: HB_ON
+110021: WWM: 0:SLEEP_TIMEOUT
+110022: PWR_USED = 11.52
+110024: VOLT = 6.85
+110025: AMPS = 76.5
+110026: CTEMP = -1
+110028: ========  EVENT LOG  ========
+110028: 1. [ 0] - 10/10/2019 09:11:17
+110028: 2. [ 1] - 10/10/2019 11:00:08
+110028: OP_MODE = 0
+110028: Thu Oct 10 11:00:28 2019
+
+110028: > in autonomous mode...
+110028: Loaded NST=1570705200 (Thu Oct 10 11:00:00 2019<LF>)
+110028: Upload Queue Emptied.
+110028: Entering HUB<-->NODE session...
+110028: Port:/dev/ttyS4 opened (fd:4)
+110028: Enable UART Driver: F (p98)
+110028: >> Collect data from ADCP NODE.
+110028: >> AM_LOCAL: (AT<CR>).
+110029: Local AM awake.
+110029: >> AM_LOCAL: (ATJ<CR>).
+110030: AM_LOCAL: (<CR><LF>TILT=0 (4 deg))
+110030: >> AM_LOCAL: (ATV<CR>).
+110032: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.8V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+110032: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+110036: Link Established with remote modem (addr2).
+110037: Waiting for READY from node...
+110037: HUB>>NODE: waiting for READY
+110058: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+110058: ACK<CR> sent.
+110101: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+110101: Command Queue 0 Emptied.
+110102: HUB>>NODE: (GID<CR>)
+110110: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+110112: HUB>>NODE: (GFN<CR>)
+110120: HUB<<NODE: (FILE=/sdcard/data/pc/19101010.pcm.gz<CR>).
+110120: Opening file: '/sdcard/data/pc/19101010.pcm.gz'
+110122: HUB>>NODE: 'GNB<CR>'
+110130: HUB<<NODE: 'BLOCKSIZE=108'
+110131: HUB>>NODE: 'TXB<CR>'
+110146: Block upload complete [108]
+110147: SPV HB (3).
+110147: '/sdcard/data/pc/19101010.pcm.gz' added to UQ.
+110148: SPV HB (5).
+110149: HUB>>NODE: (GFN<CR>)
+110158: HUB<<NODE: (FILE=/sdcard/data/adcp/19101010.rdi.gz<CR>).
+110158: Opening file: '/sdcard/data/adcp/19101010.rdi.gz'
+110200: HUB>>NODE: 'GNB<CR>'
+110208: HUB<<NODE: 'BLOCKSIZE=629'
+110209: HUB>>NODE: 'TXB<CR>'
+110243: Block upload complete [629]
+110244: SPV HB (7).
+110244: '/sdcard/data/adcp/19101010.rdi.gz' added to UQ.
+110246: SPV HB (9).
+110247: HUB>>NODE: (GFN<CR>)
+110255: HUB<<NODE: (FILE=/sdcard/data/sbe/19101010.mcA.gz<CR>).
+110255: Opening file: '/sdcard/data/sbe/19101010.mcA.gz'
+110257: HUB>>NODE: 'GNB<CR>'
+110305: HUB<<NODE: 'BLOCKSIZE=82'
+110306: HUB>>NODE: 'TXB<CR>'
+110319: Block upload complete [82]
+110321: SPV HB (11).
+110321: '/sdcard/data/sbe/19101010.mcA.gz' added to UQ.
+110322: SPV HB (13).
+110323: HUB>>NODE: (GFN<CR>)
+110331: HUB<<NODE: (FILE=NONE<CR>).
+110331: No more data to upload.
+110331: HUB>>NODE: (&CLK=1570705411<CR>)
+110339: HUB<<NODE: (&CLK=1570705411_NONEED<CR>).
+110340: HUB>>NODE: (REL<CR>)
+110348: HUB>>NODE: Node Released.
+110348: ADCP NODE SESSION COMPLETE.
+110349: >> AM_LOCAL: (+++).
+110351: Local AM in Command Mode.
+110352: >> AM_LOCAL: (ATH<CR>).
+110353: AM Hang Up message sent.
+110356: SPV HB (15).
+110356: Not yet time to collect data from IPS NODE.
+110356: >> AM_LOCAL: (ATL<CR>).
+110357: Local AM in low Power state.
+110357: Port:4 is closed.
+110357: HUB <-> NODE session completed.
+110358: SPV HB (18).
+110358: Port:/dev/ttyS5 opened (fd:4)
+110358: Enable UART Driver: F (p98)
+110359: >> SBE: [<CR><CR><CR>].
+110401: SBE microcat awake.
+110401: >> SBE: [SL<CR>].
+110402: SBE Microcat sample collected.
+110402: SBE Sample: '  -1.0583,  2.69375,  157.497,  33.2716, 1444.435, 10 Oct 2019, 10:00:01<CR><LF>'
+110402: '/sdcard/data/sbe/19101011.mcH' added to UQ.
+110402: >> SBE: [qs<CR>].
+110404: SBE microcat sleeping.
+110404: Port:5 is closed.
+110404: SBE Sample Complete.
+110404:  # icListen powered up.
+110424: Connected to icListen.
+110425: icListen Set Time: 1570705465 (1570705465)
+110425: icListen Set Time match.
+110425:  # icListen clock updated.
+110426: icListen Start Logging at: (58) 1570705480
+110426:  # icListen logging STARTED.
+110426:  # Waiting for data collection to complete...
+110542: icListen Logging Stopped.
+110542:  # icListen logging STOPPED.
+110545: Download Attempt 1 (1570705480)
+110545: FTPGET Failed: /sdcard/data/icl/SAF2564_20191010_110440.txt [err_code:1]
+110545: Download Attempt 2 (1570705481)
+110545: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_110441.txt.
+110549: File compressed '/sdcard/data/icl/SAF2564_20191010_110441.txt.gz'
+110549: [/sdcard/data/icl/SAF2564_20191010_110441.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_110441.txt.gz]
+110549: File '/sdcard/data/icl/SAF2564_20191010_110441.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_11.txt.gz'.
+110549: '/sdcard/data/icl/SAF2564_20191010_11.txt.gz' added to UQ.
+110549:  # icListen data DOWNLOADED.
+110549: icListen Standby
+110549:  # icListen in Standby mode.
+110550:  # icListen socket closed.
+110553:  # icListen shutting down....
+110600:  # icListen shutdown.
+110600: icListen Sample Completed Successfully.
+110600: Entering HUB<-->SHORE session...
+110600: Port:/dev/ttyS0 opened (fd:4)
+110600: Enable UART Driver: D (p175)
+110600: HUB<-->SHORE sending wake signal...
+110603: Not time to queue logfile. (ssm=39963)
+110603: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+110603: Stored Upload Queue Emptied.
+110605: SPV HB (20).
+110605: ***   HUB passing control to SHORE...
+110605: ***   HUB COMMAND MODE ...<CR><LF>
+110705: ** Remote Command Timeout!
+110706: SPV HB (22).
+110805: ** Remote Command Timeout!
+110806: SPV HB (24).
+110905: ** Remote Command Timeout!
+110906: SPV HB (26).
+111005: ** Remote Command Timeout!
+111006: SPV HB (28).
+111105: ** Remote Command Timeout!
+111106: SPV HB (30).
+111106: ** Max Consecutive Command Timeouts [5].  End session!
+111106: Port:0 is closed.
+111106: Error: HUB <-> SHORE session completed with error.
+111106: Next Sample Time Stored: NST=1570712400 (Thu Oct 10 13:00:00 2019<LF>)
+111106: >> SPV: (<CLOCK :1570705866 /><CR>).
+111108: SPV Clock set: 1570705866.
+111109: ========  EVENT LOG  ========
+111109: 1. [29] - 10/10/2019 11:00:56
+111110: PWR_USED = 376.42
+111112: VOLT = 6.75
+111113: AMPS = 80.9
+111114: CTEMP = 3
+111114:  >> Attempt sleep for 6534 seconds...
+111114: >> SPV: (<SLEEP :6534 /><CR>).
+111116: ... Sleep Executed Successfully.
+111116: POWERING OFF...
+
+
+130015: #########   NEW SESSION   ##########
+130015: SDCARD mounted ...
+130015: Port:/dev/ttyS1 opened (fd:3)
+130015: BOOT_TS: Thu Oct 10 13:00:15 2019
+
+130015: Init gpio...
+130016: '/sdcard/data/pc/19101010.pcm.gz' loaded in UQ.
+130016: '/sdcard/data/adcp/19101010.rdi.gz' loaded in UQ.
+130016: '/sdcard/data/sbe/19101010.mcA.gz' loaded in UQ.
+130016: '/sdcard/data/sbe/19101011.mcH' loaded in UQ.
+130016: '/sdcard/data/icl/SAF2564_20191010_11.txt.gz' loaded in UQ.
+130016: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+130016: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+130016: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+130017: >> SPV: (<HB_ON /><CR>).
+130019: HB_ON
+130020: WWM: 0:SLEEP_TIMEOUT
+130021: PWR_USED = 11.53
+130023: VOLT = 6.85
+130024: AMPS = 76.5
+130025: CTEMP = -1
+130027: ========  EVENT LOG  ========
+130027: 1. [ 0] - 10/10/2019 11:11:19
+130027: 2. [ 1] - 10/10/2019 13:00:08
+130027: OP_MODE = 0
+130027: Thu Oct 10 13:00:27 2019
+
+130027: > in autonomous mode...
+130027: Loaded NST=1570712400 (Thu Oct 10 13:00:00 2019<LF>)
+130027: Upload Queue Emptied.
+130027: Entering HUB<-->NODE session...
+130027: Port:/dev/ttyS4 opened (fd:4)
+130027: Enable UART Driver: F (p98)
+130027: >> Collect data from ADCP NODE.
+130027: >> AM_LOCAL: (AT<CR>).
+130028: Local AM awake.
+130028: >> AM_LOCAL: (ATJ<CR>).
+130029: AM_LOCAL: (<CR><LF>TILT=0 (5 deg))
+130029: >> AM_LOCAL: (ATV<CR>).
+130031: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+130031: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+130035: Link Established with remote modem (addr2).
+130036: Waiting for READY from node...
+130036: HUB>>NODE: waiting for READY
+130057: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+130057: ACK<CR> sent.
+130100: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+130100: Command Queue 0 Emptied.
+130101: HUB>>NODE: (GID<CR>)
+130109: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+130111: HUB>>NODE: (GFN<CR>)
+130120: HUB<<NODE: (FILE=/sdcard/data/pc/19101012.pcm.gz<CR>).
+130120: Opening file: '/sdcard/data/pc/19101012.pcm.gz'
+130122: HUB>>NODE: 'GNB<CR>'
+130129: HUB<<NODE: 'BLOCKSIZE=112'
+130130: HUB>>NODE: 'TXB<CR>'
+130145: Block upload complete [112]
+130146: SPV HB (3).
+130146: '/sdcard/data/pc/19101012.pcm.gz' added to UQ.
+130148: SPV HB (5).
+130149: HUB>>NODE: (GFN<CR>)
+130157: HUB<<NODE: (FILE=/sdcard/data/adcp/19101012.rdi.gz<CR>).
+130157: Opening file: '/sdcard/data/adcp/19101012.rdi.gz'
+130159: HUB>>NODE: 'GNB<CR>'
+130207: HUB<<NODE: 'BLOCKSIZE=606'
+130208: HUB>>NODE: 'TXB<CR>'
+130241: Block upload complete [606]
+130243: SPV HB (7).
+130243: '/sdcard/data/adcp/19101012.rdi.gz' added to UQ.
+130244: SPV HB (9).
+130245: HUB>>NODE: (GFN<CR>)
+130254: HUB<<NODE: (FILE=/sdcard/data/sbe/19101012.mcA.gz<CR>).
+130254: Opening file: '/sdcard/data/sbe/19101012.mcA.gz'
+130256: HUB>>NODE: 'GNB<CR>'
+130303: HUB<<NODE: 'BLOCKSIZE=83'
+130304: HUB>>NODE: 'TXB<CR>'
+130318: Block upload complete [83]
+130319: SPV HB (11).
+130319: '/sdcard/data/sbe/19101012.mcA.gz' added to UQ.
+130321: SPV HB (13).
+130322: HUB>>NODE: (GFN<CR>)
+130329: HUB<<NODE: (FILE=NONE<CR>).
+130329: No more data to upload.
+130329: HUB>>NODE: (&CLK=1570712609<CR>)
+130338: HUB<<NODE: (&CLK=1570712609_NONEED<CR>).
+130339: HUB>>NODE: (REL<CR>)
+130346: HUB>>NODE: Node Released.
+130346: ADCP NODE SESSION COMPLETE.
+130347: >> AM_LOCAL: (+++).
+130350: Local AM in Command Mode.
+130351: >> AM_LOCAL: (ATH<CR>).
+130352: AM Hang Up message sent.
+130354: SPV HB (15).
+130354: Not yet time to collect data from IPS NODE.
+130354: >> AM_LOCAL: (ATL<CR>).
+130356: Local AM in low Power state.
+130356: Port:4 is closed.
+130356: HUB <-> NODE session completed.
+130357: SPV HB (18).
+130357: Port:/dev/ttyS5 opened (fd:4)
+130357: Enable UART Driver: F (p98)
+130358: >> SBE: [<CR><CR><CR>].
+130359: SBE microcat awake.
+130359: >> SBE: [SL<CR>].
+130401: SBE Microcat sample collected.
+130401: SBE Sample: '  -1.0090,  2.70411,  157.614,  33.3578, 1444.787, 10 Oct 2019, 12:00:01<CR><LF>'
+130401: '/sdcard/data/sbe/19101013.mcH' added to UQ.
+130401: >> SBE: [qs<CR>].
+130402: SBE microcat sleeping.
+130402: Port:5 is closed.
+130402: SBE Sample Complete.
+130402:  # icListen powered up.
+130422: Connected to icListen.
+130423: icListen Set Time: 1570712663 (1570712663)
+130423: icListen Set Time match.
+130423:  # icListen clock updated.
+130425: icListen Start Logging at: (58) 1570712678
+130425:  # icListen logging STARTED.
+130425:  # Waiting for data collection to complete...
+130541: icListen Logging Stopped.
+130541:  # icListen logging STOPPED.
+130544: Download Attempt 1 (1570712678)
+130544: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_130438.txt.
+130548: File compressed '/sdcard/data/icl/SAF2564_20191010_130438.txt.gz'
+130548: [/sdcard/data/icl/SAF2564_20191010_130438.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_130438.txt.gz]
+130548: File '/sdcard/data/icl/SAF2564_20191010_130438.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_13.txt.gz'.
+130548: '/sdcard/data/icl/SAF2564_20191010_13.txt.gz' added to UQ.
+130548:  # icListen data DOWNLOADED.
+130548: icListen Standby
+130548:  # icListen in Standby mode.
+130549:  # icListen socket closed.
+130552:  # icListen shutting down....
+130559:  # icListen shutdown.
+130559: icListen Sample Completed Successfully.
+130559: Entering HUB<-->SHORE session...
+130559: Port:/dev/ttyS0 opened (fd:4)
+130559: Enable UART Driver: D (p175)
+130559: HUB<-->SHORE sending wake signal...
+130602: Not time to queue logfile. (ssm=47162)
+130602: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+130602: Stored Upload Queue Emptied.
+130604: SPV HB (20).
+130604: ***   HUB passing control to SHORE...
+130604: ***   HUB COMMAND MODE ...<CR><LF>
+130704: ** Remote Command Timeout!
+130705: SPV HB (22).
+130804: ** Remote Command Timeout!
+130805: SPV HB (24).
+130904: ** Remote Command Timeout!
+130905: SPV HB (26).
+131004: ** Remote Command Timeout!
+131005: SPV HB (28).
+131104: ** Remote Command Timeout!
+131105: SPV HB (30).
+131105: ** Max Consecutive Command Timeouts [5].  End session!
+131105: Port:0 is closed.
+131105: Error: HUB <-> SHORE session completed with error.
+131105: Next Sample Time Stored: NST=1570719600 (Thu Oct 10 15:00:00 2019<LF>)
+131105: >> SPV: (<CLOCK :1570713065 /><CR>).
+131107: SPV Clock set: 1570713065.
+131108: ========  EVENT LOG  ========
+131108: 1. [29] - 10/10/2019 13:00:56
+131109: PWR_USED = 376.59
+131111: VOLT = 6.75
+131112: AMPS = 80.9
+131113: CTEMP = 3
+131113:  >> Attempt sleep for 6535 seconds...
+131113: >> SPV: (<SLEEP :6535 /><CR>).
+131115: ... Sleep Executed Successfully.
+131115: POWERING OFF...
+
+
+150016: #########   NEW SESSION   ##########
+150016: SDCARD mounted ...
+150016: Port:/dev/ttyS1 opened (fd:3)
+150016: BOOT_TS: Thu Oct 10 15:00:16 2019
+
+150016: Init gpio...
+150017: '/sdcard/data/pc/19101012.pcm.gz' loaded in UQ.
+150017: '/sdcard/data/adcp/19101012.rdi.gz' loaded in UQ.
+150017: '/sdcard/data/sbe/19101012.mcA.gz' loaded in UQ.
+150017: '/sdcard/data/sbe/19101013.mcH' loaded in UQ.
+150017: '/sdcard/data/icl/SAF2564_20191010_13.txt.gz' loaded in UQ.
+150017: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+150017: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+150017: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+150018: >> SPV: (<HB_ON /><CR>).
+150020: HB_ON
+150021: WWM: 0:SLEEP_TIMEOUT
+150022: PWR_USED = 11.70
+150024: VOLT = 6.85
+150025: AMPS = 76.5
+150026: CTEMP = -1
+150028: ========  EVENT LOG  ========
+150028: 1. [ 0] - 10/10/2019 13:11:18
+150028: 2. [ 1] - 10/10/2019 15:00:08
+150028: OP_MODE = 0
+150028: Thu Oct 10 15:00:28 2019
+
+150028: > in autonomous mode...
+150028: Loaded NST=1570719600 (Thu Oct 10 15:00:00 2019<LF>)
+150028: Upload Queue Emptied.
+150028: Entering HUB<-->NODE session...
+150028: Port:/dev/ttyS4 opened (fd:4)
+150028: Enable UART Driver: F (p98)
+150028: >> Collect data from ADCP NODE.
+150028: >> AM_LOCAL: (AT<CR>).
+150029: Local AM awake.
+150029: >> AM_LOCAL: (ATJ<CR>).
+150030: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+150030: >> AM_LOCAL: (ATV<CR>).
+150032: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+150032: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+150036: Link Established with remote modem (addr2).
+150037: Waiting for READY from node...
+150037: HUB>>NODE: waiting for READY
+150058: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+150058: ACK<CR> sent.
+150101: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+150101: Command Queue 0 Emptied.
+150102: HUB>>NODE: (GID<CR>)
+150110: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+150112: HUB>>NODE: (GFN<CR>)
+150121: HUB<<NODE: (FILE=/sdcard/data/pc/19101014.pcm.gz<CR>).
+150121: Opening file: '/sdcard/data/pc/19101014.pcm.gz'
+150123: HUB>>NODE: 'GNB<CR>'
+150130: HUB<<NODE: 'BLOCKSIZE=100'
+150131: HUB>>NODE: 'TXB<CR>'
+150145: Block upload complete [100]
+150147: SPV HB (3).
+150147: '/sdcard/data/pc/19101014.pcm.gz' added to UQ.
+150148: SPV HB (5).
+150149: HUB>>NODE: (GFN<CR>)
+150158: HUB<<NODE: (FILE=/sdcard/data/adcp/19101014.rdi.gz<CR>).
+150158: Opening file: '/sdcard/data/adcp/19101014.rdi.gz'
+150200: HUB>>NODE: 'GNB<CR>'
+150207: HUB<<NODE: 'BLOCKSIZE=637'
+150208: HUB>>NODE: 'TXB<CR>'
+150243: Block upload complete [637]
+150245: SPV HB (7).
+150245: '/sdcard/data/adcp/19101014.rdi.gz' added to UQ.
+150246: SPV HB (9).
+150247: HUB>>NODE: (GFN<CR>)
+150255: HUB<<NODE: (FILE=/sdcard/data/sbe/19101014.mcA.gz<CR>).
+150255: Opening file: '/sdcard/data/sbe/19101014.mcA.gz'
+150258: HUB>>NODE: 'GNB<CR>'
+150305: HUB<<NODE: 'BLOCKSIZE=81'
+150306: HUB>>NODE: 'TXB<CR>'
+150320: Block upload complete [81]
+150321: SPV HB (11).
+150321: '/sdcard/data/sbe/19101014.mcA.gz' added to UQ.
+150322: SPV HB (13).
+150323: HUB>>NODE: (GFN<CR>)
+150331: HUB<<NODE: (FILE=NONE<CR>).
+150331: No more data to upload.
+150331: HUB>>NODE: (&CLK=1570719811<CR>)
+150340: HUB<<NODE: (&CLK=1570719811_NONEED<CR>).
+150341: HUB>>NODE: (REL<CR>)
+150348: HUB>>NODE: Node Released.
+150348: ADCP NODE SESSION COMPLETE.
+150349: >> AM_LOCAL: (+++).
+150351: Local AM in Command Mode.
+150352: >> AM_LOCAL: (ATH<CR>).
+150353: AM Hang Up message sent.
+150356: SPV HB (15).
+150356: Not yet time to collect data from IPS NODE.
+150356: >> AM_LOCAL: (ATL<CR>).
+150357: Local AM in low Power state.
+150357: Port:4 is closed.
+150357: HUB <-> NODE session completed.
+150359: SPV HB (18).
+150359: Port:/dev/ttyS5 opened (fd:4)
+150359: Enable UART Driver: F (p98)
+150400: >> SBE: [<CR><CR><CR>].
+150401: SBE microcat awake.
+150401: >> SBE: [SL<CR>].
+150403: SBE Microcat sample collected.
+150403: SBE Sample: '  -1.0172,  2.70250,  158.075,  33.3448, 1444.738, 10 Oct 2019, 14:00:01<CR><LF>'
+150403: '/sdcard/data/sbe/19101015.mcH' added to UQ.
+150403: >> SBE: [qs<CR>].
+150404: SBE microcat sleeping.
+150404: Port:5 is closed.
+150404: SBE Sample Complete.
+150404:  # icListen powered up.
+150424: Connected to icListen.
+150425: icListen Set Time: 1570719865 (1570719865)
+150425: icListen Set Time match.
+150425:  # icListen clock updated.
+150426: icListen Start Logging at: (58) 1570719880
+150426:  # icListen logging STARTED.
+150426:  # Waiting for data collection to complete...
+150542: icListen Logging Stopped.
+150542:  # icListen logging STOPPED.
+150545: Download Attempt 1 (1570719880)
+150545: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_150440.txt.
+150549: File compressed '/sdcard/data/icl/SAF2564_20191010_150440.txt.gz'
+150549: [/sdcard/data/icl/SAF2564_20191010_150440.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_150440.txt.gz]
+150549: File '/sdcard/data/icl/SAF2564_20191010_150440.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_15.txt.gz'.
+150549: '/sdcard/data/icl/SAF2564_20191010_15.txt.gz' added to UQ.
+150549:  # icListen data DOWNLOADED.
+150549: icListen Standby
+150549:  # icListen in Standby mode.
+150550:  # icListen socket closed.
+150553:  # icListen shutting down....
+150600:  # icListen shutdown.
+150600: icListen Sample Completed Successfully.
+150600: Entering HUB<-->SHORE session...
+150600: Port:/dev/ttyS0 opened (fd:4)
+150600: Enable UART Driver: D (p175)
+150600: HUB<-->SHORE sending wake signal...
+150603: Not time to queue logfile. (ssm=54363)
+150603: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+150603: Stored Upload Queue Emptied.
+150604: SPV HB (20).
+150604: ***   HUB passing control to SHORE...
+150604: ***   HUB COMMAND MODE ...<CR><LF>
+150704: ** Remote Command Timeout!
+150706: SPV HB (22).
+150804: ** Remote Command Timeout!
+150806: SPV HB (24).
+150904: ** Remote Command Timeout!
+150906: SPV HB (26).
+151004: ** Remote Command Timeout!
+151006: SPV HB (28).
+151104: ** Remote Command Timeout!
+151106: SPV HB (30).
+151106: ** Max Consecutive Command Timeouts [5].  End session!
+151106: Port:0 is closed.
+151106: Error: HUB <-> SHORE session completed with error.
+151106: Next Sample Time Stored: NST=1570726800 (Thu Oct 10 17:00:00 2019<LF>)
+151106: >> SPV: (<CLOCK :1570720266 /><CR>).
+151107: SPV Clock set: 1570720266.
+151109: ========  EVENT LOG  ========
+151109: 1. [29] - 10/10/2019 15:00:56
+151110: PWR_USED = 376.16
+151111: VOLT = 6.75
+151113: AMPS = 81.3
+151114: CTEMP = 3
+151114:  >> Attempt sleep for 6534 seconds...
+151114: >> SPV: (<SLEEP :6534 /><CR>).
+151115: ... Sleep Executed Successfully.
+151115: POWERING OFF...
+
+
+170015: #########   NEW SESSION   ##########
+170015: SDCARD mounted ...
+170015: Port:/dev/ttyS1 opened (fd:3)
+170015: BOOT_TS: Thu Oct 10 17:00:15 2019
+
+170015: Init gpio...
+170016: '/sdcard/data/pc/19101014.pcm.gz' loaded in UQ.
+170016: '/sdcard/data/adcp/19101014.rdi.gz' loaded in UQ.
+170016: '/sdcard/data/sbe/19101014.mcA.gz' loaded in UQ.
+170016: '/sdcard/data/sbe/19101015.mcH' loaded in UQ.
+170016: '/sdcard/data/icl/SAF2564_20191010_15.txt.gz' loaded in UQ.
+170016: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+170016: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+170016: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+170017: >> SPV: (<HB_ON /><CR>).
+170019: HB_ON
+170020: WWM: 0:SLEEP_TIMEOUT
+170021: PWR_USED = 11.39
+170023: VOLT = 6.85
+170024: AMPS = 76.5
+170025: CTEMP = -1
+170027: ========  EVENT LOG  ========
+170027: 1. [ 0] - 10/10/2019 15:11:19
+170027: 2. [ 1] - 10/10/2019 17:00:08
+170027: OP_MODE = 0
+170027: Thu Oct 10 17:00:27 2019
+
+170027: > in autonomous mode...
+170027: Loaded NST=1570726800 (Thu Oct 10 17:00:00 2019<LF>)
+170027: Upload Queue Emptied.
+170027: Entering HUB<-->NODE session...
+170027: Port:/dev/ttyS4 opened (fd:4)
+170027: Enable UART Driver: F (p98)
+170027: >> Collect data from ADCP NODE.
+170027: >> AM_LOCAL: (AT<CR>).
+170028: Local AM awake.
+170028: >> AM_LOCAL: (ATJ<CR>).
+170029: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+170029: >> AM_LOCAL: (ATV<CR>).
+170031: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+170031: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+170035: Link Established with remote modem (addr2).
+170036: Waiting for READY from node...
+170036: HUB>>NODE: waiting for READY
+170057: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+170057: ACK<CR> sent.
+170100: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+170100: Command Queue 0 Emptied.
+170101: HUB>>NODE: (GID<CR>)
+170109: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+170111: HUB>>NODE: (GFN<CR>)
+170120: HUB<<NODE: (FILE=/sdcard/data/pc/19101016.pcm.gz<CR>).
+170120: Opening file: '/sdcard/data/pc/19101016.pcm.gz'
+170122: HUB>>NODE: 'GNB<CR>'
+170129: HUB<<NODE: 'BLOCKSIZE=101'
+170130: HUB>>NODE: 'TXB<CR>'
+170145: Block upload complete [101]
+170146: SPV HB (3).
+170146: '/sdcard/data/pc/19101016.pcm.gz' added to UQ.
+170147: SPV HB (5).
+170148: HUB>>NODE: (GFN<CR>)
+170157: HUB<<NODE: (FILE=/sdcard/data/adcp/19101016.rdi.gz<CR>).
+170157: Opening file: '/sdcard/data/adcp/19101016.rdi.gz'
+170159: HUB>>NODE: 'GNB<CR>'
+170207: HUB<<NODE: 'BLOCKSIZE=625'
+170208: HUB>>NODE: 'TXB<CR>'
+170242: Block upload complete [625]
+170243: SPV HB (7).
+170243: '/sdcard/data/adcp/19101016.rdi.gz' added to UQ.
+170245: SPV HB (9).
+170246: HUB>>NODE: (GFN<CR>)
+170254: HUB<<NODE: (FILE=/sdcard/data/sbe/19101016.mcA.gz<CR>).
+170254: Opening file: '/sdcard/data/sbe/19101016.mcA.gz'
+170256: HUB>>NODE: 'GNB<CR>'
+170304: HUB<<NODE: 'BLOCKSIZE=81'
+170305: HUB>>NODE: 'TXB<CR>'
+170318: Block upload complete [81]
+170320: SPV HB (11).
+170320: '/sdcard/data/sbe/19101016.mcA.gz' added to UQ.
+170321: SPV HB (13).
+170322: HUB>>NODE: (GFN<CR>)
+170330: HUB<<NODE: (FILE=NONE<CR>).
+170330: No more data to upload.
+170330: HUB>>NODE: (&CLK=1570727010<CR>)
+170338: HUB<<NODE: (&CLK=1570727010_NONEED<CR>).
+170339: HUB>>NODE: (REL<CR>)
+170347: HUB>>NODE: Node Released.
+170347: ADCP NODE SESSION COMPLETE.
+170348: >> AM_LOCAL: (+++).
+170350: Local AM in Command Mode.
+170351: >> AM_LOCAL: (ATH<CR>).
+170352: AM Hang Up message sent.
+170354: SPV HB (15).
+170354: Not yet time to collect data from IPS NODE.
+170354: >> AM_LOCAL: (ATL<CR>).
+170356: Local AM in low Power state.
+170356: Port:4 is closed.
+170356: HUB <-> NODE session completed.
+170357: SPV HB (18).
+170357: Port:/dev/ttyS5 opened (fd:4)
+170357: Enable UART Driver: F (p98)
+170358: >> SBE: [<CR><CR><CR>].
+170400: SBE microcat awake.
+170400: >> SBE: [SL<CR>].
+170401: SBE Microcat sample collected.
+170401: SBE Sample: '  -1.0103,  2.70477,  158.372,  33.3677, 1444.807, 10 Oct 2019, 16:00:01<CR><LF>'
+170401: '/sdcard/data/sbe/19101017.mcH' added to UQ.
+170401: >> SBE: [qs<CR>].
+170402: SBE microcat sleeping.
+170402: Port:5 is closed.
+170402: SBE Sample Complete.
+170402:  # icListen powered up.
+170423: Connected to icListen.
+170424: icListen Set Time: 1570727064 (1570727064)
+170424: icListen Set Time match.
+170424:  # icListen clock updated.
+170425: icListen Start Logging at: (58) 1570727079
+170425:  # icListen logging STARTED.
+170425:  # Waiting for data collection to complete...
+170541: icListen Logging Stopped.
+170541:  # icListen logging STOPPED.
+170544: Download Attempt 1 (1570727079)
+170544: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_170439.txt.
+170546: File compressed '/sdcard/data/icl/SAF2564_20191010_170439.txt.gz'
+170546: [/sdcard/data/icl/SAF2564_20191010_170439.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_170439.txt.gz]
+170546: File '/sdcard/data/icl/SAF2564_20191010_170439.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_17.txt.gz'.
+170546: '/sdcard/data/icl/SAF2564_20191010_17.txt.gz' added to UQ.
+170546:  # icListen data DOWNLOADED.
+170546: icListen Standby
+170546:  # icListen in Standby mode.
+170547:  # icListen socket closed.
+170550:  # icListen shutting down....
+170558:  # icListen shutdown.
+170558: icListen Sample Completed Successfully.
+170558: Entering HUB<-->SHORE session...
+170558: Port:/dev/ttyS0 opened (fd:4)
+170558: Enable UART Driver: D (p175)
+170558: HUB<-->SHORE sending wake signal...
+170601: Not time to queue logfile. (ssm=61561)
+170601: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+170601: Stored Upload Queue Emptied.
+170602: SPV HB (20).
+170602: ***   HUB passing control to SHORE...
+170602: ***   HUB COMMAND MODE ...<CR><LF>
+170702: ** Remote Command Timeout!
+170703: SPV HB (22).
+170710: ->[CABLE_MODEM_SYNC]
+170710: Command unknown (CABLE_MODEM_SYNC)
+170712: ->[RID]
+170712: BSRTO-HUB_20191<CR>
+170714: ->[RBV]
+170716: AMPS = 80.9
+170717: VOLT = 6.77
+170717: Vbat=6.77, mA=80.9<CR>
+170719: ->[GFN]
+170719: FILE=/sdcard/data/pc/19101016.pcm.gz
+170722: ->[GNB]
+170722: >> BlockSize=101
+170759: ->[CABLE_MODEM_SYNC]
+170759: Command unknown (CABLE_MODEM_SYNC)
+170801: SPV HB (29).
+170801: ->[RID]
+170801: BSRTO-HUB_20191<CR>
+170804: ->[RBV]
+170805: AMPS = 80.9
+170806: VOLT = 6.77
+170806: Vbat=6.77, mA=80.9<CR>
+170808: ->[GFN]
+170808: FILE=/sdcard/data/adcp/19101016.rdi.gz
+170812: ->[GNB]
+170812: >> BlockSize=625
+170816: ->[TXB]
+170823: ->[GNB]
+170823: >> BS=DONE
+170825: ->[GFN]
+170825: FILE=/sdcard/data/sbe/19101016.mcA.gz
+170828: ->[GNB]
+170828: >> BlockSize=81
+170832: ->[TXB]
+170835: SPV HB (39).
+170838: ->[GNB]
+170838: >> BS=DONE
+170938: ** Remote Command Timeout!
+170940: SPV HB (42).
+171038: ** Remote Command Timeout!
+171040: SPV HB (44).
+171138: ** Remote Command Timeout!
+171140: SPV HB (46).
+171238: ** Remote Command Timeout!
+171240: SPV HB (48).
+171323: ->[DTS=4]
+171323: OK<CR>
+171324: SPV HB (50).
+171331: ->[DTS=3]
+171331: OK<CR>
+171339: ->[DTS=2]
+171339: OK<CR>
+171348: ->[DTS=1]
+171348: OK<CR>
+171351: ->[DTS=0]
+171351: OK<CR>
+171451: ** Remote Command Timeout!
+171453: SPV HB (56).
+171512: ->[rid]
+171512: Command unknown (rid)
+171612: ** Remote Command Timeout!
+171614: SPV HB (59).
+171713: ** Remote Command Timeout!
+171714: SPV HB (61).
+171813: ** Remote Command Timeout!
+171814: SPV HB (63).
+171907: ->[PLDM]
+171907: Command unknown (PLDM)
+171909: SPV HB (65).
+172007: ** Remote Command Timeout!
+172009: SPV HB (67).
+172107: ** Remote Command Timeout!
+172109: SPV HB (69).
+172207: ** Remote Command Timeout!
+172209: SPV HB (71).
+172307: ** Remote Command Timeout!
+172309: SPV HB (73).
+172402: ** Remote Session Timeout!
+172403: SPV HB (75).
+172403: Port:0 is closed.
+172403: Error: HUB <-> SHORE session completed with error.
+172403: Next Sample Time Stored: NST=1570734000 (Thu Oct 10 19:00:00 2019<LF>)
+172403: >> SPV: (<CLOCK :1570728243 /><CR>).
+172405: SPV Clock set: 1570728243.
+172406: ========  EVENT LOG  ========
+172406: 1. [29] - 10/10/2019 17:00:56
+172406: 2. [31] - 10/10/2019 17:14:39
+172406: 3. [31] - 10/10/2019 17:17:42
+172408: PWR_USED = 802.91
+172409: VOLT = 6.73
+172410: AMPS = 81.3
+172412: CTEMP = 3
+172412:  >> Attempt sleep for 5757 seconds...
+172412: >> SPV: (<SLEEP :5757 /><CR>).
+172413: ... Sleep Executed Successfully.
+172413: POWERING OFF...
+
+
+172959: #########   NEW SESSION   ##########
+172959: SDCARD mounted ...
+172959: Port:/dev/ttyS1 opened (fd:3)
+172959: BOOT_TS: Thu Oct 10 17:29:59 2019
+
+172959: Init gpio...
+173000: '/sdcard/data/pc/19101016.pcm.gz' loaded in UQ.
+173000: '/sdcard/data/adcp/19101016.rdi.gz' loaded in UQ.
+173000: '/sdcard/data/sbe/19101016.mcA.gz' loaded in UQ.
+173000: '/sdcard/data/sbe/19101017.mcH' loaded in UQ.
+173000: '/sdcard/data/icl/SAF2564_20191010_17.txt.gz' loaded in UQ.
+173000: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+173000: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+173000: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+173001: >> SPV: (<HB_ON /><CR>).
+173003: HB_ON
+173004: WWM: 6:SC_WAKE
+173005: PWR_USED = 12.43
+173007: VOLT = 6.79
+173008: AMPS = 79.7
+173009: CTEMP = 1
+173011: ========  EVENT LOG  ========
+173011: 1. [ 0] - 10/10/2019 17:24:16
+173011: 2. [ 5] - 10/10/2019 17:29:51
+173011: OP_MODE = 6
+173011: Thu Oct 10 17:30:11 2019
+
+173011: > in autonomous mode...
+173011: Loaded NST=1570734000 (Thu Oct 10 19:00:00 2019<LF>)
+173011: HUB >> SHORE WAKE ISSUED!!!!
+173011: Entering HUB<-->SHORE session...
+173011: Port:/dev/ttyS0 opened (fd:4)
+173011: Enable UART Driver: D (p175)
+173011: Not time to queue logfile. (ssm=63011)
+173011: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+173011: Stored Upload Queue Emptied.
+173012: SPV HB (3).
+173012: ***   HUB passing control to SHORE...
+173012: ***   HUB COMMAND MODE ...<CR><LF>
+173046: ->[RID]
+173046: BSRTO-HUB_20191<CR>
+173047: SPV HB (5).
+173108: ->[GFN]
+173108: FILE=/sdcard/data/pc/19101016.pcm.gz
+173121: ->[GFN]
+173121: FILE=/sdcard/data/adcp/19101016.rdi.gz
+173122: SPV HB (8).
+173130: ->[GFN]
+173130: FILE=/sdcard/data/sbe/19101016.mcA.gz
+173136: ->[gfn]
+173136: Command unknown (gfn)
+173140: ->[GFN]
+173140: FILE=/sdcard/data/sbe/19101017.mcH
+173146: ->[GFN]
+173146: FILE=/sdcard/data/icl/SAF2564_20191010_17.txt.gz
+173151: ->[GFN]
+173151: >> FILE=NONE
+173205: ->[REL]
+173205: >> BYE
+173207: SPV HB (15).
+173207: Port:0 is closed.
+173207: HUB <-> SHORE wake session completed.
+173207: Next Sample Time Stored: NST=1570734000 (Thu Oct 10 19:00:00 2019<LF>)
+173207: >> SPV: (<CLOCK :1570728727 /><CR>).
+173208: SPV Clock set: 1570728727.
+173210: ========  EVENT LOG  ========
+173211: PWR_USED = 66.76
+173212: VOLT = 6.75
+173214: AMPS = 78.1
+173215: CTEMP = 2
+173215:  >> Attempt sleep for 5273 seconds...
+173215: >> SPV: (<SLEEP :5273 /><CR>).
+173216: ... Sleep Executed Successfully.
+173216: POWERING OFF...
+
+
+190014: #########   NEW SESSION   ##########
+190014: SDCARD mounted ...
+190014: Port:/dev/ttyS1 opened (fd:3)
+190014: BOOT_TS: Thu Oct 10 19:00:14 2019
+
+190014: Init gpio...
+190015: '/sdcard/data/pc/19101016.pcm.gz' loaded in UQ.
+190015: '/sdcard/data/adcp/19101016.rdi.gz' loaded in UQ.
+190015: '/sdcard/data/sbe/19101016.mcA.gz' loaded in UQ.
+190015: '/sdcard/data/sbe/19101017.mcH' loaded in UQ.
+190015: '/sdcard/data/icl/SAF2564_20191010_17.txt.gz' loaded in UQ.
+190015: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+190015: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+190015: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+190016: >> SPV: (<HB_ON /><CR>).
+190018: HB_ON
+190019: WWM: 0:SLEEP_TIMEOUT
+190020: PWR_USED = 11.47
+190022: VOLT = 6.83
+190023: AMPS = 76.9
+190024: CTEMP = -1
+190026: ========  EVENT LOG  ========
+190026: 1. [ 0] - 10/10/2019 17:32:20
+190026: 2. [ 1] - 10/10/2019 19:00:07
+190026: OP_MODE = 0
+190026: Thu Oct 10 19:00:26 2019
+
+190026: > in autonomous mode...
+190026: Loaded NST=1570734000 (Thu Oct 10 19:00:00 2019<LF>)
+190026: Upload Queue Emptied.
+190026: Entering HUB<-->NODE session...
+190026: Port:/dev/ttyS4 opened (fd:4)
+190026: Enable UART Driver: F (p98)
+190026: >> Collect data from ADCP NODE.
+190026: >> AM_LOCAL: (AT<CR>).
+190027: Local AM awake.
+190027: >> AM_LOCAL: (ATJ<CR>).
+190028: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+190028: >> AM_LOCAL: (ATV<CR>).
+190030: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+190030: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+190034: Link Established with remote modem (addr2).
+190035: Waiting for READY from node...
+190035: HUB>>NODE: waiting for READY
+190056: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+190056: ACK<CR> sent.
+190059: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+190059: Command Queue 0 Emptied.
+190100: HUB>>NODE: (GID<CR>)
+190108: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+190110: HUB>>NODE: (GFN<CR>)
+190119: HUB<<NODE: (FILE=/sdcard/data/pc/19101018.pcm.gz<CR>).
+190119: Opening file: '/sdcard/data/pc/19101018.pcm.gz'
+190121: HUB>>NODE: 'GNB<CR>'
+190128: HUB<<NODE: 'BLOCKSIZE=117'
+190129: HUB>>NODE: 'TXB<CR>'
+190144: Block upload complete [117]
+190145: SPV HB (3).
+190145: '/sdcard/data/pc/19101018.pcm.gz' added to UQ.
+190147: SPV HB (5).
+190148: HUB>>NODE: (GFN<CR>)
+190156: HUB<<NODE: (FILE=/sdcard/data/adcp/19101018.rdi.gz<CR>).
+190156: Opening file: '/sdcard/data/adcp/19101018.rdi.gz'
+190158: HUB>>NODE: 'GNB<CR>'
+190206: HUB<<NODE: 'BLOCKSIZE=645'
+190207: HUB>>NODE: 'TXB<CR>'
+190242: Block upload complete [645]
+190243: SPV HB (7).
+190243: '/sdcard/data/adcp/19101018.rdi.gz' added to UQ.
+190245: SPV HB (9).
+190246: HUB>>NODE: (GFN<CR>)
+190254: HUB<<NODE: (FILE=/sdcard/data/sbe/19101018.mcA.gz<CR>).
+190254: Opening file: '/sdcard/data/sbe/19101018.mcA.gz'
+190256: HUB>>NODE: 'GNB<CR>'
+190304: HUB<<NODE: 'BLOCKSIZE=81'
+190305: HUB>>NODE: 'TXB<CR>'
+190319: Block upload complete [81]
+190320: SPV HB (11).
+190320: '/sdcard/data/sbe/19101018.mcA.gz' added to UQ.
+190321: SPV HB (13).
+190322: HUB>>NODE: (GFN<CR>)
+190330: HUB<<NODE: (FILE=NONE<CR>).
+190330: No more data to upload.
+190330: HUB>>NODE: (&CLK=1570734210<CR>)
+190338: HUB<<NODE: (&CLK=1570734210_NONEED<CR>).
+190339: HUB>>NODE: (REL<CR>)
+190347: HUB>>NODE: Node Released.
+190347: ADCP NODE SESSION COMPLETE.
+190348: >> AM_LOCAL: (+++).
+190350: Local AM in Command Mode.
+190351: >> AM_LOCAL: (ATH<CR>).
+190352: AM Hang Up message sent.
+190355: SPV HB (15).
+190355: Not yet time to collect data from IPS NODE.
+190355: >> AM_LOCAL: (ATL<CR>).
+190356: Local AM in low Power state.
+190356: Port:4 is closed.
+190356: HUB <-> NODE session completed.
+190357: SPV HB (18).
+190357: Port:/dev/ttyS5 opened (fd:4)
+190357: Enable UART Driver: F (p98)
+190359: >> SBE: [<CR><CR><CR>].
+190400: SBE microcat awake.
+190400: >> SBE: [SL<CR>].
+190401: SBE Microcat sample collected.
+190402: SBE Sample: '  -0.9998,  2.70591,  158.159,  33.3718, 1444.858, 10 Oct 2019, 18:00:01<CR><LF>'
+190402: '/sdcard/data/sbe/19101019.mcH' added to UQ.
+190402: >> SBE: [qs<CR>].
+190403: SBE microcat sleeping.
+190403: Port:5 is closed.
+190403: SBE Sample Complete.
+190403:  # icListen powered up.
+190423: Connected to icListen.
+190424: icListen Set Time: 1570734264 (1570734264)
+190424: icListen Set Time match.
+190424:  # icListen clock updated.
+190425: icListen Start Logging at: (58) 1570734279
+190425:  # icListen logging STARTED.
+190425:  # Waiting for data collection to complete...
+190541: icListen Logging Stopped.
+190541:  # icListen logging STOPPED.
+190544: Download Attempt 1 (1570734279)
+190544: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_190439.txt.
+190547: File compressed '/sdcard/data/icl/SAF2564_20191010_190439.txt.gz'
+190547: [/sdcard/data/icl/SAF2564_20191010_190439.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_190439.txt.gz]
+190547: File '/sdcard/data/icl/SAF2564_20191010_190439.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_19.txt.gz'.
+190547: '/sdcard/data/icl/SAF2564_20191010_19.txt.gz' added to UQ.
+190547:  # icListen data DOWNLOADED.
+190547: icListen Standby
+190547:  # icListen in Standby mode.
+190548:  # icListen socket closed.
+190551:  # icListen shutting down....
+190558:  # icListen shutdown.
+190558: icListen Sample Completed Successfully.
+190558: Entering HUB<-->SHORE session...
+190558: Port:/dev/ttyS0 opened (fd:4)
+190558: Enable UART Driver: D (p175)
+190558: HUB<-->SHORE sending wake signal...
+190601: Not time to queue logfile. (ssm=68761)
+190601: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+190601: Stored Upload Queue Emptied.
+190603: SPV HB (20).
+190603: ***   HUB passing control to SHORE...
+190603: ***   HUB COMMAND MODE ...<CR><LF>
+190628: ->[CABLE_MODEM_SYNC]
+190628: Command unknown (CABLE_MODEM_SYNC)
+190630: ->[RID]
+190630: BSRTO-HUB_20191<CR>
+190632: ->[RBV]
+190633: AMPS = 81.3
+190635: VOLT = 6.77
+190635: Vbat=6.77, mA=81.3<CR>
+190636: SPV HB (24).
+190637: ->[GFN]
+190637: FILE=/sdcard/data/pc/19101018.pcm.gz
+190640: ->[GNB]
+190640: >> BlockSize=117
+190644: ->[TXB]
+190650: ->[GNB]
+190650: >> BS=DONE
+190652: ->[GFN]
+190652: FILE=/sdcard/data/adcp/19101018.rdi.gz
+190656: ->[GNB]
+190656: >> BlockSize=645
+190700: ->[TXB]
+190707: ->[GNB]
+190707: >> BS=DONE
+190708: SPV HB (33).
+190709: ->[GFN]
+190709: FILE=/sdcard/data/sbe/19101018.mcA.gz
+190712: ->[GNB]
+190712: >> BlockSize=81
+190716: ->[TXB]
+190722: ->[GNB]
+190722: >> BS=DONE
+190724: ->[GFN]
+190724: FILE=/sdcard/data/sbe/19101019.mcH
+190728: ->[GNB]
+190728: >> BlockSize=74
+190732: ->[TXB]
+190738: ->[GNB]
+190738: >> BS=DONE
+190740: ->[GFN]
+190740: FILE=/sdcard/data/icl/SAF2564_20191010_19.txt.gz
+190741: SPV HB (43).
+190743: ->[GNB]
+190743: >> BlockSize=2048
+190747: ->[TXB]
+190757: ->[GNB]
+190757: >> BlockSize=2048
+190801: ->[TXB]
+190811: ->[GNB]
+190811: >> BlockSize=2048
+190815: ->[TXB]
+190822: SPV HB (50).
+190825: ->[GNB]
+190825: >> BlockSize=2048
+190829: ->[TXB]
+190839: ->[GNB]
+190839: >> BlockSize=2048
+190844: ->[TXB]
+190853: ->[GNB]
+190853: >> BlockSize=2048
+190855: SPV HB (56).
+190858: ->[TXB]
+190907: ->[GNB]
+190907: >> BlockSize=2048
+190912: ->[TXB]
+190922: ->[GNB]
+190922: >> BlockSize=777
+190926: ->[TXB]
+190930: SPV HB (62).
+190933: ->[GNB]
+190933: >> BS=DONE
+190935: ->[GFN]
+190935: >> FILE=NONE
+190937: ->[CLK?]
+190937: OK<CR>
+190938: ->[&CLK=10/10/2019 19:11:18]
+191118: Clock updated 'Thu Oct 10 19:11:18 2019<LF>'
+191118: >> SPV: (<CLOCK :1570734679 /><CR>).
+191119: SPV Clock set: 1570734679.
+191119: &CLK=10/10/2019 19:11:18_ACK<CR>
+191120: SPV HB (67).
+191120: ->[DTM]
+191120: OK<CR>
+191121: ->[REL]
+191121: >> BYE
+191121: Port:0 is closed.
+191121: HUB <-> SHORE session complete
+191121: Next Sample Time Stored: NST=1570741200 (Thu Oct 10 21:00:00 2019<LF>)
+191121: >> SPV: (<CLOCK :1570734681 /><CR>).
+191122: SPV Clock set: 1570734681.
+191124: ========  EVENT LOG  ========
+191124: 1. [29] - 10/10/2019 19:00:55
+191125: PWR_USED = 331.32
+191126: VOLT = 6.77
+191128: AMPS = 82.9
+191129: CTEMP = 3
+191129:  >> Attempt sleep for 6519 seconds...
+191129: >> SPV: (<SLEEP :6519 /><CR>).
+191130: ... Sleep Executed Successfully.
+191130: POWERING OFF...
+
+
+210015: #########   NEW SESSION   ##########
+210015: SDCARD mounted ...
+210015: Port:/dev/ttyS1 opened (fd:3)
+210015: BOOT_TS: Thu Oct 10 21:00:15 2019
+
+210015: Init gpio...
+210016: '/sdcard/data/pc/19101018.pcm.gz' loaded in UQ.
+210016: '/sdcard/data/adcp/19101018.rdi.gz' loaded in UQ.
+210016: '/sdcard/data/sbe/19101018.mcA.gz' loaded in UQ.
+210016: '/sdcard/data/sbe/19101019.mcH' loaded in UQ.
+210016: '/sdcard/data/icl/SAF2564_20191010_19.txt.gz' loaded in UQ.
+210016: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+210016: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+210016: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+210017: >> SPV: (<HB_ON /><CR>).
+210019: HB_ON
+210020: WWM: 0:SLEEP_TIMEOUT
+210021: PWR_USED = 11.94
+210023: VOLT = 6.85
+210024: AMPS = 76.9
+210025: CTEMP = -1
+210027: ========  EVENT LOG  ========
+210027: 1. [ 0] - 10/10/2019 19:11:34
+210027: 2. [ 1] - 10/10/2019 21:00:08
+210027: OP_MODE = 0
+210027: Thu Oct 10 21:00:27 2019
+
+210027: > in autonomous mode...
+210027: Loaded NST=1570741200 (Thu Oct 10 21:00:00 2019<LF>)
+210027: Upload Queue Emptied.
+210027: Entering HUB<-->NODE session...
+210027: Port:/dev/ttyS4 opened (fd:4)
+210027: Enable UART Driver: F (p98)
+210027: >> Collect data from ADCP NODE.
+210027: >> AM_LOCAL: (AT<CR>).
+210028: Local AM awake.
+210028: >> AM_LOCAL: (ATJ<CR>).
+210029: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+210029: >> AM_LOCAL: (ATV<CR>).
+210031: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+210031: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+210035: Link Established with remote modem (addr2).
+210036: Waiting for READY from node...
+210036: HUB>>NODE: waiting for READY
+210057: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+210057: ACK<CR> sent.
+210100: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+210100: Command Queue 0 Emptied.
+210101: HUB>>NODE: (GID<CR>)
+210109: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+210111: HUB>>NODE: (GFN<CR>)
+210120: HUB<<NODE: (FILE=/sdcard/data/pc/19101020.pcm.gz<CR>).
+210120: Opening file: '/sdcard/data/pc/19101020.pcm.gz'
+210122: HUB>>NODE: 'GNB<CR>'
+210129: HUB<<NODE: 'BLOCKSIZE=100'
+210130: HUB>>NODE: 'TXB<CR>'
+210145: Block upload complete [100]
+210146: SPV HB (3).
+210146: '/sdcard/data/pc/19101020.pcm.gz' added to UQ.
+210147: SPV HB (5).
+210148: HUB>>NODE: (GFN<CR>)
+210157: HUB<<NODE: (FILE=/sdcard/data/adcp/19101020.rdi.gz<CR>).
+210157: Opening file: '/sdcard/data/adcp/19101020.rdi.gz'
+210159: HUB>>NODE: 'GNB<CR>'
+210207: HUB<<NODE: 'BLOCKSIZE=638'
+210208: HUB>>NODE: 'TXB<CR>'
+210242: Block upload complete [638]
+210244: SPV HB (7).
+210244: '/sdcard/data/adcp/19101020.rdi.gz' added to UQ.
+210245: SPV HB (9).
+210246: HUB>>NODE: (GFN<CR>)
+210255: HUB<<NODE: (FILE=/sdcard/data/sbe/19101020.mcA.gz<CR>).
+210255: Opening file: '/sdcard/data/sbe/19101020.mcA.gz'
+210257: HUB>>NODE: 'GNB<CR>'
+210305: HUB<<NODE: 'BLOCKSIZE=81'
+210306: HUB>>NODE: 'TXB<CR>'
+210319: Block upload complete [81]
+210320: SPV HB (11).
+210320: '/sdcard/data/sbe/19101020.mcA.gz' added to UQ.
+210322: SPV HB (13).
+210323: HUB>>NODE: (GFN<CR>)
+210330: HUB<<NODE: (FILE=NONE<CR>).
+210330: No more data to upload.
+210330: HUB>>NODE: (&CLK=1570741410<CR>)
+210340: HUB<<NODE: (&CLK=1570741410_ACK<CR>).
+210341: HUB>>NODE: (REL<CR>)
+210349: HUB>>NODE: Node Released.
+210349: ADCP NODE SESSION COMPLETE.
+210350: >> AM_LOCAL: (+++).
+210352: Local AM in Command Mode.
+210353: >> AM_LOCAL: (ATH<CR>).
+210354: AM Hang Up message sent.
+210357: SPV HB (15).
+210357: Not yet time to collect data from IPS NODE.
+210357: >> AM_LOCAL: (ATL<CR>).
+210358: Local AM in low Power state.
+210358: Port:4 is closed.
+210358: HUB <-> NODE session completed.
+210359: SPV HB (18).
+210359: Port:/dev/ttyS5 opened (fd:4)
+210359: Enable UART Driver: F (p98)
+210400: >> SBE: [<CR><CR><CR>].
+210402: SBE microcat awake.
+210402: >> SBE: [SL<CR>].
+210403: SBE Microcat sample collected.
+210403: SBE Sample: '  -1.0116,  2.70395,  157.656,  33.3585, 1444.776, 10 Oct 2019, 20:00:01<CR><LF>'
+210403: '/sdcard/data/sbe/19101021.mcH' added to UQ.
+210403: >> SBE: [qs<CR>].
+210405: SBE microcat sleeping.
+210405: Port:5 is closed.
+210405: SBE Sample Complete.
+210405:  # icListen powered up.
+210425: Connected to icListen.
+210426: icListen Set Time: 1570741466 (1570741466)
+210426: icListen Set Time match.
+210426:  # icListen clock updated.
+210427: icListen Start Logging at: (58) 1570741481
+210427:  # icListen logging STARTED.
+210427:  # Waiting for data collection to complete...
+210543: icListen Logging Stopped.
+210543:  # icListen logging STOPPED.
+210546: Download Attempt 1 (1570741481)
+210546: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_210441.txt.
+210549: File compressed '/sdcard/data/icl/SAF2564_20191010_210441.txt.gz'
+210549: [/sdcard/data/icl/SAF2564_20191010_210441.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_210441.txt.gz]
+210549: File '/sdcard/data/icl/SAF2564_20191010_210441.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_21.txt.gz'.
+210549: '/sdcard/data/icl/SAF2564_20191010_21.txt.gz' added to UQ.
+210549:  # icListen data DOWNLOADED.
+210549: icListen Standby
+210549:  # icListen in Standby mode.
+210550:  # icListen socket closed.
+210553:  # icListen shutting down....
+210600:  # icListen shutdown.
+210600: icListen Sample Completed Successfully.
+210600: Entering HUB<-->SHORE session...
+210600: Port:/dev/ttyS0 opened (fd:4)
+210600: Enable UART Driver: D (p175)
+210600: HUB<-->SHORE sending wake signal...
+210603: Not time to queue logfile. (ssm=75963)
+210603: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+210603: Stored Upload Queue Emptied.
+210604: SPV HB (20).
+210604: ***   HUB passing control to SHORE...
+210604: ***   HUB COMMAND MODE ...<CR><LF>
+210629: ->[CABLE_MODEM_SYNC]
+210629: Command unknown (CABLE_MODEM_SYNC)
+210631: ->[RID]
+210631: BSRTO-HUB_20191<CR>
+210634: ->[RBV]
+210635: AMPS = 80.9
+210636: VOLT = 6.77
+210636: Vbat=6.77, mA=80.9<CR>
+210638: SPV HB (24).
+210638: ->[GFN]
+210638: FILE=/sdcard/data/pc/19101020.pcm.gz
+210642: ->[GNB]
+210642: >> BlockSize=100
+210646: ->[TXB]
+210652: ->[GNB]
+210652: >> BS=DONE
+210654: ->[GFN]
+210654: FILE=/sdcard/data/adcp/19101020.rdi.gz
+210657: ->[GNB]
+210657: >> BlockSize=638
+210701: ->[TXB]
+210708: ->[GNB]
+210708: >> BS=DONE
+210710: SPV HB (33).
+210711: ->[GFN]
+210711: FILE=/sdcard/data/sbe/19101020.mcA.gz
+210714: ->[GNB]
+210714: >> BlockSize=81
+210718: ->[TXB]
+210724: ->[GNB]
+210724: >> BS=DONE
+210726: ->[GFN]
+210726: FILE=/sdcard/data/sbe/19101021.mcH
+210729: ->[GNB]
+210729: >> BlockSize=74
+210733: ->[TXB]
+210739: ->[GNB]
+210739: >> BS=DONE
+210741: ->[GFN]
+210741: FILE=/sdcard/data/icl/SAF2564_20191010_21.txt.gz
+210743: SPV HB (43).
+210745: ->[GNB]
+210745: >> BlockSize=2048
+210749: ->[TXB]
+210759: ->[GNB]
+210759: >> BlockSize=2048
+210803: ->[TXB]
+210813: ->[GNB]
+210813: >> BlockSize=2048
+210817: ->[TXB]
+210824: SPV HB (50).
+210827: ->[GNB]
+210827: >> BlockSize=2048
+210831: ->[TXB]
+210841: ->[GNB]
+210841: >> BlockSize=2048
+210845: ->[TXB]
+210855: ->[GNB]
+210855: >> BlockSize=2048
+210856: SPV HB (56).
+210859: ->[TXB]
+210909: ->[GNB]
+210909: >> BlockSize=2048
+210913: ->[TXB]
+210923: ->[GNB]
+210923: >> BlockSize=806
+210927: ->[TXB]
+210931: SPV HB (62).
+210935: ->[GNB]
+210935: >> BS=DONE
+210937: ->[GFN]
+210937: >> FILE=NONE
+210939: ->[CLK?]
+210939: OK<CR>
+210940: ->[&CLK=10/10/2019 21:09:41]
+210940: &CLK=10/10/2019 21:09:41_NONEED<CR>
+210942: ->[DTM]
+210942: OK<CR>
+210943: ->[REL]
+210943: >> BYE
+210943: Port:0 is closed.
+210943: HUB <-> SHORE session complete
+210943: Next Sample Time Stored: NST=1570748400 (Thu Oct 10 23:00:00 2019<LF>)
+210943: >> SPV: (<CLOCK :1570741783 /><CR>).
+210945: SPV Clock set: 1570741783.
+210946: ========  EVENT LOG  ========
+210946: 1. [29] - 10/10/2019 21:00:56
+210948: PWR_USED = 331.99
+210949: VOLT = 6.77
+210950: AMPS = 80.9
+210951: CTEMP = 3
+210951:  >> Attempt sleep for 6617 seconds...
+210951: >> SPV: (<SLEEP :6617 /><CR>).
+210953: ... Sleep Executed Successfully.
+210953: POWERING OFF...
+
+
+230016: #########   NEW SESSION   ##########
+230016: SDCARD mounted ...
+230016: Port:/dev/ttyS1 opened (fd:3)
+230016: BOOT_TS: Thu Oct 10 23:00:16 2019
+
+230016: Init gpio...
+230017: '/sdcard/data/pc/19101020.pcm.gz' loaded in UQ.
+230017: '/sdcard/data/adcp/19101020.rdi.gz' loaded in UQ.
+230017: '/sdcard/data/sbe/19101020.mcA.gz' loaded in UQ.
+230017: '/sdcard/data/sbe/19101021.mcH' loaded in UQ.
+230017: '/sdcard/data/icl/SAF2564_20191010_21.txt.gz' loaded in UQ.
+230017: No stored upload queue found. '/sdcard/cfg/stored_upload_q.txt' (err2)
+230017: No stored command queue found. '/sdcard/cfg/cmd_q_0.txt' (err2)
+230017: No stored command queue found. '/sdcard/cfg/cmd_q_1.txt' (err2)
+230018: >> SPV: (<HB_ON /><CR>).
+230020: HB_ON
+230021: WWM: 0:SLEEP_TIMEOUT
+230022: PWR_USED = 11.86
+230024: VOLT = 6.85
+230025: AMPS = 76.5
+230026: CTEMP = -1
+230028: ========  EVENT LOG  ========
+230028: 1. [ 0] - 10/10/2019 21:09:56
+230028: 2. [ 1] - 10/10/2019 23:00:08
+230028: OP_MODE = 0
+230028: Thu Oct 10 23:00:28 2019
+
+230028: > in autonomous mode...
+230028: Loaded NST=1570748400 (Thu Oct 10 23:00:00 2019<LF>)
+230028: Upload Queue Emptied.
+230028: Entering HUB<-->NODE session...
+230028: Port:/dev/ttyS4 opened (fd:4)
+230028: Enable UART Driver: F (p98)
+230028: >> Collect data from ADCP NODE.
+230028: >> AM_LOCAL: (AT<CR>).
+230029: Local AM awake.
+230029: >> AM_LOCAL: (ATJ<CR>).
+230030: AM_LOCAL: (<CR><LF>TILT=0 (2 deg))
+230030: >> AM_LOCAL: (ATV<CR>).
+230032: AM_LOCAL: (<CR><LF>Local Battery Voltage<CR><LF>DSP Bat = 19.7V<CR><LF>Board Temp = -01.0C<CR><LF>user:)
+230032: >> AM_LOCAL: (ATD2<CR>) attempt 1.
+230036: Link Established with remote modem (addr2).
+230037: Waiting for READY from node...
+230037: HUB>>NODE: waiting for READY
+230058: HUB<<NODE: ( 00300 bits/sec<CR><LF>READY<CR>).
+230058: ACK<CR> sent.
+230101: ERROR: failed to delete '/sdcard/cfg/cmd_q_0.txt'  (err2)
+230101: Command Queue 0 Emptied.
+230102: HUB>>NODE: (GID<CR>)
+230110: HUB<<NODE: (BSRTO-ADCP_20191<CR>).
+230112: HUB>>NODE: (GFN<CR>)
+230120: HUB<<NODE: (FILE=/sdcard/data/pc/19101022.pcm.gz<CR>).
+230120: Opening file: '/sdcard/data/pc/19101022.pcm.gz'
+230123: HUB>>NODE: 'GNB<CR>'
+230130: HUB<<NODE: 'BLOCKSIZE=109'
+230131: HUB>>NODE: 'TXB<CR>'
+230146: Block upload complete [109]
+230147: SPV HB (3).
+230147: '/sdcard/data/pc/19101022.pcm.gz' added to UQ.
+230149: SPV HB (5).
+230150: HUB>>NODE: (GFN<CR>)
+230158: HUB<<NODE: (FILE=/sdcard/data/adcp/19101022.rdi.gz<CR>).
+230158: Opening file: '/sdcard/data/adcp/19101022.rdi.gz'
+230200: HUB>>NODE: 'GNB<CR>'
+230208: HUB<<NODE: 'BLOCKSIZE=606'
+230209: HUB>>NODE: 'TXB<CR>'
+230242: Block upload complete [606]
+230244: SPV HB (7).
+230244: '/sdcard/data/adcp/19101022.rdi.gz' added to UQ.
+230245: SPV HB (9).
+230246: HUB>>NODE: (GFN<CR>)
+230255: HUB<<NODE: (FILE=/sdcard/data/sbe/19101022.mcA.gz<CR>).
+230255: Opening file: '/sdcard/data/sbe/19101022.mcA.gz'
+230257: HUB>>NODE: 'GNB<CR>'
+230304: HUB<<NODE: 'BLOCKSIZE=83'
+230305: HUB>>NODE: 'TXB<CR>'
+230319: Block upload complete [83]
+230320: SPV HB (11).
+230320: '/sdcard/data/sbe/19101022.mcA.gz' added to UQ.
+230322: SPV HB (13).
+230323: HUB>>NODE: (GFN<CR>)
+230330: HUB<<NODE: (FILE=NONE<CR>).
+230330: No more data to upload.
+230330: HUB>>NODE: (&CLK=1570748610<CR>)
+230339: HUB<<NODE: (&CLK=1570748610_NONEED<CR>).
+230340: HUB>>NODE: (REL<CR>)
+230347: HUB>>NODE: Node Released.
+230347: ADCP NODE SESSION COMPLETE.
+230348: >> AM_LOCAL: (+++).
+230350: Local AM in Command Mode.
+230351: >> AM_LOCAL: (ATH<CR>).
+230353: AM Hang Up message sent.
+230355: SPV HB (15).
+230355: Not yet time to collect data from IPS NODE.
+230355: >> AM_LOCAL: (ATL<CR>).
+230356: Local AM in low Power state.
+230356: Port:4 is closed.
+230356: HUB <-> NODE session completed.
+230358: SPV HB (18).
+230358: Port:/dev/ttyS5 opened (fd:4)
+230358: Enable UART Driver: F (p98)
+230359: >> SBE: [<CR><CR><CR>].
+230400: SBE microcat awake.
+230400: >> SBE: [SL<CR>].
+230402: SBE Microcat sample collected.
+230402: SBE Sample: '  -0.9365,  2.71736,  157.386,  33.4573, 1445.260, 10 Oct 2019, 22:00:01<CR><LF>'
+230402: '/sdcard/data/sbe/19101023.mcH' added to UQ.
+230402: >> SBE: [qs<CR>].
+230403: SBE microcat sleeping.
+230403: Port:5 is closed.
+230403: SBE Sample Complete.
+230403:  # icListen powered up.
+230423: Connected to icListen.
+230424: icListen Set Time: 1570748664 (1570748664)
+230424: icListen Set Time match.
+230424:  # icListen clock updated.
+230425: icListen Start Logging at: (58) 1570748679
+230425:  # icListen logging STARTED.
+230425:  # Waiting for data collection to complete...
+230542: icListen Logging Stopped.
+230542:  # icListen logging STOPPED.
+230545: Download Attempt 1 (1570748679)
+230545: FTPGET executed: /sdcard/data/icl/SAF2564_20191010_230439.txt.
+230548: File compressed '/sdcard/data/icl/SAF2564_20191010_230439.txt.gz'
+230548: [/sdcard/data/icl/SAF2564_20191010_230439.txt] compressed to [/sdcard/data/icl/SAF2564_20191010_230439.txt.gz]
+230548: File '/sdcard/data/icl/SAF2564_20191010_230439.txt.gz' renamed to '/sdcard/data/icl/SAF2564_20191010_23.txt.gz'.
+230548: '/sdcard/data/icl/SAF2564_20191010_23.txt.gz' added to UQ.
+230548:  # icListen data DOWNLOADED.
+230548: icListen Standby
+230548:  # icListen in Standby mode.
+230549:  # icListen socket closed.
+230552:  # icListen shutting down....
+230559:  # icListen shutdown.
+230559: icListen Sample Completed Successfully.
+230559: Entering HUB<-->SHORE session...
+230559: Port:/dev/ttyS0 opened (fd:4)
+230559: Enable UART Driver: D (p175)
+230559: HUB<-->SHORE sending wake signal...
+230602: Not time to queue logfile. (ssm=83162)
+230602: ERROR: failed to delete '/sdcard/cfg/stored_upload_q.txt'  (err2)
+230602: Stored Upload Queue Emptied.
+230604: SPV HB (20).
+230604: ***   HUB passing control to SHORE...
+230604: ***   HUB COMMAND MODE ...<CR><LF>
+230629: ->[CABLE_MODEM_SYNC]
+230629: Command unknown (CABLE_MODEM_SYNC)
+230631: ->[RID]
+230631: BSRTO-HUB_20191<CR>
+230633: ->[RBV]
+230634: AMPS = 80.9
+230636: VOLT = 6.77
+230636: Vbat=6.77, mA=80.9<CR>
+230637: SPV HB (24).
+230638: ->[GFN]
+230638: FILE=/sdcard/data/pc/19101022.pcm.gz
+230641: ->[GNB]
+230641: >> BlockSize=109
+230645: ->[TXB]
+230651: ->[GNB]
+230651: >> BS=DONE
+230653: ->[GFN]
+230653: FILE=/sdcard/data/adcp/19101022.rdi.gz
+230657: ->[GNB]
+230657: >> BlockSize=606
+230701: ->[TXB]
+230708: ->[GNB]
+230708: >> BS=DONE
+230709: SPV HB (33).
+230710: ->[GFN]
+230710: FILE=/sdcard/data/sbe/19101022.mcA.gz
+230713: ->[GNB]
+230713: >> BlockSize=83
+230717: ->[TXB]
+230723: ->[GNB]
+230723: >> BS=DONE
+230725: ->[GFN]
+230725: FILE=/sdcard/data/sbe/19101023.mcH
+230729: ->[GNB]
+230729: >> BlockSize=74
+230733: ->[TXB]
+230739: ->[GNB]
+230739: >> BS=DONE
+230741: ->[GFN]
+230741: FILE=/sdcard/data/icl/SAF2564_20191010_23.txt.gz
+230742: SPV HB (43).
+230744: ->[GNB]
+230744: >> BlockSize=2048
+230748: ->[TXB]
+230758: ->[GNB]
+230758: >> BlockSize=2048
+230802: ->[TXB]
+230812: ->[GNB]
+230812: >> BlockSize=2048
+230816: ->[TXB]
+230823: SPV HB (50).
+230826: ->[GNB]
+230826: >> BlockSize=2048
+230830: ->[TXB]
+230840: ->[GNB]
+230840: >> BlockSize=2048
+230845: ->[TXB]
+230854: ->[GNB]
+230854: >> BlockSize=2048
+230856: SPV HB (56).
+230859: ->[TXB]
+230908: ->[GNB]
+230908: >> BlockSize=2048
+230913: ->[TXB]
+230923: ->[GNB]
+230923: >> BlockSize=754
+230927: ->[TXB]
+230931: SPV HB (62).
+230934: ->[GNB]
+230934: >> BS=DONE
+230936: ->[GFN]
+230936: >> FILE=NONE
+230938: ->[CLK?]
+230938: OK<CR>
+230939: ->[&CLK=10/10/2019 23:09:40]
+230939: &CLK=10/10/2019 23:09:40_NONEED<CR>
+230942: ->[DTM]
+230942: OK<CR>
+230943: ->[REL]
+230943: >> BYE
+230943: Port:0 is closed.
+230943: HUB <-> SHORE session complete
+230943: Next Sample Time Stored: NST=1570755600 (Fri Oct 11 01:00:00 2019<LF>)
+230943: >> SPV: (<CLOCK :1570748983 /><CR>).
+230944: SPV Clock set: 1570748983.
+230946: ========  EVENT LOG  ========
+230946: 1. [29] - 10/10/2019 23:00:56
+230947: PWR_USED = 330.71
+230948: VOLT = 6.77
+230950: AMPS = 82.9
+230951: CTEMP = 3
+230951:  >> Attempt sleep for 6617 seconds...
+230951: >> SPV: (<SLEEP :6617 /><CR>).
+230952: ... Sleep Executed Successfully.
+230952: POWERING OFF...
+

@@ -26,7 +26,8 @@ Imports:
     progress
 Suggests: 
     testthat,
-    withr
+    withr,
+    tidyr
 URL: https://github.com/paleolimbot/bsrto
 BugReports: https://github.com/paleolimbot/bsrto/issues
 Depends: 
