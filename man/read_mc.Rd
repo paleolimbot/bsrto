@@ -8,18 +8,20 @@
 \alias{guess_mc_col_names}
 \alias{mca_col_names}
 \alias{mci_col_names}
+\alias{read_mci_meta}
+\alias{read_mci_meta_vector}
 \title{Read mcA, mcI, and mcH files}
 \usage{
 read_mc(
   file,
-  col_names = guess_mc_col_names(file),
+  col_names = guess_mc_col_names(file, skip),
   skip = guess_mc_skip(file),
   tz = "UTC"
 )
 
 read_mc_vector(
   file_vector,
-  col_names = guess_mc_col_names(file_vector[1]),
+  col_names = guess_mc_col_names(file_vector[1], skip),
   skip = guess_mc_skip(file_vector[1]),
   tz = "UTC"
 )
@@ -28,11 +30,15 @@ read_mc_single(file, col_names = NULL, skip = NULL, pb = NULL)
 
 guess_mc_skip(file)
 
-guess_mc_col_names(file)
+guess_mc_col_names(file, skip = guess_mc_skip(file))
 
 mca_col_names(year)
 
 mci_col_names(year)
+
+read_mci_meta(file, tz = "UTC")
+
+read_mci_meta_vector(file_vector, tz = "UTC")
 }
 \arguments{
 \item{file}{A file, URL, or connection. Files ending in .gz, .bz2, .xz, or
@@ -57,5 +63,9 @@ Read mcA, mcI, and mcH files
 mca_file <- bs_example("mcA/19101018.mcA")
 read_mc(mca_file)
 read_mc_vector(mca_file)
+
+mci_file <- bs_example("mcI/19101023.mcI")
+read_mci_meta(mci_file)
+read_mci_meta_vector(mci_file)
 
 }
