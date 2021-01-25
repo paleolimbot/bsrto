@@ -102,3 +102,15 @@ test_that("read_mc() works for all mcI files in the cache", {
   all_meta <- read_mci_meta_vector(with_header)
   expect_true(all(!is.na(all_meta$`start time`[file.size(with_header) > 0])))
 })
+
+test_that("read_mc() works for all mcH files in the cache", {
+  skip_if_not(bs_has_cache())
+
+  # >34,000 files
+  files <- bs_ftp_snapshot_latest$file[grepl("\\.mcH", bs_ftp_snapshot_latest$file)]
+  cached <- bs_cache(head(files, 5000))
+  cached <- cached[file.exists(cached)]
+
+  all <- read_mc_vector(cached[1:1000])
+  expect_true(all(all$temperature > -2 & all$temperature < 0, na.rm = TRUE))
+})

@@ -46,9 +46,16 @@ read_mci_meta_vector(file_vector, tz = "UTC")
 downloaded. See \code{\link[readr:read_lines]{readr::read_lines()}} for a full description of how
 this parameter is interpreted.}
 
+\item{col_names}{Column names, if guessed wrong by \code{guess_mc_col_names()}.}
+
+\item{skip}{Number of columns before table, if guessed wrong by
+\code{guess_mc_skip()}.}
+
 \item{tz}{Timezone for which date times are representative.}
 
 \item{file_vector}{A vector of files or URLs}
+
+\item{pb}{A \link[progress:progress_bar]{progress bar} or \code{NULL}.}
 
 \item{year}{The year to use to specify column names in the range
 2017-2019.}

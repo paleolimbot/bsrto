@@ -2,7 +2,7 @@
 #' Read mcA, mcI, and mcH files
 #'
 #' @inheritParams read_imm
-#' @inheritParams bs_progress
+#' @inheritParams read_icl
 #' @param col_names Column names, if guessed wrong by `guess_mc_col_names()`.
 #' @param skip Number of columns before table, if guessed wrong by
 #'   `guess_mc_skip()`.
