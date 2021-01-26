@@ -99,6 +99,27 @@ final_include <- glue("
 #include <Rinternals.h>
 #include \"read-rdi-common.h\"
 
+SEXP rdi_header_list(rdi_header_t* header, uint16_t* data_offset) {{
+    const char* header_names[] = {{\"bytes_per_ensemble\", \"n_data_types\", \"data_offset\", \"\"}};
+    SEXP r_header = PROTECT(Rf_mkNamed(VECSXP, header_names));
+    SET_VECTOR_ELT(r_header, 0, Rf_ScalarInteger(header->bytes_per_ensemble));
+    SET_VECTOR_ELT(r_header, 1, Rf_ScalarInteger(header->n_data_types));
+
+    // wrap in list() so that this can be a data.frame
+    SEXP r_data_offset_list = PROTECT(Rf_allocVector(VECSXP, 1));
+    SEXP r_data_offset = PROTECT(Rf_allocVector(INTSXP, header->n_data_types));
+    for (uint16_t i = 0; i < header->n_data_types; i++) {{
+        INTEGER(r_data_offset)[i] = data_offset[i];
+    }}
+
+    SET_VECTOR_ELT(r_data_offset_list, 0, r_data_offset);
+    SET_VECTOR_ELT(r_header, 2, r_data_offset_list);
+    UNPROTECT(2);
+
+    UNPROTECT(1);
+    return r_header;
+}}
+
 { make_fixed_df }
 
 { make_variable_df }

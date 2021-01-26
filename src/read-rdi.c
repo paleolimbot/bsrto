@@ -31,7 +31,7 @@ void rdi_read_header(rdi_header_t* header, read_rdi_data_t* data) {
 
     if (header->magic_number != 0x7f7f) {
         Rf_error(
-            "Expected 0x7f7f at start of file but found %#04x", 
+            "Expected 0x7f7f at start of file but found %#04x",
             header->magic_number
         );
     }
@@ -65,31 +65,6 @@ void rdi_read_variable_leader_data(rdi_variable_leader_data_t* variable, read_rd
     }
 }
 
-// these functions generate R objects (one-row data frames without the class)
-// from C structs
-SEXP rdi_header_list(rdi_header_t* header, uint16_t* data_offset) {
-    const char* header_names[] = {"bytes_per_ensemble", "n_data_types", "data_offset", ""};
-    SEXP r_header = PROTECT(Rf_mkNamed(VECSXP, header_names));
-    SET_VECTOR_ELT(r_header, 0, Rf_ScalarInteger(header->bytes_per_ensemble));
-    SET_VECTOR_ELT(r_header, 1, Rf_ScalarInteger(header->n_data_types));
-
-    // wrap in list() so that this can be a data.frame
-    SEXP r_data_offset_list = PROTECT(Rf_allocVector(VECSXP, 1));
-    SEXP r_data_offset = PROTECT(Rf_allocVector(INTSXP, header->n_data_types));
-    for (uint16_t i = 0; i < header->n_data_types; i++) {
-        INTEGER(r_data_offset)[i] = data_offset[i];
-    }
-
-    SET_VECTOR_ELT(r_data_offset_list, 0, r_data_offset);
-    SET_VECTOR_ELT(r_header, 2, r_data_offset_list);
-    UNPROTECT(2);
-
-    UNPROTECT(1);
-    return r_header;
-}
-
-
-
 SEXP bsrto_c_read_rdi_impl(void* data_void) {
     read_rdi_data_t* data = (read_rdi_data_t*) data_void;
 
@@ -101,7 +76,7 @@ SEXP bsrto_c_read_rdi_impl(void* data_void) {
     rdi_read_header(&header, data);
     uint16_t data_offset[header.n_data_types];
     rdi_read_uint16_n(data_offset, header.n_data_types, data);
-    
+
     // fixed leader data is located at the data_offset[0]
     if (fseek(data->handle, data_offset[0], SEEK_SET) != 0) {
         Rf_error("Can't seek to data_offset position %d", data_offset[0]);

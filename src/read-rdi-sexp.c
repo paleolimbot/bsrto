@@ -8,6 +8,27 @@
 #include <Rinternals.h>
 #include "read-rdi-common.h"
 
+SEXP rdi_header_list(rdi_header_t* header, uint16_t* data_offset) {
+    const char* header_names[] = {"bytes_per_ensemble", "n_data_types", "data_offset", ""};
+    SEXP r_header = PROTECT(Rf_mkNamed(VECSXP, header_names));
+    SET_VECTOR_ELT(r_header, 0, Rf_ScalarInteger(header->bytes_per_ensemble));
+    SET_VECTOR_ELT(r_header, 1, Rf_ScalarInteger(header->n_data_types));
+
+    // wrap in list() so that this can be a data.frame
+    SEXP r_data_offset_list = PROTECT(Rf_allocVector(VECSXP, 1));
+    SEXP r_data_offset = PROTECT(Rf_allocVector(INTSXP, header->n_data_types));
+    for (uint16_t i = 0; i < header->n_data_types; i++) {
+        INTEGER(r_data_offset)[i] = data_offset[i];
+    }
+
+    SET_VECTOR_ELT(r_data_offset_list, 0, r_data_offset);
+    SET_VECTOR_ELT(r_header, 2, r_data_offset_list);
+    UNPROTECT(2);
+
+    UNPROTECT(1);
+    return r_header;
+}
+
 SEXP rdi_fixed_leader_data_list(rdi_fixed_leader_data_t* fixed) {
     const char* fixed_df_names[] = { "magic_number", "firmware_version", "system_config", "real_sim_flag", "lag_length", "n_beams", "n_cells", "pings_per_ensemble", "cell_size", "blank_after_transmit", "profiling_mode", "low_corr_thresh", "n_code_reps", "pct_gd_min", "error_velocity_maximum", "tpp_minutes", "tpp_seconds", "tpp_hundredths", "coord_transform", "heading_alignment", "heading_bias", "sensor_source", "sensors_available", "bin1_distance", "transmit_pulse_length", "wp_ref_layer_average", "false_target_threshold", "padding", "transmit_lag_distance", "cpu_board_serial_number", "system_bandwidth", "system_power", "padding2", "serial_number", "beam_angle"  , ""};
     SEXP fixed_df = PROTECT(Rf_mkNamed(VECSXP, fixed_df_names));
