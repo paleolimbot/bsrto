@@ -12,6 +12,11 @@ typedef struct {
     FILE* handle;
 } read_rdi_data_t;
 
+
+// these structs are used as the source of "truth" for the other 
+// data structures (e.g., data-frame code is auto-generated from
+// the struct definition)
+
 // For readability and for auto-generating the code to translate
 // the C structs into R objects
 typedef uint16_t uint16_scaled_by_100_t;
@@ -24,7 +29,6 @@ typedef struct {
     // uint16_t data_offset[n_data_types];
 } rdi_header_t;
 
-// address in file specified by data_offset[0, 2, 4, 6, ...]
 typedef struct {
     uint16_t magic_number; // 0x0000 or 0x0100
     uint8_t firmware_version_major;
@@ -62,13 +66,12 @@ typedef struct {
     uint8_t padding2;
     uint32_t serial_number;
     uint8_t beam_angle;
-    // trailing padding, possibly maybe variable length
+    // trailing padding, possibly variable length
     // Sentinel IV config bytes possibly here
 } rdi_fixed_leader_data_t;
 
-// address in file specified by data_offset[1, 3, 5, 7, ...]
 typedef struct {
-    uint16_t magic_number;
+    uint16_t magic_number; // 0x8000
     uint16_t ensemble_number;
     uint8_t real_time_clock[7];
     uint8_t ensemble_number_msb;
@@ -78,12 +81,7 @@ typedef struct {
     // there is more here that is not included in oce::read.adp.rdi()
 } rdi_variable_leader_data_t;
 
-// these functions are auto-generated based on the above struct objects
-SEXP rdi_alloc_items_df(R_xlen_t n_data_types);
-void rdi_add_fixed_to_items(SEXP items_df, R_xlen_t i, rdi_fixed_leader_data_t fixed);
-void rdi_add_variable_to_items(SEXP items_df, R_xlen_t i, rdi_variable_leader_data_t variable);
-
-#include "rdi-items.inc"
+// these functions read and check the magic numbers at the start of each
 
 void rdi_read_uint16_n(uint16_t* buf, size_t n, read_rdi_data_t* data) {
     size_t size_read = fread(buf, sizeof(uint16_t), n, data->handle);
@@ -92,31 +90,70 @@ void rdi_read_uint16_n(uint16_t* buf, size_t n, read_rdi_data_t* data) {
     }
 }
 
-SEXP rdi_read_header(read_rdi_data_t* data) {
-    rdi_header_t header;
-    size_t size_read = fread(&header, sizeof(rdi_header_t), 1, data->handle);
+void rdi_read_header(rdi_header_t* header, read_rdi_data_t* data) {
+    size_t size_read = fread(header, sizeof(rdi_header_t), 1, data->handle);
     if (size_read != 1) {
-        Rf_error("Failed to read RDI header");
+        Rf_error("Incomplete header");
     }
 
-    if (header.magic_number != 0x7f7f) {
-        Rf_error("Expected magic number 0x7f7f but found %#04x", header.magic_number);
+    if (header->magic_number != 0x7f7f) {
+        Rf_error(
+            "Expected 0x7f7f at start of file but found %#04x", 
+            header->magic_number
+        );
+    }
+}
+
+void rdi_read_fixed_leader_data(rdi_fixed_leader_data_t* fixed, read_rdi_data_t* data) {
+    size_t size_read = fread(fixed, sizeof(rdi_fixed_leader_data_t), 1, data->handle);
+    if (size_read != 1) {
+        Rf_error("Incomplete fixed leader data");
     }
 
-    uint16_t data_offset[header.n_data_types];
-    rdi_read_uint16_n(data_offset, header.n_data_types, data);
+    if (fixed->magic_number != 0x0000 && fixed->magic_number != 0x0100) {
+        Rf_error(
+            "Expected 0x0000 or 0x0100 at start of fixed leader data but found %#04x",
+             fixed->magic_number
+        );
+    }
+}
 
+void rdi_read_variable_leader_data(rdi_variable_leader_data_t* variable, read_rdi_data_t* data) {
+    size_t size_read = fread(variable, sizeof(rdi_fixed_leader_data_t), 1, data->handle);
+    if (size_read != 1) {
+        Rf_error("Incomplete variable leader data");
+    }
+
+    if (variable->magic_number != 0x8000) {
+        Rf_error(
+            "Expected 0x8000 at start of variable leader data but found %#04x",
+             variable->magic_number
+        );
+    }
+}
+
+// these functions are auto-generated based on the above struct objects
+SEXP rdi_fixed_leader_data_list(rdi_fixed_leader_data_t* fixed);
+SEXP rdi_variable_leader_data_list(rdi_variable_leader_data_t* variable);
+
+#include "rdi-items.inc"
+
+SEXP rdi_header_list(read_rdi_data_t* data, rdi_header_t* header, uint16_t* data_offset) {
     const char* header_names[] = {"bytes_per_ensemble", "n_data_types", "data_offset", ""};
     SEXP r_header = PROTECT(Rf_mkNamed(VECSXP, header_names));
-    SET_VECTOR_ELT(r_header, 0, Rf_ScalarInteger(header.bytes_per_ensemble));
-    SET_VECTOR_ELT(r_header, 1, Rf_ScalarInteger(header.n_data_types));
+    SET_VECTOR_ELT(r_header, 0, Rf_ScalarInteger(header->bytes_per_ensemble));
+    SET_VECTOR_ELT(r_header, 1, Rf_ScalarInteger(header->n_data_types));
 
-    SEXP r_data_offset = PROTECT(Rf_allocVector(INTSXP, header.n_data_types));
-    for (uint16_t i = 0; i < header.n_data_types; i++) {
+    // wrap in list() so that this can be a data.frame
+    SEXP r_data_offset_list = PROTECT(Rf_allocVector(VECSXP, 1));
+    SEXP r_data_offset = PROTECT(Rf_allocVector(INTSXP, header->n_data_types));
+    for (uint16_t i = 0; i < header->n_data_types; i++) {
         INTEGER(r_data_offset)[i] = data_offset[i];
     }
-    SET_VECTOR_ELT(r_header, 2, r_data_offset);
-    UNPROTECT(1);
+
+    SET_VECTOR_ELT(r_data_offset_list, 0, r_data_offset);
+    SET_VECTOR_ELT(r_header, 2, r_data_offset_list);
+    UNPROTECT(2);
 
     UNPROTECT(1);
     return r_header;
@@ -125,8 +162,29 @@ SEXP rdi_read_header(read_rdi_data_t* data) {
 SEXP bsrto_c_read_rdi_impl(void* data_void) {
     read_rdi_data_t* data = (read_rdi_data_t*) data_void;
 
-    SEXP r_header = PROTECT(rdi_read_header(data));
-    return r_header;
+    // container for meta information
+    const char* meta_names[] = {"header", "fixed_leader_data", "variable_leader_data", ""};
+    SEXP r_meta = PROTECT(Rf_mkNamed(VECSXP, meta_names));
+
+    // header is always at the start of a file
+    rdi_header_t header;
+    rdi_read_header(&header, data);
+    uint16_t data_offset[header.n_data_types];
+    rdi_read_uint16_n(data_offset, header.n_data_types, data);
+    SEXP r_header = PROTECT(rdi_header_list(data, &header, data_offset));
+    SET_VECTOR_ELT(r_meta, 0, r_header);
+    UNPROTECT(1);
+
+    // fixed leader data is located at the data_offset[0]
+    if (fseek(data->handle, data_offset[0], SEEK_SET) != 0) {
+        Rf_error("Can't seek to data_offset position %d", data_offset[0]);
+    }
+
+    rdi_fixed_leader_data_t fixed;
+    rdi_read_fixed_leader_data(&fixed, data);
+
+    UNPROTECT(1);
+    return r_meta;
 }
 
 void bsrto_c_read_rdi_cleanup(void* data_void) {

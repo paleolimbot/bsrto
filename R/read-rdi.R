@@ -4,5 +4,10 @@
 
 
 read_rdi <- function(file) {
-  .Call(bsrto_c_read_rdi, file)
+  rdi <- .Call(bsrto_c_read_rdi, file)
+  rdi <- rdi[!vapply(rdi, is.null, logical(1))]
+  structure(
+    lapply(rdi, tibble::new_tibble, nrow = 1),
+    class = "bsrto_rdi"
+  )
 }
