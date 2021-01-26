@@ -8,9 +8,54 @@
 typedef struct {
     uint16_t magic_number;
     uint16_t bytes_per_ensemble;
-    char unused;
-    char n_data_types;
+    uint8_t unused;
+    uint8_t n_data_types;
+    // uint16_t data_offset[n_data_types];
 } rdi_header_t;
+
+typedef struct {
+    uint16_t magic_number;
+    uint8_t firmware_version_major;
+    uint8_t firmware_version_minor;
+    uint8_t system_config1;
+    uint8_t system_config2;
+    uint8_t real_sim_flag;
+    uint8_t lag_length;
+    uint8_t n_beams;
+    uint8_t n_cells;
+    uint16_t pings_per_ensemble;
+    uint16_t cell_size100;
+    uint16_t blank_after_transmit100;
+    uint8_t profiling_mode;
+    uint8_t low_corr_thresh;
+    uint8_t n_code_reps;
+    uint8_t pct_gd_min;
+    uint16_t error_velocity_maximum;
+    uint8_t tpp_minutes;
+    uint8_t tpp_seconds;
+    uint8_t tpp_hundredths;
+    uint8_t coord_transform;
+    uint16_t heading_alignment100;
+    uint16_t heading_bias100;
+    uint8_t sensor_source; // 31
+    uint8_t sensors_available;
+    uint16_t bin1_distance100;
+    uint16_t transmit_pulse_length100;
+    uint16_t wp_ref_layer_average;
+    uint8_t false_target_threshold;
+    uint8_t unused; // padding
+    uint16_t transmit_lag_distance; //41
+    uint8_t cpu_board_searial_number[8];
+    uint16_t system_bandwidth; //51
+    uint8_t system_power;
+    uint8_t unused2; // padding
+    uint32_t serial_number;
+    uint8_t beam_angle;
+    // probably some padding here, but the location of the next
+    // element is specified in the header by data_offset[1]
+} rdi_fixed_leader_data_t;
+
+
 
 void rdi_read_uint16_n(uint16_t* buf, size_t n, FILE* f) {
     size_t size_read = fread(buf, sizeof(uint16_t), n, f);
@@ -63,7 +108,6 @@ SEXP bsrto_c_read_rdi_impl(void* data_void) {
 void bsrto_c_read_rdi_cleanup(void* data_void) {
     read_rdi_data_t* data = (read_rdi_data_t*) data_void;
     if (data->handle != NULL) {
-        Rprintf("Closing file\n");
         fclose(data->handle);
         data->handle = NULL;
     }
@@ -73,7 +117,6 @@ void bsrto_c_read_rdi_cleanup(void* data_void) {
 SEXP bsrto_c_read_rdi(SEXP filename) {
     const char* filename_chr = CHAR(STRING_ELT(filename, 0));
 
-    Rprintf("Opening file\n");
     FILE* handle = fopen(filename_chr, "rb");
     if (handle == NULL) {
         Rf_error("Failed to open file '%s'", filename_chr);
