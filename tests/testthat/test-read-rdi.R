@@ -36,4 +36,34 @@ test_that("read_rdi_meta_single() aligns with results from oce::read.adp.rdi()",
     rdi$variable_leader$contamination_sensor,
     159L
   )
+
+  expect_identical(
+    rdi$bottom_track$bv[[1]] / 1000,
+    c(-0.357, -0.279, 0.006, -0.001)
+  )
+
+  expect_identical(
+    rdi$bottom_track$bc[[1]],
+    c(254L, 254L, 255L, 254L)
+  )
+
+  expect_identical(
+    rdi$bottom_track$ba[[1]],
+    c(78L, 79L, 82L, 76L)
+  )
+
+  expect_identical(
+    rdi$bottom_track$bg[[1]],
+    c(0L, 0L, 0L, 100L)
+  )
+
+  expect_identical(
+    rdi$bottom_track$range_lsb[[1]],
+    c(6179L, 6082L, 6106L, 6130L)
+  )
+
+  expect_identical(
+    rdi$bottom_track$range_msb[[1]],
+    c(0L, 0L, 0L, 0L)
+  )
 })

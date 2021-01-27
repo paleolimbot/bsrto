@@ -132,13 +132,14 @@ typedef struct {
 
 typedef struct {
     uint16_t magic_number; 
-    uint8_t unknown[16]; 
-    uint16_t range_lsb[4];
-    uint8_t range_msb[4];
-    int16_t bv[4];
+    uint8_t unknown[14]; 
+    uint16_t range_lsb[4]; // 16-23
+    int16_t bv[4]; // 24: scaled by 1000
     uint8_t bc[4];
     uint8_t ba[4];
-    uint8_t bg[4];
+    uint8_t bg[4]; // 40-43
+    uint8_t unknown2[33];
+    uint8_t range_msb[4]; // 77
 } rdi_bottom_track_t;
 
 #endif
