@@ -130,6 +130,7 @@ typedef struct {
     uint8_t pressure_std[4]; // 52 int32_t
 } rdi_variable_leader_data_t;
 
+// this struct is depends on the number of beams (4 here)
 typedef struct {
     uint16_t magic_number; 
     uint8_t unknown[14]; 
