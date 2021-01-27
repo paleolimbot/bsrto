@@ -64,13 +64,6 @@ void rdi_read_header(rdi_header_t* header, read_rdi_data_t* data) {
     if (size_read != 1) {
         Rf_error("Incomplete header");
     }
-
-    if (header->magic_number != 0x7f7f) {
-        Rf_error(
-            "Expected 0x7f7f at start of file but found %#04x",
-            header->magic_number
-        );
-    }
 }
 
 void rdi_read_fixed_leader_data(rdi_fixed_leader_data_t* fixed, read_rdi_data_t* data) {
@@ -78,12 +71,12 @@ void rdi_read_fixed_leader_data(rdi_fixed_leader_data_t* fixed, read_rdi_data_t*
     if (size_read != 1) {
         Rf_error("Incomplete fixed leader data");
     }
+}
 
-    if (fixed->magic_number != 0x0000 && fixed->magic_number != 0x0001) {
-        Rf_error(
-            "Expected 0x0000 or 0x0100 at start of fixed leader data but found %#04x",
-             fixed->magic_number
-        );
+void rdi_read_bottom_track(rdi_bottom_track_t* bottom_track, read_rdi_data_t* data) {
+    size_t size_read = fread(bottom_track, sizeof(rdi_bottom_track_t), 1, data->handle);
+    if (size_read != 1) {
+        Rf_error("Incomplete bottom track data");
     }
 }
 
@@ -131,6 +124,7 @@ SEXP bsrto_c_read_rdi_meta_impl(void* data_void) {
     SEXP item;
     rdi_fixed_leader_data_t fixed;
     rdi_variable_leader_data_t variable;
+    rdi_bottom_track_t bottom_track;
     for (uint8_t i = 0; i < header.n_data_types; i++) {
         rdi_seek_absolute(data, data_offset[i]);
         switch(data_type[i]) {
@@ -141,6 +135,10 @@ SEXP bsrto_c_read_rdi_meta_impl(void* data_void) {
         case RDI_TYPE_VARIABLE_LEADER:
             rdi_read_variable_leader_data(&variable, data);
             item = PROTECT(rdi_variable_leader_data_list(&variable));
+            break;
+        case RDI_TYPE_BOTTOM_TRACK:
+            rdi_read_bottom_track(&bottom_track, data);
+            item = PROTECT(rdi_bottom_track_list(&bottom_track));
             break;
         default:
             item = PROTECT(rdi_unknown_list(data_type[i]));

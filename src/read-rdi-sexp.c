@@ -124,7 +124,7 @@ UNPROTECT(1);
 }
 
 SEXP rdi_variable_leader_data_list(rdi_variable_leader_data_t* variable) {
-    const char* variable_df_names[] = { "magic_number", "ensemble_number", "real_time_clock", "ensemble_number_msb", "bit_result", "sound_speed", "tranducer_depth"  , ""};
+    const char* variable_df_names[] = { "magic_number", "ensemble_number", "real_time_clock", "ensemble_number_msb", "bit_result", "sound_speed", "tranducer_depth", "heading", "pitch", "salinity", "temperature", "unknown", "heading_std", "pitch_std", "roll_std", "transmit_current", "transmit_voltage", "ambient_temperature", "pressure_plus", "pressure_minus", "attitude_temp", "attitude", "contamination_sensor", "unknown2", "pressure", "pressure_std"  , ""};
     SEXP variable_df = PROTECT(Rf_mkNamed(VECSXP, variable_df_names));
     SET_VECTOR_ELT(variable_df, 0, Rf_allocVector(INTSXP, 1));
     SET_VECTOR_ELT(variable_df, 1, Rf_allocVector(INTSXP, 1));
@@ -133,6 +133,25 @@ SEXP rdi_variable_leader_data_list(rdi_variable_leader_data_t* variable) {
     SET_VECTOR_ELT(variable_df, 4, Rf_allocVector(INTSXP, 1));
     SET_VECTOR_ELT(variable_df, 5, Rf_allocVector(INTSXP, 1));
     SET_VECTOR_ELT(variable_df, 6, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 7, Rf_allocVector(REALSXP, 1));
+    SET_VECTOR_ELT(variable_df, 8, Rf_allocVector(REALSXP, 1));
+    SET_VECTOR_ELT(variable_df, 9, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 10, Rf_allocVector(REALSXP, 1));
+    SET_VECTOR_ELT(variable_df, 11, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(variable_df, 12, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 13, Rf_allocVector(REALSXP, 1));
+    SET_VECTOR_ELT(variable_df, 14, Rf_allocVector(REALSXP, 1));
+    SET_VECTOR_ELT(variable_df, 15, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 16, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 17, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 18, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 19, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 20, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 21, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 22, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(variable_df, 23, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(variable_df, 24, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(variable_df, 25, Rf_allocVector(VECSXP, 1));
 
     INTEGER(VECTOR_ELT(variable_df, 0))[0] = variable->magic_number;
     INTEGER(VECTOR_ELT(variable_df, 1))[0] = variable->ensemble_number;
@@ -146,9 +165,108 @@ UNPROTECT(1);
     INTEGER(VECTOR_ELT(variable_df, 4))[0] = variable->bit_result;
     INTEGER(VECTOR_ELT(variable_df, 5))[0] = variable->sound_speed;
     INTEGER(VECTOR_ELT(variable_df, 6))[0] = variable->tranducer_depth;
+    REAL(VECTOR_ELT(variable_df, 7))[0] = variable->heading / 100.0;
+    REAL(VECTOR_ELT(variable_df, 8))[0] = variable->pitch / 100.0;
+    INTEGER(VECTOR_ELT(variable_df, 9))[0] = variable->salinity;
+    REAL(VECTOR_ELT(variable_df, 10))[0] = variable->temperature / 100.0;
+    SEXP r_unknown = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_unknown)[j] = variable->unknown[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(variable_df, 11),  0, r_unknown);
+UNPROTECT(1);
+    INTEGER(VECTOR_ELT(variable_df, 12))[0] = variable->heading_std;
+    REAL(VECTOR_ELT(variable_df, 13))[0] = variable->pitch_std / 10.0;
+    REAL(VECTOR_ELT(variable_df, 14))[0] = variable->roll_std / 10.0;
+    INTEGER(VECTOR_ELT(variable_df, 15))[0] = variable->transmit_current;
+    INTEGER(VECTOR_ELT(variable_df, 16))[0] = variable->transmit_voltage;
+    INTEGER(VECTOR_ELT(variable_df, 17))[0] = variable->ambient_temperature;
+    INTEGER(VECTOR_ELT(variable_df, 18))[0] = variable->pressure_plus;
+    INTEGER(VECTOR_ELT(variable_df, 19))[0] = variable->pressure_minus;
+    INTEGER(VECTOR_ELT(variable_df, 20))[0] = variable->attitude_temp;
+    INTEGER(VECTOR_ELT(variable_df, 21))[0] = variable->attitude;
+    INTEGER(VECTOR_ELT(variable_df, 22))[0] = variable->contamination_sensor;
+    SEXP r_unknown2 = PROTECT(Rf_allocVector(INTSXP, 6));
+for (int j = 0; j < 6; j++) {
+    INTEGER(r_unknown2)[j] = variable->unknown2[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(variable_df, 23),  0, r_unknown2);
+UNPROTECT(1);
+    SEXP r_pressure = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_pressure)[j] = variable->pressure[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(variable_df, 24),  0, r_pressure);
+UNPROTECT(1);
+    SEXP r_pressure_std = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_pressure_std)[j] = variable->pressure_std[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(variable_df, 25),  0, r_pressure_std);
+UNPROTECT(1);
 
     UNPROTECT(1);
     return variable_df;
+}
+
+SEXP rdi_bottom_track_list(rdi_bottom_track_t* bottom_track) {
+    const char* bottom_track_df_names[] = { "magic_number", "unknown", "range_lsb", "range_msb", "bv", "bc", "ba", "bg"  , ""};
+    SEXP bottom_track_df = PROTECT(Rf_mkNamed(VECSXP, bottom_track_df_names));
+    SET_VECTOR_ELT(bottom_track_df, 0, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(bottom_track_df, 1, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(bottom_track_df, 2, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(bottom_track_df, 3, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(bottom_track_df, 4, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(bottom_track_df, 5, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(bottom_track_df, 6, Rf_allocVector(VECSXP, 1));
+    SET_VECTOR_ELT(bottom_track_df, 7, Rf_allocVector(VECSXP, 1));
+
+    INTEGER(VECTOR_ELT(bottom_track_df, 0))[0] = bottom_track->magic_number;
+    SEXP r_unknown = PROTECT(Rf_allocVector(INTSXP, 16));
+for (int j = 0; j < 16; j++) {
+    INTEGER(r_unknown)[j] = bottom_track->unknown[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 1),  0, r_unknown);
+UNPROTECT(1);
+    SEXP r_range_lsb = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_range_lsb)[j] = bottom_track->range_lsb[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 2),  0, r_range_lsb);
+UNPROTECT(1);
+    SEXP r_range_msb = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_range_msb)[j] = bottom_track->range_msb[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 3),  0, r_range_msb);
+UNPROTECT(1);
+    SEXP r_bv = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_bv)[j] = bottom_track->bv[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 4),  0, r_bv);
+UNPROTECT(1);
+    SEXP r_bc = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_bc)[j] = bottom_track->bc[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 5),  0, r_bc);
+UNPROTECT(1);
+    SEXP r_ba = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_ba)[j] = bottom_track->ba[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 6),  0, r_ba);
+UNPROTECT(1);
+    SEXP r_bg = PROTECT(Rf_allocVector(INTSXP, 4));
+for (int j = 0; j < 4; j++) {
+    INTEGER(r_bg)[j] = bottom_track->bg[j];
+}
+SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 7),  0, r_bg);
+UNPROTECT(1);
+
+    UNPROTECT(1);
+    return bottom_track_df;
 }
 
 SEXP rdi_unknown_list(uint16_t magic_number) {

@@ -31,4 +31,9 @@ test_that("read_rdi_meta_single() aligns with results from oce::read.adp.rdi()",
     # dput(oce_rdi@metadata$transducerDepth)
     613L
   )
+
+  expect_identical(
+    rdi$variable_leader$contamination_sensor,
+    159L
+  )
 })

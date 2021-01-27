@@ -16,13 +16,24 @@ vld_struct <- read_file("src/read-rdi-common.h") %>%
   read_lines() %>%
   str_subset("[^\\s]+")
 
-rdi_item_struct <- c(fld_struct, vld_struct) %>%
+btm_track_struct <- read_file("src/read-rdi-common.h") %>%
+  str_match("typedef struct \\{([^\\}]+)\\}\\s*rdi_bottom_track_t") %>%
+  .[, 2] %>%
+  str_replace_all("//.*?\n", "\n") %>%
+  read_lines() %>%
+  str_subset("[^\\s]+")
+
+rdi_item_struct <- c(fld_struct, vld_struct, btm_track_struct) %>%
   str_match("([A-Za-z0-9_]+)\\s+([A-Za-z0-9_]+)(\\[[0-9]+\\])?") %>%
   .[, 2:4] %>%
   as.data.frame() %>%
   setNames(c("c_type", "c_name", "c_size")) %>%
   mutate(
-    type = c(rep("fixed", length(fld_struct)), rep("variable", length(vld_struct)))
+    type = c(
+      rep("fixed", length(fld_struct)),
+      rep("variable", length(vld_struct)),
+      rep("bottom_track", length(btm_track_struct))
+    )
   ) %>%
   group_by(type) %>%
   mutate(
@@ -30,7 +41,7 @@ rdi_item_struct <- c(fld_struct, vld_struct) %>%
     c_size = parse_number(c_size),
     r_c_type = case_when(
       !is.na(c_size) ~ "VECSXP",
-      c_type == "uint16_scaled_by_100_t" ~ "REALSXP",
+      c_type %in% c("uint16_scaled_by_100_t", "int16_scaled_by_100_t", "uint8_scaled_by_10_t") ~ "REALSXP",
       TRUE ~ "INTSXP"
     ),
     r_c_create = glue(
@@ -48,8 +59,11 @@ rdi_item_struct <- c(fld_struct, vld_struct) %>%
             UNPROTECT(1);
             "
         ),
-      r_c_type == "REALSXP" & c_type == "uint16_scaled_by_100_t" ~ glue(
+      r_c_type == "REALSXP" & c_type %in% c("uint16_scaled_by_100_t", "int16_scaled_by_100_t") ~ glue(
         "REAL(VECTOR_ELT({ type }_df, { c_index }))[0] = { type }->{ c_name } / 100.0;"
+      ),
+      r_c_type == "REALSXP" & c_type == "uint8_scaled_by_10_t" ~ glue(
+        "REAL(VECTOR_ELT({ type }_df, { c_index }))[0] = { type }->{ c_name } / 10.0;"
       ),
       TRUE ~ glue(
         "INTEGER(VECTOR_ELT({ type }_df, { c_index }))[0] = { type }->{ c_name };"
@@ -76,6 +90,21 @@ make_variable_df <- glue_data(
   rdi_item_struct %>% filter(type == "variable"),
   "
 SEXP rdi_variable_leader_data_list(rdi_variable_leader_data_t* variable) {{
+    const char* { type[1] }_df_names[] = {{ { paste0('\"', c_name , '\"', collapse = ', ') }  , \"\"}};
+    SEXP { type[1] }_df = PROTECT(Rf_mkNamed(VECSXP, { type[1] }_df_names));
+{ paste0('    ', r_c_create, collapse = '\n') }
+
+{ paste0('    ', r_c_set, collapse = '\n')}
+
+    UNPROTECT(1);
+    return { type[1] }_df;
+}}
+")
+
+make_bottom_track_df <- glue_data(
+  rdi_item_struct %>% filter(type == "bottom_track"),
+  "
+SEXP rdi_bottom_track_list(rdi_bottom_track_t* bottom_track) {{
     const char* { type[1] }_df_names[] = {{ { paste0('\"', c_name , '\"', collapse = ', ') }  , \"\"}};
     SEXP { type[1] }_df = PROTECT(Rf_mkNamed(VECSXP, { type[1] }_df_names));
 { paste0('    ', r_c_create, collapse = '\n') }
@@ -123,6 +152,8 @@ SEXP rdi_header_list(rdi_header_t* header, uint16_t* data_offset) {{
 { make_fixed_df }
 
 { make_variable_df }
+
+{ make_bottom_track_df }
 
 SEXP rdi_unknown_list(uint16_t magic_number) {{
     const char* names[] = {{\"magic_number\", \"\"}};
