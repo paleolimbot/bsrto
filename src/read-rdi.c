@@ -57,11 +57,11 @@ void rdi_read_variable_leader_data(rdi_variable_leader_data_t* variable, read_rd
         Rf_error("Incomplete variable leader data");
     }
 
-    if (variable->magic_number != 0x0008) {
-        // Rf_error(
-        //     "Expected 0x8000 at start of variable leader data but found %#04x",
-        //      variable->magic_number
-        // );
+    if (variable->magic_number != 0x0080) {
+        Rf_error(
+            "Expected 0x8000 at start of variable leader data but found %#04x",
+             variable->magic_number
+        );
     }
 }
 
