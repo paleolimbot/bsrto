@@ -15,19 +15,19 @@ test_that("read_rdi_meta_single() aligns with results from oce::read.adp.rdi()",
   )
 
   expect_identical(
-    rdi$fixed_leader_data$cpu_board_serial_number[[1]],
+    rdi$fixed_leader$cpu_board_serial_number[[1]],
     # dput(oce_rdi@metadata$cpuBoardSerialNumber)
     c(58L, 0L, 0L, 2L, 128L, 134L, 1L, 9L)
   )
 
   expect_identical(
-    readBin(as.raw(rdi$fixed_leader_data$serial_number[[1]]), "integer"),
+    readBin(as.raw(rdi$fixed_leader$serial_number[[1]]), "integer"),
     # dput(oce_rdi@metadata$serialNumber)
     9088L
   )
 
   expect_identical(
-    rdi$variable_leader_data$tranducer_depth,
+    rdi$variable_leader$tranducer_depth,
     # dput(oce_rdi@metadata$transducerDepth)
     613L
   )

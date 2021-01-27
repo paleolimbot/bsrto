@@ -124,6 +124,14 @@ SEXP rdi_header_list(rdi_header_t* header, uint16_t* data_offset) {{
 
 { make_variable_df }
 
+SEXP rdi_unknown_list(uint16_t magic_number) {{
+    const char* names[] = {{\"magic_number\", \"\"}};
+    SEXP df = PROTECT(Rf_mkNamed(VECSXP, names));
+    SET_VECTOR_ELT(df, 0, Rf_ScalarInteger(magic_number));
+    UNPROTECT(1);
+    return df;
+}}
+
 #endif
 
 ")

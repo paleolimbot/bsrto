@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 // these structs are used as the source of "truth" for the other 
-// data structures (e.g., data-frame code is auto-generated from
+// data structures (e.g., data-frame creation code is auto-generated from
 // the struct definition)
 
 // For readability and for auto-generating the code to translate
@@ -17,9 +17,38 @@ typedef struct {
     uint16_t bytes_per_ensemble;
     uint8_t padding;
     uint8_t n_data_types;
+    // read separately:
     // uint16_t data_offset[n_data_types];
 } rdi_header_t;
 
+// Writing these as little-endian uint16_t instead of
+// byte one...byte two because each struct has to start with
+// a uint16_t to ensure that the members are arranged without
+// any padding. These are best documented on the oce reference
+// page for read.adp.rdi(). These are the values pointed to
+// by the `data_offset` immediately following the rdi_header_t
+// that each have a recipe for reading.
+enum rdi_item_type {
+    RDI_TYPE_FIXED_LEADER = 0x0000,
+    RDI_TYPE_VARIABLE_LEADER = 0x0080,
+    RDI_TYPE_VELOCITY = 0x0100,
+    RDI_TYPE_CORRELATION = 0x0200,
+    RDI_TYPE_ECHO_INTENSITY = 0x0300,
+    RDI_TYPE_PCT_GOOD = 0x0400,
+    RDI_TYPE_BOTTOM_TRACK = 0x0600,
+    RDI_TYPE_SENTINEL_VERTICAL_BEAM_VELOCITY = 0x0a00,
+    RDI_TYPE_SENTINEL_VERTICAL_BEAM_CORRECTION = 0x0b00,
+    RDI_TYPE_SENTINEL_VERTICAL_BEAM_AMPLITUDE = 0x0c00,
+    RDI_TYPE_SENTINEL_VERTICAL_BEAM_PCT_GOOD = 0x0d00,
+    RDI_TYPE_VMDASS = 0x2000,
+    RDI_TYPE_BINARY_FIXED_ATTITUDE = 0x3000,
+    RDI_TYPE_SENTINEL_TRANSFORMATION_MATRIX = 0x3200
+};
+
+// These structs are laid out such that there is no padding between
+// members. This makes it easy to read all at once using
+// fread(&str, 1, 1, file_handle). To make this work they have to
+// start with a uint16_t and contain no members wider than 2 bytes.
 typedef struct {
     uint16_t magic_number; // 0x00 then 0x00 or 0x01 then 0x00
     uint8_t firmware_version[2];
@@ -55,7 +84,8 @@ typedef struct {
     uint8_t system_power;
     uint8_t padding2;
     // this is actually an int32_t; however, declaring it as such causes
-    // alignment issues
+    // padding between members that causes the integer to be read
+    // at the wrong location
     uint8_t serial_number[4];
     uint8_t beam_angle;
     // trailing padding, possibly variable length
