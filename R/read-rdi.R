@@ -5,7 +5,5 @@
 
 read_rdi_meta_single <- function(file, read_offsets = FALSE) {
   rdi <- .Call(bsrto_c_read_rdi, file, as.logical(read_offsets)[1])
-  rdi[-2] <- lapply(rdi[-2], tibble::new_tibble, nrow = 1)
-  names(rdi[[2]]) <- names(rdi[-(1:2)])
-  rdi
+  lapply(rdi, tibble::new_tibble, nrow = 1)
 }
