@@ -35,6 +35,7 @@ rdi_item_struct <- c(fld_struct, vld_struct, btm_track_struct) %>%
       rep("bottom_track", length(btm_track_struct))
     )
   ) %>%
+  filter(!str_detect(c_name, "padding|unknown")) %>%
   group_by(type) %>%
   mutate(
     c_index = seq_len(n()) - 1,

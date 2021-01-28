@@ -17,8 +17,6 @@ read_rdi_internal <- function(file, offset = 0L) {
   rdi[is_fixed_leader] <- lapply(rdi[is_fixed_leader], read_rdi_fix_fixed_leader)
   is_variable_leader <- names(rdi) == "variable_leader"
   rdi[is_variable_leader] <- lapply(rdi[is_variable_leader], read_rdi_fix_variable_leader)
-  is_bottom_track <- names(rdi) == "bottom_track"
-  rdi[is_bottom_track] <- lapply(rdi[is_bottom_track], read_rdi_fix_bottom_track)
 
   lapply(rdi, tibble::new_tibble, nrow = 1)
 }
@@ -51,6 +49,8 @@ read_rdi_fix_variable_leader <- function(item) {
     "%02d-%02d-%02d %02d:%02d:%02d.%02d",
     rtc[1], rtc[2], rtc[3], rtc[4], rtc[5], rtc[6], rtc[7]
   )
+
+  item$transducer_depth <- item$transducer_depth / 10.0
 
   item$pressure <- readBin(
     as.raw(item$pressure[[1]]),

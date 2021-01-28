@@ -10,25 +10,21 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   # that are likely to be misaligned if any error occurred
   expect_identical(
     rdi$header$data_offset[[1]],
-    # dput(oce_rdi@metadata$dataOffset)
     c(20L, 79L, 144L, 346L, 448L, 550L, 652L)
   )
 
   expect_identical(
     rdi$fixed_leader$cpu_board_serial_number[[1]],
-    # dput(oce_rdi@metadata$cpuBoardSerialNumber)
-    c(58L, 0L, 0L, 2L, 128L, 134L, 1L, 9L)
+    "3a.00.00.02.80.86.01.09"
   )
 
   expect_identical(
-    readBin(as.raw(rdi$fixed_leader$serial_number[[1]]), "integer"),
-    # dput(oce_rdi@metadata$serialNumber)
+    rdi$fixed_leader$serial_number,
     9088L
   )
 
   expect_identical(
     rdi$variable_leader$tranducer_depth,
-    # dput(oce_rdi@metadata$transducerDepth)
     613L
   )
 
