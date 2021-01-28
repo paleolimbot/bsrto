@@ -29,8 +29,8 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   # variable leader
 
   expect_identical(
-    rdi$variable_leader$tranducer_depth,
-    613L
+    rdi$variable_leader$transducer_depth,
+    61.3
   )
 
   expect_identical(
@@ -77,10 +77,25 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
 
   # velocity
 
-  # (note tranposed relative to oce_rdi@data$v)
+  # (note transposed relative to oce_rdi@data$v)
   expect_identical(
     rdi$velocity$velocity[[1]][, 25],
     c(-0.147, -0.039, 0.014, NA)
+  )
+
+  expect_identical(
+    rdi$correlation$correlation[[1]][, 25],
+    as.raw(c(75L, 56L, 50L, 73L))
+  )
+
+  expect_identical(
+    rdi$echo_intensity$echo_intensity[[1]][, 25],
+    as.raw(c(91L, 82L, 86L, 91L))
+  )
+
+  expect_identical(
+    rdi$pct_good$pct_good[[1]][, 25],
+    as.raw(c(18L, 0L, 81L, 0L))
   )
 
 })

@@ -37,14 +37,14 @@ enum rdi_item_type {
     RDI_TYPE_FIXED_LEADER = 0x0000,
     // rdi_variable_leader_data_t
     RDI_TYPE_VARIABLE_LEADER = 0x0080, 
-    // int16_t[n_cells * n_beams]
+    // int16_t[n_beams * n_cells]
     // -32768 as NA, divide by 1000 to get velocity in m/s
     RDI_TYPE_VELOCITY = 0x0100,
-    // uint8_t[n_cells * n_beams]
+    // uint8_t[n_beams * n_cells]
     RDI_TYPE_CORRELATION = 0x0200,
-    // uint8_t[n_cells * n_beams]
+    // uint8_t[n_beams * n_cells]
     RDI_TYPE_ECHO_INTENSITY = 0x0300,
-    // uint8_t[n_cells * n_beams]
+    // uint8_t[n_beams * n_cells]
     RDI_TYPE_PCT_GOOD = 0x0400,
     // rdi_bottom_track_t
     RDI_TYPE_BOTTOM_TRACK = 0x0600,
@@ -111,7 +111,7 @@ typedef struct {
     uint8_t ensemble_number_msb;
     uint16_t bit_result;
     uint16_t sound_speed;
-    uint16_t tranducer_depth;
+    uint16_t transducer_depth;
     uint16_scaled_by_100_t heading;
     int16_scaled_by_100_t pitch;
     int16_scaled_by_100_t roll;

@@ -134,7 +134,7 @@ SEXP rdi_fixed_leader_data_list(rdi_fixed_leader_data_t* fixed) {
 }
 
 SEXP rdi_variable_leader_data_list(rdi_variable_leader_data_t* variable) {
-    const char* variable_df_names[] = { "magic_number", "ensemble_number", "real_time_clock", "ensemble_number_msb", "bit_result", "sound_speed", "tranducer_depth", "heading", "pitch", "roll", "salinity", "temperature", "heading_std", "pitch_std", "roll_std", "transmit_current", "transmit_voltage", "ambient_temperature", "pressure_plus", "pressure_minus", "attitude_temp", "attitude", "contamination_sensor", "pressure", "pressure_std"  , ""};
+    const char* variable_df_names[] = { "magic_number", "ensemble_number", "real_time_clock", "ensemble_number_msb", "bit_result", "sound_speed", "transducer_depth", "heading", "pitch", "roll", "salinity", "temperature", "heading_std", "pitch_std", "roll_std", "transmit_current", "transmit_voltage", "ambient_temperature", "pressure_plus", "pressure_minus", "attitude_temp", "attitude", "contamination_sensor", "pressure", "pressure_std"  , ""};
     SEXP variable_df = PROTECT(Rf_mkNamed(VECSXP, variable_df_names));
     SET_VECTOR_ELT(variable_df, 0, Rf_allocVector(INTSXP, 1));
     SET_VECTOR_ELT(variable_df, 1, Rf_allocVector(INTSXP, 1));
@@ -173,7 +173,7 @@ SEXP rdi_variable_leader_data_list(rdi_variable_leader_data_t* variable) {
     INTEGER(VECTOR_ELT(variable_df, 3))[0] = variable->ensemble_number_msb;
     INTEGER(VECTOR_ELT(variable_df, 4))[0] = variable->bit_result;
     INTEGER(VECTOR_ELT(variable_df, 5))[0] = variable->sound_speed;
-    INTEGER(VECTOR_ELT(variable_df, 6))[0] = variable->tranducer_depth;
+    INTEGER(VECTOR_ELT(variable_df, 6))[0] = variable->transducer_depth;
     REAL(VECTOR_ELT(variable_df, 7))[0] = variable->heading / 100.0;
     REAL(VECTOR_ELT(variable_df, 8))[0] = variable->pitch / 100.0;
     REAL(VECTOR_ELT(variable_df, 9))[0] = variable->roll / 100.0;
