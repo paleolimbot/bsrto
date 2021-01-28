@@ -1,4 +1,23 @@
 
+test_that("read_rdi() works", {
+  file <- bs_example("rdi/19101018.rdi")
+
+  rdi <- read_rdi(file)
+
+  expect_identical(
+    rdi$real_time_clock,
+    readr::parse_datetime(
+      "2019-10-10 18:00:03.08",
+      locale = readr::locale(tz = "UTC")
+    )
+  )
+
+  expect_identical(
+    read_rdi(file),
+    read_rdi_vector(file)[-1]
+  )
+})
+
 test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   file <- bs_example("rdi/19101018.rdi")
   # debug(oce:::decodeHeaderRDI)
@@ -77,7 +96,7 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
 
   # velocity
 
-  # (note transposed relative to oce_rdi@data$v)
+  # (note transposed relative to oce_rdi@data$[v, q, g, ])
   expect_identical(
     rdi$velocity$velocity[[1]][, 25],
     c(-0.147, -0.039, 0.014, NA)
@@ -97,7 +116,6 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
     rdi$pct_good$pct_good[[1]][, 25],
     as.raw(c(18L, 0L, 81L, 0L))
   )
-
 })
 
 test_that("read_rdi_internal() errors when passed an invalid offset", {

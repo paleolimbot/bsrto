@@ -1,5 +1,70 @@
 
+#' Read RDI files
+#'
+#' @inheritParams read_hpb
+#' @param types The variable types to extract from the file.
+#'   Defaults to all variable types found in the first file.
+#'
+#' @return A [tibble::tibble()]
+#'
+#' @export
+#'
+#' @examples
+#' rdi_file <- bs_example("rdi/19101018.rdi")
+#' read_rdi(rdi_file)
+#' read_rdi_vector(rdi_file)
+#'
+read_rdi <- function(file, types = guess_rdi_types(file), tz = "UTC") {
+  stopifnot(length(file) == 1)
+  read_rdi_vector(file, types = types, tz = tz)[-1]
+}
 
+#' @rdname read_rdi
+#' @export
+read_rdi_vector <- function(file_vector, types = guess_rdi_types(file_vector[1]),
+                            tz = "UTC") {
+  pb <- bs_progress(file_vector)
+  on.exit(bs_progress_finish(pb))
+
+  results <- lapply(file_vector, read_rdi_single, pb = pb, types = types)
+  lengths <- vapply(results, nrow, integer(1))
+  results_all <- vctrs::vec_rbind(
+    tibble::tibble(file = character(), real_time_clock = character()),
+    !!! results
+  )
+
+  results_all$file <- vctrs::vec_rep_each(file_vector, lengths)
+
+  results_all$real_time_clock <- readr::parse_datetime(
+    results_all$real_time_clock,
+    "%y-%m-%d %H:%M:%OS",
+    locale = readr::locale(tz = tz)
+  )
+
+  # the raw() columns are confusing and are better expressed as integers
+  is_raw <- vapply(results_all, is.raw, logical(1))
+  results_all[is_raw] <- lapply(results_all[is_raw], as.integer)
+
+  results_all
+}
+
+read_rdi_single <- function(file, types, pb) {
+  bs_tick(pb, file)
+  rdi <- read_rdi_internal(file)
+  rdi <- rdi[intersect(types, names(rdi))]
+
+  # get rid of 'magic number' columns
+  rdi <- lapply(rdi, "[", -1)
+
+  # flatten to a single row
+  vctrs::vec_cbind(!!! unname(rdi))
+}
+
+#' @rdname read_rdi
+#' @export
+guess_rdi_types <- function(file) {
+  setdiff(names(read_rdi_internal(file)), "header")
+}
 
 # Currently the C code just reads one ensemble at a time and reads
 # everything. All the BSRTO files are a single ensemble when uploaded
