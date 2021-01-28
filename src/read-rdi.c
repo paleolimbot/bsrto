@@ -34,6 +34,7 @@ const char* rdi_item_type_label(uint16_t magic_number) {
 // nice abstraction around the file types
 typedef struct {
     FILE* handle;
+    int offset;
 } read_rdi_data_t;
 
 void rdi_seek_absolute(read_rdi_data_t* data, size_t offset) {
@@ -45,7 +46,12 @@ void rdi_seek_absolute(read_rdi_data_t* data, size_t offset) {
 void rdi_read_uint16_n(uint16_t* buf, size_t n, read_rdi_data_t* data) {
     size_t size_read = fread(buf, sizeof(uint16_t), n, data->handle);
     if (size_read != n) {
-        Rf_error("Read %d 16-bit integers but expected %d", size_read, n);
+        Rf_error(
+            "Read %d 16-bit integers at offset %d but expected %d", 
+            size_read, 
+            ftell(data->handle),
+            n
+        );
     }
 }
 
@@ -53,7 +59,12 @@ uint16_t rdi_read_uint16(read_rdi_data_t* data) {
     uint16_t result;
     size_t size_read = fread(&result, sizeof(uint16_t), 1, data->handle);
     if (size_read != 1) {
-        Rf_error("Read %d 16-bit integers but expected %d", size_read, 1);
+        Rf_error(
+            "Read %d 16-bit integers at offset %d but expected %d", 
+            size_read, 
+            ftell(data->handle),
+            1
+        );
     }
 
     return result;
@@ -62,44 +73,44 @@ uint16_t rdi_read_uint16(read_rdi_data_t* data) {
 void rdi_read_header(rdi_header_t* header, read_rdi_data_t* data) {
     size_t size_read = fread(header, sizeof(rdi_header_t), 1, data->handle);
     if (size_read != 1) {
-        Rf_error("Incomplete header");
+        Rf_error("Incomplete header at offset %d", ftell(data->handle));
     }
 }
 
 void rdi_read_fixed_leader_data(rdi_fixed_leader_data_t* fixed, read_rdi_data_t* data) {
     size_t size_read = fread(fixed, sizeof(rdi_fixed_leader_data_t), 1, data->handle);
     if (size_read != 1) {
-        Rf_error("Incomplete fixed leader data");
+        Rf_error("Incomplete fixed leader data at offset %d", ftell(data->handle));
     }
 }
 
 void rdi_read_bottom_track(rdi_bottom_track_t* bottom_track, read_rdi_data_t* data) {
     size_t size_read = fread(bottom_track, sizeof(rdi_bottom_track_t), 1, data->handle);
     if (size_read != 1) {
-        Rf_error("Incomplete bottom track data");
+        Rf_error("Incomplete bottom track data at offset %d", ftell(data->handle));
     }
 }
 
 void rdi_read_variable_leader_data(rdi_variable_leader_data_t* variable, read_rdi_data_t* data) {
     size_t size_read = fread(variable, sizeof(rdi_fixed_leader_data_t), 1, data->handle);
     if (size_read != 1) {
-        Rf_error("Incomplete variable leader data");
-    }
-
-    if (variable->magic_number != 0x0080) {
-        Rf_error(
-            "Expected 0x8000 at start of variable leader data but found %#04x",
-             variable->magic_number
-        );
+        Rf_error("Incomplete variable leader data at offset %d", ftell(data->handle));
     }
 }
 
-SEXP bsrto_c_read_rdi_meta_impl(void* data_void) {
-    read_rdi_data_t* data = (read_rdi_data_t*) data_void;
-
-    // read header
+SEXP rdi_read_ensemble_sexp(read_rdi_data_t* data) {
     rdi_header_t header;
     rdi_read_header(&header, data);
+
+    // check that this is actually an ensemble header
+    if (header.magic_number != RDI_ENSEMBLE_HEADER_UINT16) {
+        Rf_error(
+            "Expected %#04x at start of ensemble but found %#04x",
+            RDI_ENSEMBLE_HEADER_UINT16,
+            header.magic_number
+        );
+    }
+
     uint16_t data_offset[header.n_data_types];
     rdi_read_uint16_n(data_offset, header.n_data_types, data);
 
@@ -153,6 +164,12 @@ SEXP bsrto_c_read_rdi_meta_impl(void* data_void) {
     return container;
 }
 
+SEXP bsrto_c_read_rdi_meta_impl(void* data_void) {
+    read_rdi_data_t* data = (read_rdi_data_t*) data_void;
+    rdi_seek_absolute(data, data->offset);
+    return rdi_read_ensemble_sexp(data);
+}
+
 void bsrto_c_read_rdi_cleanup(void* data_void) {
     read_rdi_data_t* data = (read_rdi_data_t*) data_void;
     if (data->handle != NULL) {
@@ -162,8 +179,9 @@ void bsrto_c_read_rdi_cleanup(void* data_void) {
     free(data);
 }
 
-SEXP bsrto_c_read_rdi_meta(SEXP filename) {
+SEXP bsrto_c_read_rdi_meta(SEXP filename, SEXP offset) {
     const char* filename_chr = CHAR(STRING_ELT(filename, 0));
+    int offset_int = INTEGER(offset)[0];
 
     FILE* handle = fopen(filename_chr, "rb");
     if (handle == NULL) {
@@ -176,5 +194,6 @@ SEXP bsrto_c_read_rdi_meta(SEXP filename) {
     }
 
     data->handle = handle;
+    data->offset = offset_int;
     return R_ExecWithCleanup(&bsrto_c_read_rdi_meta_impl, data, &bsrto_c_read_rdi_cleanup, data);
 }

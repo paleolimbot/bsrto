@@ -1,10 +1,10 @@
 
-test_that("read_rdi_meta_single() aligns with results from oce::read.adp.rdi()", {
+test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   file <- bs_example("rdi/19101018.rdi")
   # debug(oce:::decodeHeaderRDI)
   # oce_rdi <- oce::read.adp.rdi(file)
 
-  rdi <- read_rdi_meta_single(file)
+  rdi <- read_rdi_internal(file, offset = 0)
 
   # pick values towards the end of the structs
   # that are likely to be misaligned if any error occurred
@@ -65,5 +65,13 @@ test_that("read_rdi_meta_single() aligns with results from oce::read.adp.rdi()",
   expect_identical(
     rdi$bottom_track$range_msb[[1]],
     c(0L, 0L, 0L, 0L)
+  )
+})
+
+test_that("read_rdi_internal() errors when passed an invalid offset", {
+  file <- bs_example("rdi/19101018.rdi")
+  expect_error(
+    read_rdi_internal(file, offset = 1),
+    "Expected 0x7f7f"
   )
 })

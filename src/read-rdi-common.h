@@ -14,6 +14,8 @@ typedef uint16_t uint16_scaled_by_100_t;
 typedef int16_t int16_scaled_by_100_t;
 typedef uint8_t uint8_scaled_by_10_t;
 
+#define RDI_ENSEMBLE_HEADER_UINT16 0x7f7f
+
 typedef struct {
     uint16_t magic_number; // 0x7f7f
     uint16_t bytes_per_ensemble;
@@ -59,6 +61,8 @@ enum rdi_item_type {
 // members. This makes it easy to read all at once using
 // fread(&str, 1, 1, file_handle). To make this work they have to
 // start with a uint16_t and contain no members wider than 2 bytes.
+// Note that the fread() method suggested above will only work on
+// little-endian systems (this can be checked easily at the R level).
 typedef struct {
     uint16_t magic_number; // 0x00 then 0x00 or 0x01 then 0x00
     uint8_t firmware_version[2];
@@ -101,7 +105,7 @@ typedef struct {
 } rdi_fixed_leader_data_t;
 
 typedef struct {
-    uint16_t magic_number; // 0x80 then 0x00
+    uint16_t magic_number;
     uint16_t ensemble_number;
     uint8_t real_time_clock[7];
     uint8_t ensemble_number_msb;
@@ -112,9 +116,9 @@ typedef struct {
     int16_scaled_by_100_t pitch;
     int16_scaled_by_100_t roll;
     int16_t salinity;
-    int16_scaled_by_100_t temperature; // 26
+    int16_scaled_by_100_t temperature;
     uint8_t unknown[3];
-    uint8_t heading_std; // 31
+    uint8_t heading_std;
     uint8_scaled_by_10_t pitch_std;
     uint8_scaled_by_10_t roll_std;
     uint8_t transmit_current;
@@ -124,13 +128,13 @@ typedef struct {
     uint8_t pressure_minus;
     uint8_t attitude_temp;
     uint8_t attitude;
-    uint8_t contamination_sensor; // 41
+    uint8_t contamination_sensor;
     uint8_t unknown2[6];
-    uint8_t pressure[4]; // 48 int32_t scaled by 1000
-    uint8_t pressure_std[4]; // 52 int32_t
+    uint8_t pressure[4]; // int32_t scaled by 1000
+    uint8_t pressure_std[4]; // int32_t (probably also scaled by 1000?)
 } rdi_variable_leader_data_t;
 
-// this struct is depends on the number of beams (4 here)
+// this struct may depend on the number of beams? (4 here)
 typedef struct {
     uint16_t magic_number; 
     uint8_t unknown[14]; 

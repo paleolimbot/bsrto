@@ -2,7 +2,7 @@
 #include <R.h>
 #include <Rinternals.h>
 
-SEXP bsrto_c_read_rdi_meta(SEXP filename, SEXP read_offsets);
+SEXP bsrto_c_read_rdi_meta(SEXP filename, SEXP offset);
 
 static const R_CallMethodDef CallEntries[] = {
     {"bsrto_c_read_rdi", (DL_FUNC) &bsrto_c_read_rdi_meta, 2},

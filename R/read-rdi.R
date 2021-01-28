@@ -9,7 +9,7 @@
 # velocity and other actual data is not yet loaded. Ideally this
 # will live in another package some day with more files on which to test.
 
-read_rdi_meta_single <- function(file, read_offsets = FALSE) {
-  rdi <- .Call(bsrto_c_read_rdi, file, as.logical(read_offsets)[1])
+read_rdi_internal <- function(file, offset = 0L) {
+  rdi <- .Call(bsrto_c_read_rdi, file, as.integer(offset)[1])
   lapply(rdi, tibble::new_tibble, nrow = 1)
 }
