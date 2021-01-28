@@ -8,6 +8,9 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
 
   # pick values towards the end of the structs
   # that are likely to be misaligned if any error occurred
+
+  # fixed leader
+
   expect_identical(
     rdi$header$data_offset[[1]],
     c(20L, 79L, 144L, 346L, 448L, 550L, 652L)
@@ -23,6 +26,8 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
     9088L
   )
 
+  # variable leader
+
   expect_identical(
     rdi$variable_leader$tranducer_depth,
     613L
@@ -37,6 +42,8 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
     rdi$variable_leader$pressure,
     61.535
   )
+
+  # bottom track
 
   expect_identical(
     rdi$bottom_track$bv[[1]] / 1000,
@@ -67,6 +74,15 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
     rdi$bottom_track$range_msb[[1]],
     c(0L, 0L, 0L, 0L)
   )
+
+  # velocity
+
+  # (note tranposed relative to oce_rdi@data$v)
+  expect_identical(
+    rdi$velocity$velocity[[1]][, 25],
+    c(-0.147, -0.039, 0.014, NA)
+  )
+
 })
 
 test_that("read_rdi_internal() errors when passed an invalid offset", {

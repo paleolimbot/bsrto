@@ -38,7 +38,7 @@ enum rdi_item_type {
     // rdi_variable_leader_data_t
     RDI_TYPE_VARIABLE_LEADER = 0x0080, 
     // int16_t[n_cells * n_beams]
-    // -32768 as NA, divide by 1000 to get velocity in ????
+    // -32768 as NA, divide by 1000 to get velocity in m/s
     RDI_TYPE_VELOCITY = 0x0100,
     // uint8_t[n_cells * n_beams]
     RDI_TYPE_CORRELATION = 0x0200,
