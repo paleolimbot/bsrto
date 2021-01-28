@@ -1,0 +1,45 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# bsrto
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of bsrto is to provide a well-tested basis for generating data products for the [Barrow Strait Real Time Observatory](https://noise.phys.ocean.dal.ca/barrow/).
+
+## Installation
+
+You can install the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("paleolimbot/bsrto")
+```
+## Read functions for BSRTO files
+
+```{r example}
+library(bsrto)
+read_hpb_vector(list.files(bs_example("hpb"), "\\.hpb$", full.names = TRUE))
+read_icl(bs_example("icl/SAF2564_20191010_19.txt"))
+read_imm(bs_example("imm/18082902.imm"))
+read_ips_bn(bs_example("ips/191010AA.bn1"))
+read_lgh(bs_example("lgh/20191010.lgH"))
+read_mc(bs_example("mcA/19101018.mcA"))
+read_mc(bs_example("mcI/19101023.mcI"))
+read_odf(bs_example("odf/CTD_98911_10P_11_DN.ODF"))
+read_pcm(bs_example("pcm/19101018.pcm"))
+read_rdi(bs_example("rdi/19101018.rdi"))
+```
