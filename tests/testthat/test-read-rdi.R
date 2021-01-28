@@ -35,7 +35,7 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
 
   expect_identical(
     rdi$variable_leader$contamination_sensor,
-    159L
+    as.raw(159L)
   )
 
   expect_identical(

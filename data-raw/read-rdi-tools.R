@@ -43,6 +43,7 @@ rdi_item_struct <- c(fld_struct, vld_struct, btm_track_struct) %>%
     r_c_type = case_when(
       !is.na(c_size) ~ "VECSXP",
       c_type %in% c("uint16_scaled_by_100_t", "int16_scaled_by_100_t", "uint8_scaled_by_10_t") ~ "REALSXP",
+      c_type == "uint8_t" ~ "RAWSXP",
       TRUE ~ "INTSXP"
     ),
     r_c_create = glue(
@@ -67,6 +68,9 @@ rdi_item_struct <- c(fld_struct, vld_struct, btm_track_struct) %>%
       ) %>% unclass(),
       r_c_type == "REALSXP" & c_type == "uint8_scaled_by_10_t" ~ glue(
         "REAL(VECTOR_ELT({ type }_df, { c_index }))[0] = { type }->{ c_name } / 10.0;"
+      ) %>% unclass(),
+      r_c_type == "RAWSXP" ~ glue(
+        "RAW(VECTOR_ELT({ type }_df, { c_index }))[0] = { type }->{ c_name };"
       ) %>% unclass(),
       TRUE ~ glue(
         "INTEGER(VECTOR_ELT({ type }_df, { c_index }))[0] = { type }->{ c_name };"
