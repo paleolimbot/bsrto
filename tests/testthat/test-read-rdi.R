@@ -38,6 +38,11 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   )
 
   expect_identical(
+    rdi$variable_leader$pressure,
+    61.535
+  )
+
+  expect_identical(
     rdi$bottom_track$bv[[1]] / 1000,
     c(-0.357, -0.279, 0.006, -0.001)
   )

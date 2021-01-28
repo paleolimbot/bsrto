@@ -66,7 +66,7 @@ enum rdi_item_type {
 typedef struct {
     uint16_t magic_number; // 0x00 then 0x00 or 0x01 then 0x00
     uint8_t firmware_version[2];
-    uint16_t system_config;
+    uint8_t system_config[2];
     uint8_t real_sim_flag;
     uint8_t lag_length;
     uint8_t n_beams;

@@ -43,7 +43,7 @@ SEXP rdi_fixed_leader_data_list(rdi_fixed_leader_data_t* fixed) {
     SEXP fixed_df = PROTECT(Rf_mkNamed(VECSXP, fixed_df_names));
     SET_VECTOR_ELT(fixed_df, 0, Rf_allocVector(INTSXP, 1));
     SET_VECTOR_ELT(fixed_df, 1, Rf_allocVector(VECSXP, 1));
-    SET_VECTOR_ELT(fixed_df, 2, Rf_allocVector(INTSXP, 1));
+    SET_VECTOR_ELT(fixed_df, 2, Rf_allocVector(VECSXP, 1));
     SET_VECTOR_ELT(fixed_df, 3, Rf_allocVector(INTSXP, 1));
     SET_VECTOR_ELT(fixed_df, 4, Rf_allocVector(INTSXP, 1));
     SET_VECTOR_ELT(fixed_df, 5, Rf_allocVector(INTSXP, 1));
@@ -84,7 +84,12 @@ SEXP rdi_fixed_leader_data_list(rdi_fixed_leader_data_t* fixed) {
     }
     SET_VECTOR_ELT(VECTOR_ELT(fixed_df, 1),  0, r_firmware_version);
     UNPROTECT(1);
-    INTEGER(VECTOR_ELT(fixed_df, 2))[0] = fixed->system_config;
+    SEXP r_system_config = PROTECT(Rf_allocVector(INTSXP, 2));
+    for (int j = 0; j < 2; j++) {
+        INTEGER(r_system_config)[j] = fixed->system_config[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(fixed_df, 2),  0, r_system_config);
+    UNPROTECT(1);
     INTEGER(VECTOR_ELT(fixed_df, 3))[0] = fixed->real_sim_flag;
     INTEGER(VECTOR_ELT(fixed_df, 4))[0] = fixed->lag_length;
     INTEGER(VECTOR_ELT(fixed_df, 5))[0] = fixed->n_beams;
