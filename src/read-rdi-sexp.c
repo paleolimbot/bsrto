@@ -79,11 +79,11 @@ SEXP rdi_fixed_leader_data_list(rdi_fixed_leader_data_t* fixed) {
 
     INTEGER(VECTOR_ELT(fixed_df, 0))[0] = fixed->magic_number;
     SEXP r_firmware_version = PROTECT(Rf_allocVector(INTSXP, 2));
-for (int j = 0; j < 2; j++) {
-    INTEGER(r_firmware_version)[j] = fixed->firmware_version[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(fixed_df, 1),  0, r_firmware_version);
-UNPROTECT(1);
+    for (int j = 0; j < 2; j++) {
+        INTEGER(r_firmware_version)[j] = fixed->firmware_version[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(fixed_df, 1),  0, r_firmware_version);
+    UNPROTECT(1);
     INTEGER(VECTOR_ELT(fixed_df, 2))[0] = fixed->system_config;
     INTEGER(VECTOR_ELT(fixed_df, 3))[0] = fixed->real_sim_flag;
     INTEGER(VECTOR_ELT(fixed_df, 4))[0] = fixed->lag_length;
@@ -112,20 +112,20 @@ UNPROTECT(1);
     INTEGER(VECTOR_ELT(fixed_df, 27))[0] = fixed->padding;
     INTEGER(VECTOR_ELT(fixed_df, 28))[0] = fixed->transmit_lag_distance;
     SEXP r_cpu_board_serial_number = PROTECT(Rf_allocVector(INTSXP, 8));
-for (int j = 0; j < 8; j++) {
-    INTEGER(r_cpu_board_serial_number)[j] = fixed->cpu_board_serial_number[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(fixed_df, 29),  0, r_cpu_board_serial_number);
-UNPROTECT(1);
+    for (int j = 0; j < 8; j++) {
+        INTEGER(r_cpu_board_serial_number)[j] = fixed->cpu_board_serial_number[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(fixed_df, 29),  0, r_cpu_board_serial_number);
+    UNPROTECT(1);
     INTEGER(VECTOR_ELT(fixed_df, 30))[0] = fixed->system_bandwidth;
     INTEGER(VECTOR_ELT(fixed_df, 31))[0] = fixed->system_power;
     INTEGER(VECTOR_ELT(fixed_df, 32))[0] = fixed->padding2;
     SEXP r_serial_number = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_serial_number)[j] = fixed->serial_number[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(fixed_df, 33),  0, r_serial_number);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_serial_number)[j] = fixed->serial_number[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(fixed_df, 33),  0, r_serial_number);
+    UNPROTECT(1);
     INTEGER(VECTOR_ELT(fixed_df, 34))[0] = fixed->beam_angle;
 
     UNPROTECT(1);
@@ -166,11 +166,11 @@ SEXP rdi_variable_leader_data_list(rdi_variable_leader_data_t* variable) {
     INTEGER(VECTOR_ELT(variable_df, 0))[0] = variable->magic_number;
     INTEGER(VECTOR_ELT(variable_df, 1))[0] = variable->ensemble_number;
     SEXP r_real_time_clock = PROTECT(Rf_allocVector(INTSXP, 7));
-for (int j = 0; j < 7; j++) {
-    INTEGER(r_real_time_clock)[j] = variable->real_time_clock[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(variable_df, 2),  0, r_real_time_clock);
-UNPROTECT(1);
+    for (int j = 0; j < 7; j++) {
+        INTEGER(r_real_time_clock)[j] = variable->real_time_clock[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(variable_df, 2),  0, r_real_time_clock);
+    UNPROTECT(1);
     INTEGER(VECTOR_ELT(variable_df, 3))[0] = variable->ensemble_number_msb;
     INTEGER(VECTOR_ELT(variable_df, 4))[0] = variable->bit_result;
     INTEGER(VECTOR_ELT(variable_df, 5))[0] = variable->sound_speed;
@@ -181,11 +181,11 @@ UNPROTECT(1);
     INTEGER(VECTOR_ELT(variable_df, 10))[0] = variable->salinity;
     REAL(VECTOR_ELT(variable_df, 11))[0] = variable->temperature / 100.0;
     SEXP r_unknown = PROTECT(Rf_allocVector(INTSXP, 3));
-for (int j = 0; j < 3; j++) {
-    INTEGER(r_unknown)[j] = variable->unknown[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(variable_df, 12),  0, r_unknown);
-UNPROTECT(1);
+    for (int j = 0; j < 3; j++) {
+        INTEGER(r_unknown)[j] = variable->unknown[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(variable_df, 12),  0, r_unknown);
+    UNPROTECT(1);
     INTEGER(VECTOR_ELT(variable_df, 13))[0] = variable->heading_std;
     REAL(VECTOR_ELT(variable_df, 14))[0] = variable->pitch_std / 10.0;
     REAL(VECTOR_ELT(variable_df, 15))[0] = variable->roll_std / 10.0;
@@ -198,23 +198,23 @@ UNPROTECT(1);
     INTEGER(VECTOR_ELT(variable_df, 22))[0] = variable->attitude;
     INTEGER(VECTOR_ELT(variable_df, 23))[0] = variable->contamination_sensor;
     SEXP r_unknown2 = PROTECT(Rf_allocVector(INTSXP, 6));
-for (int j = 0; j < 6; j++) {
-    INTEGER(r_unknown2)[j] = variable->unknown2[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(variable_df, 24),  0, r_unknown2);
-UNPROTECT(1);
+    for (int j = 0; j < 6; j++) {
+        INTEGER(r_unknown2)[j] = variable->unknown2[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(variable_df, 24),  0, r_unknown2);
+    UNPROTECT(1);
     SEXP r_pressure = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_pressure)[j] = variable->pressure[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(variable_df, 25),  0, r_pressure);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_pressure)[j] = variable->pressure[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(variable_df, 25),  0, r_pressure);
+    UNPROTECT(1);
     SEXP r_pressure_std = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_pressure_std)[j] = variable->pressure_std[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(variable_df, 26),  0, r_pressure_std);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_pressure_std)[j] = variable->pressure_std[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(variable_df, 26),  0, r_pressure_std);
+    UNPROTECT(1);
 
     UNPROTECT(1);
     return variable_df;
@@ -234,54 +234,54 @@ SEXP rdi_bottom_track_list(rdi_bottom_track_t* bottom_track) {
     SET_VECTOR_ELT(bottom_track_df, 8, Rf_allocVector(VECSXP, 1));
 
     INTEGER(VECTOR_ELT(bottom_track_df, 0))[0] = bottom_track->magic_number;
-    SEXP r_unknown = PROTECT(Rf_allocVector(INTSXP, 15));
-for (int j = 0; j < 15; j++) {
-    INTEGER(r_unknown)[j] = bottom_track->unknown[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 1),  0, r_unknown);
-UNPROTECT(1);
+    SEXP r_unknown = PROTECT(Rf_allocVector(INTSXP, 14));
+    for (int j = 0; j < 14; j++) {
+        INTEGER(r_unknown)[j] = bottom_track->unknown[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 1),  0, r_unknown);
+    UNPROTECT(1);
     SEXP r_range_lsb = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_range_lsb)[j] = bottom_track->range_lsb[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 2),  0, r_range_lsb);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_range_lsb)[j] = bottom_track->range_lsb[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 2),  0, r_range_lsb);
+    UNPROTECT(1);
     SEXP r_bv = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_bv)[j] = bottom_track->bv[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 3),  0, r_bv);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_bv)[j] = bottom_track->bv[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 3),  0, r_bv);
+    UNPROTECT(1);
     SEXP r_bc = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_bc)[j] = bottom_track->bc[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 4),  0, r_bc);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_bc)[j] = bottom_track->bc[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 4),  0, r_bc);
+    UNPROTECT(1);
     SEXP r_ba = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_ba)[j] = bottom_track->ba[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 5),  0, r_ba);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_ba)[j] = bottom_track->ba[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 5),  0, r_ba);
+    UNPROTECT(1);
     SEXP r_bg = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_bg)[j] = bottom_track->bg[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 6),  0, r_bg);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_bg)[j] = bottom_track->bg[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 6),  0, r_bg);
+    UNPROTECT(1);
     SEXP r_unknown2 = PROTECT(Rf_allocVector(INTSXP, 33));
-for (int j = 0; j < 33; j++) {
-    INTEGER(r_unknown2)[j] = bottom_track->unknown2[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 7),  0, r_unknown2);
-UNPROTECT(1);
+    for (int j = 0; j < 33; j++) {
+        INTEGER(r_unknown2)[j] = bottom_track->unknown2[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 7),  0, r_unknown2);
+    UNPROTECT(1);
     SEXP r_range_msb = PROTECT(Rf_allocVector(INTSXP, 4));
-for (int j = 0; j < 4; j++) {
-    INTEGER(r_range_msb)[j] = bottom_track->range_msb[j];
-}
-SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 8),  0, r_range_msb);
-UNPROTECT(1);
+    for (int j = 0; j < 4; j++) {
+        INTEGER(r_range_msb)[j] = bottom_track->range_msb[j];
+    }
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 8),  0, r_range_msb);
+    UNPROTECT(1);
 
     UNPROTECT(1);
     return bottom_track_df;
