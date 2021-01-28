@@ -4,3 +4,4 @@
 ^data-raw$
 ^bsrto_cache$
 ^\.vscode$
+^README\.Rmd$

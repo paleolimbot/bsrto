@@ -4,6 +4,7 @@
 #' @inheritParams read_hpb
 #' @param types The variable types to extract from the file.
 #'   Defaults to all variable types found in the first file.
+#' @param ... Passed to [oce::read.adp.rdi()].
 #'
 #' @return A [tibble::tibble()]
 #'
@@ -13,6 +14,7 @@
 #' rdi_file <- bs_example("rdi/19101018.rdi")
 #' read_rdi(rdi_file)
 #' read_rdi_vector(rdi_file)
+#' read_rdi_vector_oce(rdi_file)
 #'
 read_rdi <- function(file, types = guess_rdi_types(file), tz = "UTC") {
   stopifnot(length(file) == 1)
@@ -48,10 +50,31 @@ read_rdi_vector <- function(file_vector, types = guess_rdi_types(file_vector[1])
   results_all
 }
 
-read_rdi_single <- function(file, types, pb) {
+#' @rdname read_rdi
+#' @export
+read_rdi_vector_oce <- function(file_vector, ...) {
+  # oce needs all files smushed into one (bash cat)
+  out_file <- tempfile()
+  out_con <- file(out_file, open = "wb")
+  close_con <- TRUE
+  on.exit({if (close_con) close(out_con); unlink(out_file)})
+  for (file in file_vector) {
+    writeBin(readr::read_file_raw(file), out_con)
+  }
+  close(out_con)
+  close_con <- FALSE
+
+  oce::read.adp.rdi(out_file, ...)
+}
+
+read_rdi_single <- function(file, types = NULL, pb = NULL) {
   bs_tick(pb, file)
+
   rdi <- read_rdi_internal(file)
-  rdi <- rdi[intersect(types, names(rdi))]
+
+  if (!is.null(types)) {
+    rdi <- rdi[intersect(types, names(rdi))]
+  }
 
   # get rid of 'magic number' columns
   rdi <- lapply(rdi, "[", -1)
@@ -75,6 +98,22 @@ guess_rdi_types <- function(file) {
 # https://github.com/dankelley/oce/blob/develop/R/adp.rdi.R
 # https://github.com/dankelley/oce/blob/develop/src/ldc_rdi_in_file.cpp
 read_rdi_internal <- function(file, offset = 0L) {
+
+  # not using readr for the base read, but for consistency, support
+  # gzipped files and urls
+  is_url <- stringr::str_detect(file, "^[a-z]{3,5}://")
+  is_gz <- stringr::str_detect(file, "\\.gz$")
+  if (is_url || is_gz) {
+    out_file <- tempfile()
+    close_con <- TRUE
+    out_con <- file(out_file, open = "wb")
+    on.exit({if (close_con) close(out_con); unlink(out_file)})
+    writeBin(readr::read_file_raw(file), out_con)
+    close(out_con)
+    close_con <- FALSE
+    file <- out_file
+  }
+
   rdi <- .Call(bsrto_c_read_rdi, file, as.integer(offset)[1])
 
   # Should really be done in C if this starts to limit speed
