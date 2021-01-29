@@ -5,11 +5,13 @@ output: github_document
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
+library(tidyverse)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  dpi = 300
 )
 ```
 
@@ -28,10 +30,45 @@ You can install the development version from [GitHub](https://github.com/) with:
 # install.packages("remotes")
 remotes::install_github("paleolimbot/bsrto")
 ```
+
+```{r}
+library(bsrto)
+```
+
+## List files from the BSRTO server
+
+...and plot them.
+
+```{r plot-latest}
+library(tidyverse)
+
+latest <- bs_ftp_list("BSRTO/2019-2020/mcI") %>% 
+  filter(size > 0) %>% 
+  arrange(desc(file)) %>% 
+  head(200)
+
+cache <- tempfile()
+for (i in 1:4) {
+  # dal ftp takes a few retries to download all files
+  cached_mci <- try(bs_ftp_cached(
+    latest$file,
+    async = TRUE,
+    cache = cache
+  ), silent = TRUE)
+}
+
+read_mc_vector(cached_mci) %>% 
+  pivot_longer(-c(file, date_time)) %>% 
+  ggplot(aes(date_time, value)) +
+  geom_line() +
+  facet_wrap(vars(name), scales = "free", ncol = 2)
+```
+
+
 ## Read functions for BSRTO files
 
 ```{r example}
-library(bsrto)
+
 read_hpb_vector(list.files(bs_example("hpb"), "\\.hpb$", full.names = TRUE))
 read_icl(bs_example("icl/SAF2564_20191010_19.txt"))
 read_imm(bs_example("imm/18082902.imm"))

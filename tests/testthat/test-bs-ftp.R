@@ -47,6 +47,23 @@ test_that("bs_ftp_cached() works", {
   unlink(cache, recursive = TRUE)
 })
 
+
+test_that("bs_ftp_cached() works with async = TRUE", {
+  skip_if_offline()
+  skip_if_not(interactive())
+
+  expect_identical(bs_ftp_cached(character(), async = TRUE), character())
+
+  cache <- tempfile()
+  expect_identical(
+    bs_ftp_cached("barrow/BarrowStraitDataSummary.xlsx", cache = cache, async = TRUE, quiet = TRUE),
+    file.path(cache, "barrow/BarrowStraitDataSummary.xlsx")
+  )
+  expect_true(file.exists(file.path(cache, "barrow/BarrowStraitDataSummary.xlsx")))
+
+  unlink(cache, recursive = TRUE)
+})
+
 test_that("bs_ftp_cached() errors when there is no default cache", {
   expect_error(
     bs_ftp_cached("not a file", cache = NULL),

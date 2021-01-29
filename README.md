@@ -21,10 +21,46 @@ You can install the development version from
 remotes::install_github("paleolimbot/bsrto")
 ```
 
+``` r
+library(bsrto)
+```
+
+## List files from the BSRTO server
+
+…and plot them.
+
+``` r
+library(tidyverse)
+
+latest <- bs_ftp_list("BSRTO/2019-2020/mcI") %>% 
+  filter(size > 0) %>% 
+  arrange(desc(file)) %>% 
+  head(200)
+#> Listing directory 'ftp://dfoftp.ocean.dal.ca/pub/dfo/BSRTO/2019-2020/mcI/'
+
+cache <- tempfile()
+for (i in 1:4) {
+  # dal ftp takes a few retries to download all files
+  cached_mci <- try(bs_ftp_cached(
+    latest$file,
+    async = TRUE,
+    cache = cache
+  ), silent = TRUE)
+}
+
+read_mc_vector(cached_mci) %>% 
+  pivot_longer(-c(file, date_time)) %>% 
+  ggplot(aes(date_time, value)) +
+  geom_line() +
+  facet_wrap(vars(name), scales = "free", ncol = 2)
+```
+
+<img src="man/figures/README-plot-latest-1.png" width="100%" />
+
 ## Read functions for BSRTO files
 
 ``` r
-library(bsrto)
+
 read_hpb_vector(list.files(bs_example("hpb"), "\\.hpb$", full.names = TRUE))
 #> # A tibble: 1 x 4
 #>   file                                  date_time           atm_pres_mbar temp_c

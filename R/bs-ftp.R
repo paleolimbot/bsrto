@@ -6,6 +6,8 @@
 #' @param cache Path to a local copy of /pub/dfo where files will be cached
 #'   or written.
 #' @param quiet Use `TRUE` to suppress progress messages
+#' @param async Use `TRUE` to download files asynchronously (much faster
+#'   for many small files)
 #' @param recursive Use `TRUE` to recurse directories
 #' @param pattern A regular expression against which files are matched
 #'   or `NULL` to match all files. See [stringr::str_detect()] for how
@@ -25,33 +27,21 @@
 #' }
 bs_ftp_cached <- function(x,
                           ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
-                          cache = bs_cache(), quiet = FALSE) {
+                          cache = bs_cache(), async = FALSE, quiet = FALSE) {
   if (is.null(cache)) {
     abort("Can't use `NULL` cache.\nDid you forget to set `options(bsrto.cache = '')`?")
   }
 
-  if (length(x) != 1) {
-    results <-  vapply(
-      x,
-      bs_ftp_cached,
-      ftp = ftp,
-      cache = cache,
-      quiet = quiet,
-      FUN.VALUE = character(1)
-    )
-
-    return(unname(results))
-  }
-
   ftp <- gsub("/?$", "/", ftp)
+  url <- paste0(ftp, x)
   cached_path <- file.path(cache, x)
 
-  if (!file.exists(cached_path)) {
-    cached_dir <- dirname(cached_path)
-    if (!dir.exists(cached_dir)) dir.create(cached_dir, recursive = TRUE)
-    ftp_address <- paste0(ftp, x)
-    if (!quiet) message(glue("Downloading '{ ftp_address }' => '{ cached_path }'"))
-    curl::curl_download(ftp_address, cached_path)
+  exists <- file.exists(cached_path)
+
+  if (async) {
+    multi_file_download_async(url[!exists], cached_path[!exists])
+  } else {
+    multi_file_download(url[!exists], cached_path[!exists])
   }
 
   cached_path
