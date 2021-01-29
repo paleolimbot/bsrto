@@ -9,6 +9,7 @@ bs_ftp_cached(
   x,
   ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
   cache = bs_cache(),
+  async = FALSE,
   quiet = FALSE
 )
 
@@ -28,6 +29,9 @@ bs_ftp_list(
 
 \item{cache}{Path to a local copy of /pub/dfo where files will be cached
 or written.}
+
+\item{async}{Use \code{TRUE} to download files asynchronously (much faster
+for many small files)}
 
 \item{quiet}{Use \code{TRUE} to suppress progress messages}
 
