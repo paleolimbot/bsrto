@@ -7,12 +7,7 @@
 \alias{read_icl_header_lines}
 \title{Read icl files}
 \usage{
-read_icl(
-  file,
-  skip = length(read_icl_header_lines(file)) + 1,
-  n_max = Inf,
-  pb = NULL
-)
+read_icl(file, pb = NULL, tz = "UTC")
 
 read_icl_vector(file_vector)
 
@@ -26,11 +21,9 @@ read_icl_header_lines(file, n_header = 29)
 downloaded. See \code{\link[readr:read_lines]{readr::read_lines()}} for a full description of how
 this parameter is interpreted.}
 
-\item{skip}{The number of header rows to skip}
-
-\item{n_max}{Maximum number of rows to read.}
-
 \item{pb}{A \link[progress:progress_bar]{progress bar} or \code{NULL}.}
+
+\item{tz}{Timezone for which date times are representative.}
 
 \item{file_vector}{A vector of files or URLs}
 

@@ -2,7 +2,6 @@
 #' Read hpb files
 #'
 #' @inheritParams read_icl
-#' @param tz Timezone for which date times are representative.
 #'
 #' @return A [tibble::tibble()]
 #' @export

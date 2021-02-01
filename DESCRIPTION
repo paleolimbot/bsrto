@@ -23,7 +23,8 @@ Imports:
     stringr,
     curl,
     hms,
-    progress
+    progress,
+    cli
 Suggests: 
     testthat,
     withr,

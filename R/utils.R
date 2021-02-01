@@ -1,4 +1,8 @@
 
+cat_file <- function(file) {
+  cat(readr::read_file(file))
+}
+
 header_lines <- function(file, end_header_function, n_header = 100) {
   stopifnot(n_header > 0)
 
@@ -12,7 +16,7 @@ header_lines <- function(file, end_header_function, n_header = 100) {
   }
 
   if (!any(end_header)) {
-    abort(glue("Can't find '-- DATA --' at end of header in '{ file }'.\nIs it an ODF file?"))
+    abort(glue("Can't find end of header in '{ file }'."))
   }
 
   lines[seq_len(which(end_header)[1] - 1)]

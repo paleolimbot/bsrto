@@ -1,7 +1,8 @@
 
 bs_build_2019 <- function(out_dir = tempfile()) {
 
-
+  try(build_2019_hpb(out_dir))
+  try(build_2019_icl(out_dir))
 }
 
 build_2019_met <- function() {
@@ -17,13 +18,41 @@ build_2019_hpb <- function(out_dir = ".") {
   all <- read_hpb_vector(cached)
   all$file <- build_2019_file_relative(all$file)
 
-  out_file <- file.path(out_dir, "2019-hpb.csv")
+  out_file <- file.path(out_dir, "hpb.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
   readr::write_csv(all, out_file)
 }
 
-build_2019_icl <- function() {
+build_2019_icl <- function(out_dir = ".") {
+  cli::cat_rule(glue("build_2019_icl('{ out_dir }')"))
+  dir <- "BSRTO/2019-2020/icl"
+  cached <- build_2019_list_and_cache(dir)
 
+  build_2019_log_about_to_read(cached)
+  all <- read_icl_vector(cached)
+  all$file <- build_2019_file_relative(all$file)
+
+  # there are a lot of malformed files...can check Time
+  # Comment, and data_points columns for validity
+  time_valid <- !is.na(all$Time)
+  comment_valid <- all$Comment %in% c("", "Time Adjusted")
+  data_points_valid <- is.finite(all$`Data Points`) & all$`Data Points` == 410
+  rows_valid <- time_valid & comment_valid & data_points_valid
+
+  files_with_errors <- unique(all$file[!rows_valid])
+
+  cli::cat_line(
+    glue("Removing { sum(!rows_valid) } unreadable rows ({ round(mean(!rows_valid) * 100, 1)}%)")
+  )
+  cli::cat_line(
+    glue("{ length(files_with_errors) }/{ nrow(all) } files had errors")
+  )
+
+  # TODO: split off the histograms as NetCDF
+
+  out_file <- file.path(out_dir, "icl.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  readr::write_csv(all[rows_valid, ], out_file)
 }
 
 build_2019_imm <- function() {
