@@ -14,11 +14,11 @@ test_that("read_igh() works", {
 })
 
 test_that("read_igh() works for all files in the cache", {
-  skip_if_not(bs_has_cache())
+  skip_if_not(bs_has_full_cache())
 
   # >2,000 files
   files <- bs_ftp_snapshot_latest$file[grepl("\\.lgH", bs_ftp_snapshot_latest$file)]
-  cached <- bs_cache(files)
+  cached <- bs_cache_dir(files)
   cached <- cached[file.exists(cached)]
 
   all <- read_lgh_vector(cached[1:100])

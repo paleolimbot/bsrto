@@ -16,11 +16,11 @@ test_that("read_pcm() works", {
 })
 
 test_that("read_pcm() works for all files in the cache", {
-  skip_if_not(bs_has_cache())
+  skip_if_not(bs_has_full_cache())
 
   # >27,000 files
   files <- bs_ftp_snapshot_latest$file[grepl("\\.pcm", bs_ftp_snapshot_latest$file)]
-  cached <- bs_cache(head(files, 5000))
+  cached <- bs_cache_dir(head(files, 5000))
   cached <- cached[file.exists(cached)]
 
   all <- read_pcm_vector(cached[1:500])

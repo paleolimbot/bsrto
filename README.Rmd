@@ -6,6 +6,7 @@ output: github_document
 
 ```{r, include = FALSE}
 library(tidyverse)
+options(bsrto.cache = NULL)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -47,15 +48,7 @@ latest <- bs_ftp_list("BSRTO/2019-2020/mcI") %>%
   arrange(desc(file)) %>% 
   head(200)
 
-cache <- tempfile()
-for (i in 1:4) {
-  # dal ftp takes a few retries to download all files
-  cached_mci <- try(bs_ftp_cached(
-    latest$file,
-    async = TRUE,
-    cache = cache
-  ), silent = TRUE)
-}
+cached_mci <- bs_cached(latest$file, async = TRUE)
 
 read_mc_vector(cached_mci) %>% 
   pivot_longer(-c(file, date_time)) %>% 
@@ -63,7 +56,6 @@ read_mc_vector(cached_mci) %>%
   geom_line() +
   facet_wrap(vars(name), scales = "free", ncol = 2)
 ```
-
 
 ## Read functions for BSRTO files
 

@@ -38,15 +38,7 @@ latest <- bs_ftp_list("BSRTO/2019-2020/mcI") %>%
   head(200)
 #> Listing directory 'ftp://dfoftp.ocean.dal.ca/pub/dfo/BSRTO/2019-2020/mcI/'
 
-cache <- tempfile()
-for (i in 1:4) {
-  # dal ftp takes a few retries to download all files
-  cached_mci <- try(bs_ftp_cached(
-    latest$file,
-    async = TRUE,
-    cache = cache
-  ), silent = TRUE)
-}
+cached_mci <- bs_cached(latest$file, async = TRUE)
 
 read_mc_vector(cached_mci) %>% 
   pivot_longer(-c(file, date_time)) %>% 

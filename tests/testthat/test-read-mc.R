@@ -62,11 +62,11 @@ test_that("read_mci_meta() works", {
 })
 
 test_that("read_mc() works for all mcA files in the cache", {
-  skip_if_not(bs_has_cache())
+  skip_if_not(bs_has_full_cache())
 
   # >15,000 files
   files <- bs_ftp_snapshot_latest$file[grepl("\\.mcA$", bs_ftp_snapshot_latest$file)]
-  cached <- bs_cache(files)
+  cached <- bs_cache_dir(files)
   cached <- cached[file.exists(cached)]
 
   all <- read_mc_vector(cached[1:1000])
@@ -74,11 +74,11 @@ test_that("read_mc() works for all mcA files in the cache", {
 })
 
 test_that("read_mc() works for all mcI files in the cache", {
-  skip_if_not(bs_has_cache())
+  skip_if_not(bs_has_full_cache())
 
   # >1,300 files
   files <- bs_ftp_snapshot_latest$file[grepl("\\.mcI$", bs_ftp_snapshot_latest$file)]
-  cached <- bs_cache(files)
+  cached <- bs_cache_dir(files)
   exists <- file.exists(cached)
   files <- files[exists]
   cached <- cached[exists]
@@ -104,11 +104,11 @@ test_that("read_mc() works for all mcI files in the cache", {
 })
 
 test_that("read_mc() works for all mcH files in the cache", {
-  skip_if_not(bs_has_cache())
+  skip_if_not(bs_has_full_cache())
 
   # >34,000 files
   files <- bs_ftp_snapshot_latest$file[grepl("\\.mcH", bs_ftp_snapshot_latest$file)]
-  cached <- bs_cache(head(files, 5000))
+  cached <- bs_cache_dir(head(files, 5000))
   cached <- cached[file.exists(cached)]
 
   all <- read_mc_vector(cached[1:1000])

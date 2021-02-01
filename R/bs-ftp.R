@@ -14,20 +14,22 @@
 #'   this argument is interpreted.
 #' @param print Use `TRUE` to print out matching files as the listings are
 #'   downloaded.
+#' @param retries The number of retries to use
 #'
-#' @return `bs_ftp_cached()` returns the file path to the local version of the
+#' @return `bs_cached()` returns the file path to the local version of the
 #'   file after downloading; `bs_ftp_list()` returns a list of files (not
 #'   directories!) that match `pattern`.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' bs_ftp_cached("barrow/BarrowStraitDataSummary.xlsx", cache = tempfile())
+#' bs_cached("barrow/BarrowStraitDataSummary.xlsx", cache = tempfile())
 #' bs_ftp_list("barrow")
 #' }
-bs_ftp_cached <- function(x,
-                          ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
-                          cache = bs_cache(), async = FALSE, quiet = FALSE) {
+bs_cached <- function(x,
+                      ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
+                      cache = bs_cache_dir(), async = FALSE,
+                      retries = 4, quiet = FALSE) {
   if (is.null(cache)) {
     abort("Can't use `NULL` cache.\nDid you forget to set `options(bsrto.cache = '')`?")
   }
@@ -36,18 +38,30 @@ bs_ftp_cached <- function(x,
   url <- paste0(ftp, x)
   cached_path <- file.path(cache, x)
 
-  exists <- file.exists(cached_path)
+  for (i in seq_len(retries)) {
+    exists <- file.exists(cached_path)
 
-  if (async) {
-    multi_file_download_async(url[!exists], cached_path[!exists])
-  } else {
-    multi_file_download(url[!exists], cached_path[!exists])
+    if (async) {
+      try(multi_file_download_async(url[!exists], cached_path[!exists]), silent = TRUE)
+    } else {
+      try(multi_file_download(url[!exists], cached_path[!exists]), silent = TRUE)
+    }
+  }
+
+  if (any(!exists)) {
+    bad_urls <- paste0("'", url[!exists], "'", collapse = "\n")
+    urls <- if (sum(!exists) != 1) "urls" else "url"
+    abort(
+      glue(
+        "Failed to download { sum(!exists) } { urls } after { retries } retries:\n{ bad_urls }"
+      )
+    )
   }
 
   cached_path
 }
 
-#' @rdname bs_ftp_cached
+#' @rdname bs_cached
 #' @export
 bs_ftp_list <- function(x, pattern = NULL, recursive = FALSE,
                         ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),

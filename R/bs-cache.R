@@ -5,10 +5,10 @@
 #' @export
 #'
 #' @examples
-#' bs_cache()
-#' bs_has_cache()
+#' bs_cache_dir()
+#' bs_has_full_cache()
 #'
-bs_cache <- function(...) {
+bs_cache_dir <- function(...) {
   cache <- Sys.getenv("R_BSRTO_CACHE", "")
   if (!identical(cache, "")) {
     return(file.path(cache, ...))
@@ -19,11 +19,11 @@ bs_cache <- function(...) {
     return(file.path(cache, ...))
   }
 
-  NULL
+  file.path(bs_temp_dir_internal, "bsrto_cache", ...)
 }
 
-#' @rdname bs_cache
+#' @rdname bs_cache_dir
 #' @export
-bs_has_cache <- function() {
-  !is.null(bs_cache())
+bs_has_full_cache <- function() {
+  bs_cache_dir() != file.path(bs_temp_dir_internal, "bsrto_cache")
 }

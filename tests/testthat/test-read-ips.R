@@ -8,11 +8,11 @@ test_that("read_ips_bn() works", {
 })
 
 test_that("read_ips_bn() works for all files in the cache", {
-  skip_if_not(bs_has_cache())
+  skip_if_not(bs_has_full_cache())
 
   # about 4,800 files, only use those that exist
   bn_files <- bs_ftp_snapshot_latest$file[grepl("\\.bn[0-9]$", bs_ftp_snapshot_latest$file)]
-  bn_cached <- bs_cache(bn_files)
+  bn_cached <- bs_cache_dir(bn_files)
   bn_cached <- bn_cached[file.exists(bn_cached)]
 
   bn_all <- read_ips_bn_vector(bn_cached[1:1000])
