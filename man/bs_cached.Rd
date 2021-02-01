@@ -10,6 +10,7 @@ bs_cached(
   ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
   cache = bs_cache_dir(),
   async = FALSE,
+  retries = 4,
   quiet = FALSE
 )
 
@@ -33,6 +34,8 @@ or written.}
 \item{async}{Use \code{TRUE} to download files asynchronously (much faster
 for many small files)}
 
+\item{retries}{The number of retries to use}
+
 \item{quiet}{Use \code{TRUE} to suppress progress messages}
 
 \item{pattern}{A regular expression against which files are matched
@@ -54,7 +57,7 @@ Cache, fetch, and list files from the BSRTO FTP server
 }
 \examples{
 \dontrun{
-bs_cached("barrow/BarrowStraitDataSummary.xlsx", cache = tempfile())
+bs_cached("barrow/BarrowStraitDataSummary.xlsx")
 bs_ftp_list("barrow")
 }
 }

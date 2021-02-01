@@ -23,15 +23,17 @@
 #'
 #' @examples
 #' \dontrun{
-#' bs_cached("barrow/BarrowStraitDataSummary.xlsx", cache = tempfile())
+#' bs_cached("barrow/BarrowStraitDataSummary.xlsx")
 #' bs_ftp_list("barrow")
 #' }
 bs_cached <- function(x,
                       ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
                       cache = bs_cache_dir(), async = FALSE,
                       retries = 4, quiet = FALSE) {
-  if (is.null(cache)) {
-    abort("Can't use `NULL` cache.\nDid you forget to set `options(bsrto.cache = '')`?")
+  if (is.data.frame(x) && ("file" %in% colnames(x))) {
+    x <- x$file
+  } else if (is.data.frame(x)) {
+    abort("Can't use bs_cached() with data.frame if there is no 'file' column.")
   }
 
   ftp <- gsub("/?$", "/", ftp)

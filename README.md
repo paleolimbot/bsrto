@@ -35,12 +35,11 @@ library(tidyverse)
 latest <- bs_ftp_list("BSRTO/2019-2020/mcI") %>% 
   filter(size > 0) %>% 
   arrange(desc(file)) %>% 
-  head(200)
+  head(200) %>% 
+  bs_cached(async = TRUE)
 #> Listing directory 'ftp://dfoftp.ocean.dal.ca/pub/dfo/BSRTO/2019-2020/mcI/'
 
-cached_mci <- bs_cached(latest$file, async = TRUE)
-
-read_mc_vector(cached_mci) %>% 
+read_mc_vector(latest) %>% 
   pivot_longer(-c(file, date_time)) %>% 
   ggplot(aes(date_time, value)) +
   geom_line() +
@@ -52,7 +51,6 @@ read_mc_vector(cached_mci) %>%
 ## Read functions for BSRTO files
 
 ``` r
-
 read_hpb_vector(list.files(bs_example("hpb"), "\\.hpb$", full.names = TRUE))
 #> # A tibble: 1 x 4
 #>   file                                  date_time           atm_pres_mbar temp_c

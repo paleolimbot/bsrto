@@ -31,6 +31,10 @@ test_that("bs_ftp_list works", {
   )
 })
 
+test_that("bs_cached() errors for an invalid data frame", {
+  expect_error(bs_cached(data.frame()), "Can't use")
+})
+
 test_that("bs_cached() works", {
   skip_if_offline()
   skip_if_not(interactive())
@@ -62,11 +66,4 @@ test_that("bs_cached() works with async = TRUE", {
   expect_true(file.exists(file.path(cache, "barrow/BarrowStraitDataSummary.xlsx")))
 
   unlink(cache, recursive = TRUE)
-})
-
-test_that("bs_cached() errors when there is no default cache", {
-  expect_error(
-    bs_cached("not a file", cache = NULL),
-    "`NULL` cache"
-  )
 })
