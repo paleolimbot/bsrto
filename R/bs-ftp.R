@@ -39,14 +39,19 @@ bs_cached <- function(x,
   ftp <- gsub("/?$", "/", ftp)
   url <- paste0(ftp, x)
   cached_path <- file.path(cache, x)
+  exists <- file.exists(cached_path)
 
   for (i in seq_len(retries)) {
+    if (async) {
+      try(multi_file_download_async(url[!exists], cached_path[!exists]), silent = quiet)
+    } else {
+      try(multi_file_download(url[!exists], cached_path[!exists]), silent = quiet)
+    }
+
     exists <- file.exists(cached_path)
 
-    if (async) {
-      try(multi_file_download_async(url[!exists], cached_path[!exists]), silent = TRUE)
-    } else {
-      try(multi_file_download(url[!exists], cached_path[!exists]), silent = TRUE)
+    if (all(exists)) {
+      break
     }
   }
 
