@@ -73,7 +73,20 @@ build_2019_ips <- function(out_dir = ".") {
 }
 
 build_2019_lgh <- function() {
+  cli::cat_rule(glue("build_2019_lgh('{ out_dir }')"))
+  dir <- "BSRTO/2019-2020/lgH"
+  cached <- build_2019_list_and_cache(dir)
 
+  build_2019_log_about_to_read(cached)
+  all <- read_lgh_vector(cached)
+  all$file <- build_2019_file_relative(all$file)
+
+  # TODO: find a way for logs to get loaded
+  all$log_text <- NULL
+
+  out_file <- file.path(out_dir, "lgh.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  readr::write_csv(all, out_file)
 }
 
 build_2019_mca <- function() {
