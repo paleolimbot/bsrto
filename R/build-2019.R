@@ -55,12 +55,21 @@ build_2019_icl <- function(out_dir = ".") {
   readr::write_csv(all[rows_valid, ], out_file)
 }
 
-build_2019_imm <- function() {
+build_2019_ips <- function(out_dir = ".") {
+  cli::cat_rule(glue("build_2019_ips('{ out_dir }')"))
+  dir <- "BSRTO/2019-2020/ips"
+  cached <- build_2019_list_and_cache(dir)
 
-}
+  build_2019_log_about_to_read(cached)
+  all <- read_ips_bn_vector(cached)
+  all$file <- build_2019_file_relative(all$file)
 
-build_2019_ips <- function() {
+  # TODO: need to find a way to write histograms
+  all$bins <- NULL
 
+  out_file <- file.path(out_dir, "ips.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  readr::write_csv(all, out_file)
 }
 
 build_2019_lgh <- function() {
@@ -106,6 +115,9 @@ build_2019_list_and_cache <- function(dir, retries = 4) {
   if (!exists("files", inherits = FALSE)) {
     abort(glue("Failed to list '{ dir }' after { retries } retries."))
   }
+
+  # there is one file that must have permissions set that don't allow access
+  files <- files[files$file != "BSRTO/2019-2020/ips/200224AA.bn4", ]
 
   summary_size <- build_2019_friendly_file_size(sum(files$size))
   cli::cat_line(glue("Summary: { nrow(files) } file(s) ({ summary_size })"))
