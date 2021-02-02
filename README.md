@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![R build
+status](https://github.com/paleolimbot/bsrto/workflows/R-CMD-check/badge.svg)](https://github.com/paleolimbot/bsrto/actions)
 <!-- badges: end -->
 
 The goal of bsrto is to provide a well-tested basis for generating data
@@ -24,6 +26,11 @@ remotes::install_github("paleolimbot/bsrto")
 ``` r
 library(bsrto)
 ```
+
+The main event of the bsrto package are the `bs_build_()` functions,
+which generate data products from data available on the ftp server. A
+number of helper functions support them which can be useful when
+debugging problems with the intermediary outputs.
 
 ## List files from the BSRTO server
 

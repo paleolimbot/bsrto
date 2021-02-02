@@ -5,3 +5,4 @@
 ^bsrto_cache$
 ^\.vscode$
 ^README\.Rmd$
+^\.github$
