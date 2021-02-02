@@ -17,6 +17,8 @@ bs_build_2019 <- function(out_dir = ".") {
   # Read functions are concerned with taking raw data files and filtering
   # out data that is corrupted or otherwise unreadable. These functions also
   # check for new files and download them if they aren't present locally.
+  # This object is ~500 MB and could benefit from laziness and/or intermediary
+  # files.
   built <- list(
     met = read_2019_met(),
     hpb = read_2019_hpb(),
@@ -32,16 +34,16 @@ bs_build_2019 <- function(out_dir = ".") {
 
   # Write functions take care of corrections and QC checks that might require
   # values from other files (e.g., corrections for pressure, heading)
-  write_2019_met(out_dir)
-  write_2019_hpb(out_dir)
-  write_2019_icl(out_dir)
-  write_2019_ips(out_dir)
-  write_2019_lgh(out_dir)
-  write_2019_mca(out_dir)
-  write_2019_mch(out_dir)
-  write_2019_mci(out_dir)
-  write_2019_pcm(out_dir)
-  write_2019_rdi(out_dir)
+  write_2019_met(built, out_dir)
+  write_2019_hpb(built, out_dir)
+  write_2019_icl(built, out_dir)
+  write_2019_ips(built, out_dir)
+  write_2019_lgh(built, out_dir)
+  write_2019_mca(built, out_dir)
+  write_2019_mch(built, out_dir)
+  write_2019_mci(built, out_dir)
+  write_2019_pcm(built, out_dir)
+  write_2019_rdi(built, out_dir)
 
   # (any real-time outputs need to re-read these files, which are the source
   # of truth for this particular time-series)
@@ -66,11 +68,23 @@ write_2019_icl <- function(built, out_dir = ".") {
 
 write_2019_ips <- function(built, out_dir = ".") {
   cli::cat_rule("write_2019_ips()")
+
+  # bins is a list-col: join by whitespace
+  built$ips$bins <- vapply(built$ips$bins, paste0, collapse = " ", FUN.VALUE = character(1))
+
   readr::write_csv(built$ips, file.path(out_dir, "ips.csv"))
 }
 
 write_2019_lgh <- function(built, out_dir = ".") {
   cli::cat_rule("write_2019_lgh()")
+
+  # log_text is a list-col, but we can unnest it
+  log_text <- built$lgh$log_text
+  lengths <- vapply(log_text, length, integer(1))
+  built$lgh$log_text <- NULL
+  built$lgh <- vctrs::vec_rep_each(built$lgh, lengths)
+  built$lgh$log_text <- do.call(c, log_text)
+
   readr::write_csv(built$lgh, file.path(out_dir, "lgh.csv"))
 }
 
@@ -99,11 +113,13 @@ write_2019_rdi <- function(built, out_dir = ".") {
 
   # list columns need to be joined by whitespace before writing
   is_list <- vapply(built$rdi, is.list, logical(1))
+  built$rdi[is_list] <- lapply(built$rdi[is_list], function(col) {
+    vapply(col, paste0, collapse = " ", FUN.VALUE = character(1))
+  })
 
 
   readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
 }
-
 
 # met here refers to environment canada hourly data from resolute
 # these files aren't cached on the ftp server but are instead
