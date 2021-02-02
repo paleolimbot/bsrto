@@ -102,8 +102,6 @@ build_2019_icl <- function(out_dir = ".") {
 
   build_2019_log_qc(all, rows_valid)
 
-  # TODO: split off the histograms as NetCDF
-
   out_file <- file.path(out_dir, "icl.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
   readr::write_csv(all[rows_valid, ], out_file)
@@ -118,8 +116,7 @@ build_2019_ips <- function(out_dir = ".") {
   all <- read_ips_bn_vector(cached)
   all$file <- build_2019_file_relative(all$file)
 
-  # TODO: need to find a way to write histograms
-  all$bins <- NULL
+  all$bins <- vapply(all$bins, paste0, collapse = " ", FUN.VALUE = character(1))
 
   out_file <- file.path(out_dir, "ips.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
