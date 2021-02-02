@@ -13,25 +13,103 @@
 #' }
 #'
 bs_build_2019 <- function(out_dir = ".") {
-  build_2019_met(out_dir)
-  build_2019_hpb(out_dir)
-  build_2019_icl(out_dir)
-  build_2019_ips(out_dir)
-  build_2019_lgh(out_dir)
-  build_2019_mca(out_dir)
-  build_2019_mch(out_dir)
-  build_2019_mci(out_dir)
-  build_2019_pcm(out_dir)
-  build_2019_rdi(out_dir)
+
+  # Read functions are concerned with taking raw data files and filtering
+  # out data that is corrupted or otherwise unreadable. These functions also
+  # check for new files and download them if they aren't present locally.
+  built <- list(
+    met = read_2019_met(),
+    hpb = read_2019_hpb(),
+    icl = read_2019_icl(),
+    ips = read_2019_ips(),
+    lgh = read_2019_lgh(),
+    mca = read_2019_mca(),
+    mch = read_2019_mch(),
+    mci = read_2019_mci(),
+    pcm = read_2019_pcm(),
+    rdi = read_2019_rdi()
+  )
+
+  # Write functions take care of corrections and QC checks that might require
+  # values from other files (e.g., corrections for pressure, heading)
+  write_2019_met(out_dir)
+  write_2019_hpb(out_dir)
+  write_2019_icl(out_dir)
+  write_2019_ips(out_dir)
+  write_2019_lgh(out_dir)
+  write_2019_mca(out_dir)
+  write_2019_mch(out_dir)
+  write_2019_mci(out_dir)
+  write_2019_pcm(out_dir)
+  write_2019_rdi(out_dir)
+
+  # (any real-time outputs need to re-read these files, which are the source
+  # of truth for this particular time-series)
 
   invisible(out_dir)
 }
 
+write_2019_met <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_met()")
+  readr::write_csv(built$met, file.path(out_dir, "met.csv"))
+}
+
+write_2019_hpb <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_hpb()")
+  readr::write_csv(built$hpb, file.path(out_dir, "icl.csv"))
+}
+
+write_2019_icl <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_icl()")
+  readr::write_csv(built$icl, file.path(out_dir, "icl.csv"))
+}
+
+write_2019_ips <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_ips()")
+  readr::write_csv(built$ips, file.path(out_dir, "ips.csv"))
+}
+
+write_2019_lgh <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_lgh()")
+  readr::write_csv(built$lgh, file.path(out_dir, "lgh.csv"))
+}
+
+write_2019_mca <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_mca()")
+  readr::write_csv(built$mca, file.path(out_dir, "mca.csv"))
+}
+
+write_2019_mch <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_mch()")
+  readr::write_csv(built$mch, file.path(out_dir, "mch.csv"))
+}
+
+write_2019_mci <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_mci()")
+  readr::write_csv(built$mci, file.path(out_dir, "mci.csv"))
+}
+
+write_2019_pcm <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_pcm()")
+  readr::write_csv(built$pcm, file.path(out_dir, "pcm.csv"))
+}
+
+write_2019_rdi <- function(built, out_dir = ".") {
+  cli::cat_rule("write_2019_rdi()")
+
+  # list columns need to be joined by whitespace before writing
+  is_list <- vapply(built$rdi, is.list, logical(1))
+
+
+  readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
+}
+
+
 # met here refers to environment canada hourly data from resolute
-# these files aren't cached on the ftp server but are available from
-# environment canada
-build_2019_met <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_met('{ out_dir }')"))
+# these files aren't cached on the ftp server but are instead
+# downloaded from environment canada
+read_2019_met <- function() {
+  cli::cat_rule("read_2019_met()")
   cache_dir <- bs_cache_dir("BSRTO/2019-2020/met")
 
   ec_files <- ec_download_summary_hourly(54199, "2019-08-01", Sys.Date())
@@ -65,13 +143,11 @@ build_2019_met <- function(out_dir = ".") {
   station_info <- c("longitude", "latitude", "station_name", "climate_id")
   all <- all[setdiff(names(all), station_info)]
 
-  out_file <- file.path(out_dir, "met.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all, out_file)
+  all
 }
 
-build_2019_hpb <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_hpb('{ out_dir }')"))
+read_2019_hpb <- function() {
+  cli::cat_rule("read_2019_hpb()")
   dir <- "BSRTO/2019-2020/hpb"
   cached <- build_2019_list_and_cache(dir)
 
@@ -79,13 +155,11 @@ build_2019_hpb <- function(out_dir = ".") {
   all <- read_hpb_vector(cached)
   all$file <- build_2019_file_relative(all$file)
 
-  out_file <- file.path(out_dir, "hpb.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all, out_file)
+  all
 }
 
-build_2019_icl <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_icl('{ out_dir }')"))
+read_2019_icl <- function() {
+  cli::cat_rule("read_2019_icl()")
   dir <- "BSRTO/2019-2020/icl"
   cached <- build_2019_list_and_cache(dir)
 
@@ -101,14 +175,11 @@ build_2019_icl <- function(out_dir = ".") {
   rows_valid <- time_valid & comment_valid & data_points_valid
 
   build_2019_log_qc(all, rows_valid)
-
-  out_file <- file.path(out_dir, "icl.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all[rows_valid, ], out_file)
+  all[rows_valid, ]
 }
 
-build_2019_ips <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_ips('{ out_dir }')"))
+read_2019_ips <- function() {
+  cli::cat_rule("read_2019_ips()")
   dir <- "BSRTO/2019-2020/ips"
   cached <- build_2019_list_and_cache(dir)
 
@@ -118,13 +189,11 @@ build_2019_ips <- function(out_dir = ".") {
 
   all$bins <- vapply(all$bins, paste0, collapse = " ", FUN.VALUE = character(1))
 
-  out_file <- file.path(out_dir, "ips.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all, out_file)
+  all
 }
 
-build_2019_lgh <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_lgh('{ out_dir }')"))
+read_2019_lgh <- function() {
+  cli::cat_rule("read_2019_lgh()")
   dir <- "BSRTO/2019-2020/lgH"
   cached <- build_2019_list_and_cache(dir)
 
@@ -132,16 +201,11 @@ build_2019_lgh <- function(out_dir = ".") {
   all <- read_lgh_vector(cached)
   all$file <- build_2019_file_relative(all$file)
 
-  # TODO: find a way for logs to get loaded
-  all$log_text <- NULL
-
-  out_file <- file.path(out_dir, "lgh.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all, out_file)
+  all
 }
 
-build_2019_mca <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_mca('{ out_dir }')"))
+read_2019_mca <- function() {
+  cli::cat_rule("read_2019_mca()")
   dir <- "BSRTO/2019-2020/mcA"
 
   cached <- build_2019_list_and_cache(dir)
@@ -156,14 +220,11 @@ build_2019_mca <- function(out_dir = ".") {
   rows_valid <- temp_valid & datetime_valid
 
   build_2019_log_qc(all, rows_valid)
-
-  out_file <- file.path(out_dir, "mca.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all[rows_valid, ], out_file)
+  all[rows_valid, ]
 }
 
-build_2019_mch <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_mch('{ out_dir }')"))
+read_2019_mch <- function() {
+  cli::cat_rule("read_2019_mch()")
   dir <- "BSRTO/2019-2020/mcH"
 
   cached <- build_2019_list_and_cache(dir)
@@ -178,14 +239,11 @@ build_2019_mch <- function(out_dir = ".") {
   rows_valid <- temp_valid & datetime_valid
 
   build_2019_log_qc(all, rows_valid)
-
-  out_file <- file.path(out_dir, "mch.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all[rows_valid, ], out_file)
+  all[rows_valid, ]
 }
 
-build_2019_mci <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_mci('{ out_dir }')"))
+read_2019_mci <- function() {
+  cli::cat_rule("read_2019_mci()")
   dir <- "BSRTO/2019-2020/mcI"
 
   cached <- build_2019_list_and_cache(dir)
@@ -200,14 +258,11 @@ build_2019_mci <- function(out_dir = ".") {
   rows_valid <- temp_valid & datetime_valid
 
   build_2019_log_qc(all, rows_valid)
-
-  out_file <- file.path(out_dir, "mci.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all[rows_valid, ], out_file)
+  all[rows_valid, ]
 }
 
-build_2019_pcm <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_pcm('{ out_dir }')"))
+read_2019_pcm <- function() {
+  cli::cat_rule("read_2019_pcm()")
   dir <- "BSRTO/2019-2020/pcm"
 
   cached <- build_2019_list_and_cache(dir)
@@ -219,14 +274,11 @@ build_2019_pcm <- function(out_dir = ".") {
   # basic QC to filter out mangled rows
   rows_valid <- all$checksum_valid
   build_2019_log_qc(all, rows_valid)
-
-  out_file <- file.path(out_dir, "pcm.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all[rows_valid, ], out_file)
+  all[rows_valid, ]
 }
 
-build_2019_rdi <- function(out_dir = ".") {
-  cli::cat_rule(glue("build_2019_rdi('{ out_dir }')"))
+read_2019_rdi <- function() {
+  cli::cat_rule("read_2019_rdi()")
   dir <- "BSRTO/2019-2020/rdi"
 
   cached <- build_2019_list_and_cache(dir)
@@ -241,30 +293,7 @@ build_2019_rdi <- function(out_dir = ".") {
   # at least one row is missing values for the data sections
   rows_valid <- !vapply(all$range_msb, is.null, logical(1))
   build_2019_log_qc(all, rows_valid)
-  all <- all[rows_valid, ]
-
-  # Many columns have exactly one value for all files. These values may be
-  # important but make the csv hard to inspect. Approach here is to write them
-  # separately as YAML.
-  n_unique <- vapply(all, function(x) length(unique(x)), integer(1))
-  constant_cols <- names(n_unique[n_unique == 1])
-  all_constant <- unclass(all[1, constant_cols])
-  all <- all[setdiff(names(all), constant_cols)]
-
-  # need to handle list-columns, which don't export to CSV
-  is_list <- vapply(all, is.list, logical(1))
-
-  all[is_list] <- lapply(all[is_list], function(vals_list) {
-    vapply(vals_list, function(val) paste(val, collapse = " "), character(1))
-  })
-
-  out_file_constant <- file.path(out_dir, "rdi-config.yaml")
-  cli::cat_line(glue("Writing '{ out_file_constant }'"))
-  yaml::write_yaml(all_constant, out_file_constant)
-
-  out_file <- file.path(out_dir, "rdi.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all, out_file)
+  all[rows_valid, ]
 }
 
 build_2019_log_about_to_read <- function(cached) {
