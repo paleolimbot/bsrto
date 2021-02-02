@@ -48,6 +48,8 @@ read_ec_climate_hourly <- function(file, pb = NULL, utc_offset = 0) {
     )
   )
 
+  # we really do want to know about other parse errors if there are any
+  # (e.g., env. canada changes the csv format)
   problems <- attr(result, "problems")
   not_a_problem <- (problems$expected == "30 columns") &
     (problems$actual == "9 columns")
