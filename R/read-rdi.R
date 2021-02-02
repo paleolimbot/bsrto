@@ -70,7 +70,10 @@ read_rdi_vector_oce <- function(file_vector, ...) {
 read_rdi_single <- function(file, types = NULL, pb = NULL) {
   bs_tick(pb, file)
 
-  rdi <- read_rdi_internal(file)
+  rdi <- try(read_rdi_internal(file))
+  if (inherits(rdi, "try-error")) {
+    return(tibble::tibble())
+  }
 
   if (!is.null(types)) {
     rdi <- rdi[intersect(types, names(rdi))]
@@ -112,6 +115,8 @@ read_rdi_internal <- function(file, offset = 0L) {
     close(out_con)
     close_con <- FALSE
     file <- out_file
+  } else {
+    file <- path.expand(file)
   }
 
   rdi <- .Call(bsrto_c_read_rdi, file, as.integer(offset)[1])

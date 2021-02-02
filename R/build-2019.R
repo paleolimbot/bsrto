@@ -1,8 +1,29 @@
 
-bs_build_2019 <- function(out_dir = tempfile()) {
+#' Build real-time data from the 2019 deployment
+#'
+#' @param out_dir The directory in which output files should be
+#'   generated.
+#'
+#' @return `out_dir`, invisibly.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' bs_build_2019()
+#' }
+#'
+bs_build_2019 <- function(out_dir = ".") {
+  build_2019_hpb(out_dir)
+  build_2019_icl(out_dir)
+  build_2019_ips(out_dir)
+  build_2019_lgh(out_dir)
+  build_2019_mca(out_dir)
+  build_2019_mch(out_dir)
+  build_2019_mci(out_dir)
+  build_2019_pcm(out_dir)
+  build_2019_rdi(out_dir)
 
-  try(build_2019_hpb(out_dir))
-  try(build_2019_icl(out_dir))
+  invisible(out_dir)
 }
 
 build_2019_met <- function() {
@@ -39,13 +60,13 @@ build_2019_icl <- function(out_dir = ".") {
   data_points_valid <- is.finite(all$`Data Points`) & all$`Data Points` == 410
   rows_valid <- time_valid & comment_valid & data_points_valid
 
-  all <- build_2019_log_qc(all, rows_valid)
+  build_2019_log_qc(all, rows_valid)
 
   # TODO: split off the histograms as NetCDF
 
   out_file <- file.path(out_dir, "icl.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all, out_file)
+  readr::write_csv(all[rows_valid, ], out_file)
 }
 
 build_2019_ips <- function(out_dir = ".") {
@@ -65,7 +86,7 @@ build_2019_ips <- function(out_dir = ".") {
   readr::write_csv(all, out_file)
 }
 
-build_2019_lgh <- function() {
+build_2019_lgh <- function(out_dir = ".") {
   cli::cat_rule(glue("build_2019_lgh('{ out_dir }')"))
   dir <- "BSRTO/2019-2020/lgH"
   cached <- build_2019_list_and_cache(dir)
@@ -104,7 +125,7 @@ build_2019_mca <- function(out_dir = ".") {
   readr::write_csv(all[rows_valid, ], out_file)
 }
 
-build_2019_mch <- function() {
+build_2019_mch <- function(out_dir = ".") {
   cli::cat_rule(glue("build_2019_mch('{ out_dir }')"))
   dir <- "BSRTO/2019-2020/mcH"
 
@@ -167,8 +188,26 @@ build_2019_pcm <- function(out_dir = ".") {
   readr::write_csv(all[rows_valid, ], out_file)
 }
 
-build_2019_rdi <- function() {
+build_2019_rdi <- function(out_dir = ".") {
+  cli::cat_rule(glue("build_2019_rdi('{ out_dir }')"))
+  dir <- "BSRTO/2019-2020/rdi"
 
+  cached <- build_2019_list_and_cache(dir)
+
+  build_2019_log_about_to_read(cached)
+  all <- read_rdi_vector(cached)
+  all$file <- build_2019_file_relative(all$file)
+
+  # basic QC to filter out mangled rows
+  rows_valid <- all$checksum_valid
+  build_2019_log_qc(all, rows_valid)
+
+  # TODO: find a way to write list columns
+  all <- all[!vapply(all, is.list, logical(1))]
+
+  out_file <- file.path(out_dir, "rdi.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  readr::write_csv(all, out_file)
 }
 
 build_2019_log_about_to_read <- function(cached) {
