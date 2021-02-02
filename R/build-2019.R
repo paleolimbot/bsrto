@@ -238,12 +238,32 @@ build_2019_rdi <- function(out_dir = ".") {
   all <- read_rdi_vector(cached)
   all$file <- build_2019_file_relative(all$file)
 
-  # basic QC to filter out mangled rows
-  rows_valid <- all$checksum_valid
-  build_2019_log_qc(all, rows_valid)
+  # use 'date_time' instead of 'real_time_clock' like the others
+  names(all)[names(all) == "real_time_clock"] <- "date_time"
 
-  # TODO: find a way to write list columns
-  all <- all[!vapply(all, is.list, logical(1))]
+  # at least one row is missing values for the data sections
+  rows_valid <- !vapply(all$range_msb, is.null, logical(1))
+  build_2019_log_qc(all, rows_valid)
+  all <- all[rows_valid, ]
+
+  # Many columns have exactly one value for all files. These values may be
+  # important but make the csv hard to inspect. Approach here is to write them
+  # separately as YAML.
+  n_unique <- vapply(all, function(x) length(unique(x)), integer(1))
+  constant_cols <- names(n_unique[n_unique == 1])
+  all_constant <- unclass(all[1, constant_cols])
+  all <- all[setdiff(names(all), constant_cols)]
+
+  # need to handle list-columns, which don't export to CSV
+  is_list <- vapply(all, is.list, logical(1))
+
+  all[is_list] <- lapply(all[is_list], function(vals_list) {
+    vapply(vals_list, function(val) paste(val, collapse = " "), character(1))
+  })
+
+  out_file_constant <- file.path(out_dir, "rdi-config.yaml")
+  cli::cat_line(glue("Writing '{ out_file_constant }'"))
+  yaml::write_yaml(all_constant, out_file_constant)
 
   out_file <- file.path(out_dir, "rdi.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
