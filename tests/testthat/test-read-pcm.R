@@ -15,6 +15,11 @@ test_that("read_pcm() works", {
   )
 })
 
+test_that("read_pcm() works for mangled files", {
+  file <- bs_example("pcm/20022402.pcm")
+  expect_true(all(!is.na(read_pcm(file)$last_date_time)))
+})
+
 test_that("read_pcm() works for all files in the cache", {
   skip_if_not(bs_has_full_cache())
 

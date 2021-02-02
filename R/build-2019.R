@@ -39,20 +39,13 @@ build_2019_icl <- function(out_dir = ".") {
   data_points_valid <- is.finite(all$`Data Points`) & all$`Data Points` == 410
   rows_valid <- time_valid & comment_valid & data_points_valid
 
-  files_with_errors <- unique(all$file[!rows_valid])
-
-  cli::cat_line(
-    glue("Removing { sum(!rows_valid) } unreadable rows ({ round(mean(!rows_valid) * 100, 1)}%)")
-  )
-  cli::cat_line(
-    glue("{ length(files_with_errors) }/{ nrow(all) } files had errors")
-  )
+  all <- build_2019_log_qc(all, rows_valid)
 
   # TODO: split off the histograms as NetCDF
 
   out_file <- file.path(out_dir, "icl.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
-  readr::write_csv(all[rows_valid, ], out_file)
+  readr::write_csv(all, out_file)
 }
 
 build_2019_ips <- function(out_dir = ".") {
@@ -89,16 +82,89 @@ build_2019_lgh <- function() {
   readr::write_csv(all, out_file)
 }
 
-build_2019_mca <- function() {
+build_2019_mca <- function(out_dir = ".") {
+  cli::cat_rule(glue("build_2019_mca('{ out_dir }')"))
+  dir <- "BSRTO/2019-2020/mcA"
 
+  cached <- build_2019_list_and_cache(dir)
+
+  build_2019_log_about_to_read(cached)
+  all <- read_mc_vector(cached)
+  all$file <- build_2019_file_relative(all$file)
+
+  # basic QC to filter out mangled rows
+  temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
+  datetime_valid <- !is.na(all$date_time)
+  rows_valid <- temp_valid & datetime_valid
+
+  build_2019_log_qc(all, rows_valid)
+
+  out_file <- file.path(out_dir, "mca.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  readr::write_csv(all[rows_valid, ], out_file)
 }
 
 build_2019_mch <- function() {
+  cli::cat_rule(glue("build_2019_mch('{ out_dir }')"))
+  dir <- "BSRTO/2019-2020/mcH"
 
+  cached <- build_2019_list_and_cache(dir)
+
+  build_2019_log_about_to_read(cached)
+  all <- read_mc_vector(cached)
+  all$file <- build_2019_file_relative(all$file)
+
+  # basic QC to filter out mangled rows
+  temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
+  datetime_valid <- !is.na(all$date_time)
+  rows_valid <- temp_valid & datetime_valid
+
+  build_2019_log_qc(all, rows_valid)
+
+  out_file <- file.path(out_dir, "mch.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  readr::write_csv(all[rows_valid, ], out_file)
 }
 
-build_2019_pcm <- function() {
+build_2019_mci <- function(out_dir = ".") {
+  cli::cat_rule(glue("build_2019_mci('{ out_dir }')"))
+  dir <- "BSRTO/2019-2020/mcI"
 
+  cached <- build_2019_list_and_cache(dir)
+
+  build_2019_log_about_to_read(cached)
+  all <- read_mc_vector(cached)
+  all$file <- build_2019_file_relative(all$file)
+
+  # basic QC to filter out mangled rows
+  temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
+  datetime_valid <- !is.na(all$date_time)
+  rows_valid <- temp_valid & datetime_valid
+
+  build_2019_log_qc(all, rows_valid)
+
+  out_file <- file.path(out_dir, "mci.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  readr::write_csv(all[rows_valid, ], out_file)
+}
+
+build_2019_pcm <- function(out_dir = ".") {
+  cli::cat_rule(glue("build_2019_pcm('{ out_dir }')"))
+  dir <- "BSRTO/2019-2020/pcm"
+
+  cached <- build_2019_list_and_cache(dir)
+
+  build_2019_log_about_to_read(cached)
+  all <- read_pcm_vector(cached)
+  all$file <- build_2019_file_relative(all$file)
+
+  # basic QC to filter out mangled rows
+  rows_valid <- all$checksum_valid
+  build_2019_log_qc(all, rows_valid)
+
+  out_file <- file.path(out_dir, "pcm.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  readr::write_csv(all[rows_valid, ], out_file)
 }
 
 build_2019_rdi <- function() {
@@ -112,6 +178,17 @@ build_2019_log_about_to_read <- function(cached) {
   } else if (length(cached) >= 1) {
     cli::cat_line(glue("'{ basename(cached) }'"))
   }
+}
+
+build_2019_log_qc <- function(all, rows_valid) {
+  files_with_errors <- unique(all$file[!rows_valid])
+
+  cli::cat_line(
+    glue("Removing { sum(!rows_valid) } unreadable rows ({ round(mean(!rows_valid) * 100, 1)}%)")
+  )
+  cli::cat_line(
+    glue("{ length(files_with_errors) }/{ nrow(all) } files had errors")
+  )
 }
 
 build_2019_list_and_cache <- function(dir, retries = 4) {
@@ -157,7 +234,7 @@ build_2019_list_and_cache <- function(dir, retries = 4) {
 }
 
 build_2019_file_relative <- function(file) {
-  stringr::str_extract(file, "BSRTO/2019-2020/.*$")
+  basename(file)
 }
 
 build_2019_friendly_file_size <- function(size) {

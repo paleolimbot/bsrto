@@ -34,9 +34,12 @@ read_pcm <- function(file, tz = "UTC", pb = NULL) {
   }, raw(1), USE.NAMES = FALSE)
   checksum_valid <- checksum == data_checksum
 
+  # date is at start of file
+  date_line <- stringr::str_extract(content, "^[^\r\n]+")
+
   tibble::tibble(
     last_date_time = readr::parse_datetime(
-      readr::read_lines(content, n_max = 1)[1],
+      date_line,
       "%m/%d/%Y %H:%M:%S",
       locale = readr::locale(tz = tz)
     ),
