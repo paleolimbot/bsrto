@@ -4,10 +4,10 @@ on:
       - main
       - master
 
-name: Build and deploy
+name: Test build 2019
 
 jobs:
-  pkgdown:
+  build-2019:
     runs-on: macOS-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
