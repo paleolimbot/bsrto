@@ -40,7 +40,7 @@ bs_build_2019 <- function(out_dir = ".") {
   write_2019_rdi(built, out_dir)
 
   # (any real-time outputs need to re-read these files, which are the source
-  # of truth for this particular time-series)
+  # of truth for this deployment)
 
   invisible(out_dir)
 }
@@ -120,37 +120,45 @@ read_2019_cached <- function(step, out_dir = ".", use_cache = TRUE, save_cache =
 
   if (use_cache && file.exists(cached_file)) {
     cli::cat_line(glue("Using cached '{ step }'"))
-    readRDS(cached_file)
+    previous <- readRDS(cached_file)
   } else {
-    result <- switch(
-      step,
-      met = read_2019_met(),
-      hpb = read_2019_hpb(),
-      icl = read_2019_icl(),
-      ips = read_2019_ips(),
-      lgh = read_2019_lgh(),
-      mca = read_2019_mca(),
-      mch = read_2019_mch(),
-      mci = read_2019_mci(),
-      pcm = read_2019_pcm(),
-      rdi = read_2019_rdi(),
-      abort(glue("Unknown step: '{ step }'"))
-    )
-
-    if (save_cache) {
-      cli::cat_line(glue("Saving cached '{ step }'"))
-      saveRDS(result, cached_file)
-    }
-
-    result
+    previous <- NULL
   }
+
+  result <- switch(
+    step,
+    met = read_2019_met(previous),
+    hpb = read_2019_hpb(),
+    icl = read_2019_icl(),
+    ips = read_2019_ips(),
+    lgh = read_2019_lgh(),
+    mca = read_2019_mca(),
+    mch = read_2019_mch(),
+    mci = read_2019_mci(),
+    pcm = read_2019_pcm(),
+    rdi = read_2019_rdi(),
+    abort(glue("Unknown step: '{ step }'"))
+  )
+
+  if (save_cache) {
+    cli::cat_line(glue("Saving cached '{ step }'"))
+    saveRDS(result, cached_file)
+  }
+
+  result
 }
 
 # met here refers to environment canada hourly data from resolute
 # these files aren't cached on the ftp server but are instead
 # downloaded from environment canada
-read_2019_met <- function() {
+read_2019_met <- function(previous = NULL) {
   cli::cat_rule("read_2019_met()")
+
+  if (identical(attr(previous, "date_generated"), Sys.Date())) {
+    cli::cat_line(glue("Using `previous` as it was generated on { Sys.Date() }"))
+    return(previous)
+  }
+
   cache_dir <- bs_cache_dir("BSRTO/2019-2020/met")
 
   ec_files <- ec_download_summary_hourly(54199, "2019-08-01", Sys.Date())
@@ -184,7 +192,12 @@ read_2019_met <- function() {
   station_info <- c("longitude", "latitude", "station_name", "climate_id")
   all <- all[setdiff(names(all), station_info)]
 
-  build_2019_with_files_ref(all, basename(ec_files$dest))
+  # this needs to be regenerated every day, so there is no point using
+  # the file list as the cache key (also, there are rarely many of these files
+  # and reading them is fast)
+  attr(all, "date_generated") <- Sys.Date()
+
+  all
 }
 
 read_2019_hpb <- function() {
