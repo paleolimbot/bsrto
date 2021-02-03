@@ -14,7 +14,26 @@ generated.}
 \code{out_dir}, invisibly.
 }
 \description{
-Build real-time data from the 2019 deployment
+The build of real-time data is split into multiple steps that allow
+certain types of changes to be applied without unnecessary loading
+of files. In the code these are split into "read" and "write" functions.
+}
+\details{
+Read functions are concerned with taking raw data files and filtering
+out data that is corrupted or otherwise unreadable. These functions also
+check for new files and download them if they aren't present locally.
+These functions add to the previously calculated version present in the
+build cache, which keeps the processing time to a minimum and keeps the
+build logs from being cluttered with parse errors from unreadable files
+that have already been parsed months ago. Note that the value of
+\code{\link[=bs_cache_dir]{bs_cache_dir()}} and \code{\link[=bs_build_cache_dir]{bs_build_cache_dir()}} are used to determine where
+FTP downloads and intermediary build files are stored.
+
+Whereas the output of read functions is generally stable, methods to
+flag bad measurements and perform corrections that require data from
+multiple sensors can and should be updated frequently. In the code these
+are grouped as "write" functions. These calculations are rarely expensive
+and thus the result is not cached.
 }
 \examples{
 \dontrun{

@@ -1,5 +1,15 @@
 
-#' Find a local cache of the BSRTO FTP server
+#' Cache locations
+#'
+#' Two types of caches are used in the bsrto package. The download cache, whose
+#' location is returned by [bs_cache_dir()] is a folder within which the files
+#' are organized as a mirror image of the FTP server. The build cache as
+#' returned by [bs_build_cache_dir()] is used by [bs_build_realtime()] to keep
+#' intermediary build stages of the data that would otherwise be expensive to
+#' recalculate. These can be set via `options(bsrto.cache = "...")` and
+#' `options(bsrto.build_cache = "...")` in an R session or by the environment
+#' variables `R_BSRTO_CACHE` and `R_BSRTO_BUILD_CACHE` (useful on CI). By
+#' default a temporary directory is set that is cleaned up on package unload.
 #'
 #' @param ... Passed to [file.path()]
 #' @export

@@ -4,7 +4,7 @@
 \alias{bs_cache_dir}
 \alias{bs_build_cache_dir}
 \alias{bs_has_full_cache}
-\title{Find a local cache of the BSRTO FTP server}
+\title{Cache locations}
 \usage{
 bs_cache_dir(...)
 
@@ -16,7 +16,15 @@ bs_has_full_cache()
 \item{...}{Passed to \code{\link[=file.path]{file.path()}}}
 }
 \description{
-Find a local cache of the BSRTO FTP server
+Two types of caches are used in the bsrto package. The download cache, whose
+location is returned by \code{\link[=bs_cache_dir]{bs_cache_dir()}} is a folder within which the files
+are organized as a mirror image of the FTP server. The build cache as
+returned by \code{\link[=bs_build_cache_dir]{bs_build_cache_dir()}} is used by \code{\link[=bs_build_realtime]{bs_build_realtime()}} to keep
+intermediary build stages of the data that would otherwise be expensive to
+recalculate. These can be set via \code{options(bsrto.cache = "...")} and
+\code{options(bsrto.build_cache = "...")} in an R session or by the environment
+variables \code{R_BSRTO_CACHE} and \code{R_BSRTO_BUILD_CACHE} (useful on CI). By
+default a temporary directory is set that is cleaned up on package unload.
 }
 \examples{
 bs_cache_dir()

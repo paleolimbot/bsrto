@@ -1,6 +1,26 @@
 
 #' Build real-time data from the 2019 deployment
 #'
+#' The build of real-time data is split into multiple steps that allow
+#' certain types of changes to be applied without unnecessary loading
+#' of files. In the code these are split into "read" and "write" functions.
+#'
+#' Read functions are concerned with taking raw data files and filtering
+#' out data that is corrupted or otherwise unreadable. These functions also
+#' check for new files and download them if they aren't present locally.
+#' These functions add to the previously calculated version present in the
+#' build cache, which keeps the processing time to a minimum and keeps the
+#' build logs from being cluttered with parse errors from unreadable files
+#' that have already been parsed months ago. Note that the value of
+#' [bs_cache_dir()] and [bs_build_cache_dir()] are used to determine where
+#' FTP downloads and intermediary build files are stored.
+#'
+#' Whereas the output of read functions is generally stable, methods to
+#' flag bad measurements and perform corrections that require data from
+#' multiple sensors can and should be updated frequently. In the code these
+#' are grouped as "write" functions. These calculations are rarely expensive
+#' and thus the result is not cached.
+#'
 #' @param out_dir The directory in which output files should be
 #'   generated.
 #'
@@ -13,36 +33,49 @@
 #' }
 #'
 bs_build_realtime <- function(out_dir = ".") {
-
-  # Read functions are concerned with taking raw data files and filtering
-  # out data that is corrupted or otherwise unreadable. These functions also
-  # check for new files and download them if they aren't present locally.
   steps <- c(
     "met", "hpb", "icl", "ips", "lgh",
     "mca", "mch", "mci", "pcm", "rdi"
   )
-
   names(steps) <- steps
-
   built <- lapply(steps, read_realtime_cached)
 
-  # Write functions take care of corrections and QC checks that might require
-  # values from other files (e.g., corrections for pressure, heading)
+  write_realtime_adp(built, out_dir)
+  write_realtime_baro(built, out_dir)
   write_realtime_met(built, out_dir)
-  write_realtime_hpb(built, out_dir)
   write_realtime_icl(built, out_dir)
   write_realtime_ips(built, out_dir)
   write_realtime_lgh(built, out_dir)
-  write_realtime_mca(built, out_dir)
-  write_realtime_mch(built, out_dir)
-  write_realtime_mci(built, out_dir)
+  write_realtime_mc(built, out_dir)
   write_realtime_pcm(built, out_dir)
-  write_realtime_rdi(built, out_dir)
-
-  # (any real-time outputs need to re-read these files, which are the source
-  # of truth for this deployment)
 
   invisible(out_dir)
+}
+
+write_realtime_adp <- function(built, out_dir = ".") {
+  cli::cat_rule("write_realtime_adp()")
+
+  # https://github.com/richardsc/bsrto/blob/master/adp.R#L32-L94
+
+  # list columns need to be joined by whitespace before writing
+  is_list <- vapply(built$rdi, is.list, logical(1))
+  built$rdi[is_list] <- lapply(built$rdi[is_list], function(col) {
+    vapply(col, paste0, collapse = " ", FUN.VALUE = character(1))
+  })
+
+
+  readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
+}
+
+write_realtime_baro <- function(built, out_dir = ".") {
+  cli::cat_rule("write_realtime_baro()")
+
+  # met is doing a similar thing here...process together?
+
+  # https://github.com/richardsc/bsrto/blob/master/baro.R#L11
+  # https://github.com/richardsc/bsrto/blob/master/met.R#L5-L37
+
+  readr::write_csv(built$hpb, file.path(out_dir, "baro.csv"))
 }
 
 write_realtime_met <- function(built, out_dir = ".") {
@@ -50,18 +83,19 @@ write_realtime_met <- function(built, out_dir = ".") {
   readr::write_csv(built$met, file.path(out_dir, "met.csv"))
 }
 
-write_realtime_hpb <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_hpb()")
-  readr::write_csv(built$hpb, file.path(out_dir, "icl.csv"))
-}
-
 write_realtime_icl <- function(built, out_dir = ".") {
   cli::cat_rule("write_realtime_icl()")
+
+  # ordering on time here
+
   readr::write_csv(built$icl, file.path(out_dir, "icl.csv"))
 }
 
 write_realtime_ips <- function(built, out_dir = ".") {
   cli::cat_rule("write_realtime_ips()")
+
+  # https://github.com/richardsc/bsrto/blob/master/ips.R#L74-L94
+  # https://github.com/richardsc/bsrto/blob/master/save_data_file.R#L15
 
   # bins is a list-col: join by whitespace
   built$ips$bins <- vapply(built$ips$bins, paste0, collapse = " ", FUN.VALUE = character(1))
@@ -71,6 +105,8 @@ write_realtime_ips <- function(built, out_dir = ".") {
 
 write_realtime_lgh <- function(built, out_dir = ".") {
   cli::cat_rule("write_realtime_lgh()")
+
+  # no processing of these in current app
 
   # log_text is a list-col, but we can unnest it
   log_text <- built$lgh$log_text
@@ -82,37 +118,22 @@ write_realtime_lgh <- function(built, out_dir = ".") {
   readr::write_csv(built$lgh, file.path(out_dir, "lgh.csv"))
 }
 
-write_realtime_mca <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_mca()")
+write_realtime_mc <- function(built, out_dir = ".") {
+  cli::cat_rule("write_realtime_mc()")
+
+  # https://github.com/richardsc/bsrto/blob/master/mc.R#L55-L72
+
   readr::write_csv(built$mca, file.path(out_dir, "mca.csv"))
-}
-
-write_realtime_mch <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_mch()")
   readr::write_csv(built$mch, file.path(out_dir, "mch.csv"))
-}
-
-write_realtime_mci <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_mci()")
   readr::write_csv(built$mci, file.path(out_dir, "mci.csv"))
 }
 
 write_realtime_pcm <- function(built, out_dir = ".") {
   cli::cat_rule("write_realtime_pcm()")
+
+  # https://github.com/richardsc/bsrto/blob/master/pc.R#L28-L45
+
   readr::write_csv(built$pcm, file.path(out_dir, "pcm.csv"))
-}
-
-write_realtime_rdi <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_rdi()")
-
-  # list columns need to be joined by whitespace before writing
-  is_list <- vapply(built$rdi, is.list, logical(1))
-  built$rdi[is_list] <- lapply(built$rdi[is_list], function(col) {
-    vapply(col, paste0, collapse = " ", FUN.VALUE = character(1))
-  })
-
-
-  readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
 }
 
 read_realtime_cached <- function(step, build_cache = bs_build_cache_dir("realtime"),
