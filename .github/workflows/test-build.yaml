@@ -41,19 +41,30 @@ jobs:
       - name: Install package
         run: R CMD INSTALL .
 
+      # This cache contains the downloaded files as of the last date it was
+      # invalidated. To invalidate again and keep previous values, increment
+      # both key and restore-keys. To invalidate and completely reload files
+      # (adds 60 minutes to build time), increment key and set restore-keys
+      # to the same value.
       - name: Cache BSRTO downloads
         uses: actions/cache@v2
         with:
           path: ${{ runner.temp }}/bsrto-cache-dir
-          key: bsrto-cache-dir-1
+          restore-keys:
+          - bsrto-cache-dir-1
+          key: bsrto-cache-dir-2
+
+      # This cache saves ~20 minutes of build time but needs to be invalidated
+      # manually when the raw read_() functions are updated.
+      - name: Cache built raw data
+        uses: actions/cache@v2
+        with:
+          path: ${{ runner.temp }}/bsrto-build-cache-dir
+          key: bsrto-build-cache-dir-1
 
       - name: Build updated data
         env:
           R_BSRTO_CACHE: ${{ runner.temp }}/bsrto-cache-dir
-        run: |
-          if (!dir.exists(Sys.getenv("R_BSRTO_CACHE"))) {
-            dir.create(Sys.getenv("R_BSRTO_CACHE"))
-          }
-
-          bsrto::bs_build_2019()
+          R_BSRTO_BUILD_CACHE: ${{ runner.temp }}/bsrto-build-cache-dir
+        run: bsrto::bs_build_2019()
         shell: Rscript {0}
