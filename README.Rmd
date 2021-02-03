@@ -37,7 +37,22 @@ remotes::install_github("paleolimbot/bsrto")
 library(bsrto)
 ```
 
-The main event of the bsrto package are the `bs_build_()` functions, which generate data products from data available on the ftp server. A number of helper functions support them which can be useful when debugging problems with the intermediary outputs.
+The main event of the bsrto package are the `bs_build_()` functions, which generate data products from data available on the ftp server. A number of helper functions support them which can be useful when debugging problems with the intermediary outputs. You will probably want to set a persistent cache directory in your .Rprofile:
+
+``` r
+# local path to copy of the ftp server
+options(bsrto.cache = "...")
+
+# local build cache (will need invalidating if the
+# read functions are updated)
+options(bsrto.build_cache = "...")
+```
+
+Then you can build the real-time data! It will take ~60 minutes the first time (because it needs to download a few thousand files) and ~30 seconds each time thereafter.
+
+``` r
+bs_build_realtime()
+```
 
 ## List files from the BSRTO server
 

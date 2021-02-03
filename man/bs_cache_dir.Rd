@@ -2,10 +2,13 @@
 % Please edit documentation in R/bs-cache.R
 \name{bs_cache_dir}
 \alias{bs_cache_dir}
+\alias{bs_build_cache_dir}
 \alias{bs_has_full_cache}
 \title{Find a local cache of the BSRTO FTP server}
 \usage{
 bs_cache_dir(...)
+
+bs_build_cache_dir(...)
 
 bs_has_full_cache()
 }
@@ -17,6 +20,7 @@ Find a local cache of the BSRTO FTP server
 }
 \examples{
 bs_cache_dir()
+bs_build_cache_dir()
 bs_has_full_cache()
 
 }

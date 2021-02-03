@@ -30,7 +30,25 @@ library(bsrto)
 The main event of the bsrto package are the `bs_build_()` functions,
 which generate data products from data available on the ftp server. A
 number of helper functions support them which can be useful when
-debugging problems with the intermediary outputs.
+debugging problems with the intermediary outputs. You will probably want
+to set a persistent cache directory in your .Rprofile:
+
+``` r
+# local path to copy of the ftp server
+options(bsrto.cache = "...")
+
+# local build cache (will need invalidating if the
+# read functions are updated)
+options(bsrto.build_cache = "...")
+```
+
+Then you can build the real-time data\! It will take \~60 minutes the
+first time (because it needs to download a few thousand files) and \~30
+seconds each time thereafter.
+
+``` r
+bs_build_realtime()
+```
 
 ## List files from the BSRTO server
 
@@ -65,44 +83,44 @@ read_hpb_vector(list.files(bs_example("hpb"), "\\.hpb$", full.names = TRUE))
 #> 1 C:/Users/dunningtond/Documents/R/win~ 2019-08-28 20:30:37          1004     17
 read_icl(bs_example("icl/SAF2564_20191010_19.txt"))
 #> # A tibble: 62 x 416
-#>    Time     Comment `Temperature [C~ `Humidity [%]` `Sequence #` `Data Points`
-#>    <time>   <chr>              <dbl>          <dbl>        <int>         <int>
-#>  1 19:04:39 Time A~             -1.6           34.3           15           410
-#>  2 19:04:40 <NA>                -1.6           34.3           16           410
-#>  3 19:04:41 <NA>                -1.6           34.3           17           410
-#>  4 19:04:42 <NA>                -1.7           34.1           18           410
-#>  5 19:04:43 <NA>                -1.6           34.1           19           410
-#>  6 19:04:44 <NA>                -1.6           34.1           20           410
-#>  7 19:04:45 <NA>                -1.6           34.1           21           410
-#>  8 19:04:46 <NA>                -1.6           34.1           22           410
-#>  9 19:04:47 <NA>                -1.6           34.1           23           410
-#> 10 19:04:48 <NA>                -1.6           34.1           24           410
-#> # ... with 52 more rows, and 410 more variables: `0` <int>, `15.63` <int>,
-#> #   `31.25` <int>, `46.88` <int>, `62.5` <int>, `78.13` <int>, `93.75` <int>,
-#> #   `109.38` <int>, `125` <int>, `140.63` <int>, `156.25` <int>,
-#> #   `171.88` <int>, `187.5` <int>, `203.13` <int>, `218.75` <int>,
-#> #   `234.38` <int>, `250` <int>, `265.63` <int>, `281.25` <int>,
-#> #   `296.88` <int>, `312.5` <int>, `328.13` <int>, `343.75` <int>,
-#> #   `359.38` <int>, `375` <int>, `390.63` <int>, `406.25` <int>,
-#> #   `421.88` <int>, `437.5` <int>, `453.13` <int>, `468.75` <int>,
-#> #   `484.38` <int>, `500` <int>, `515.63` <int>, `531.25` <int>,
-#> #   `546.88` <int>, `562.5` <int>, `578.13` <int>, `593.75` <int>,
-#> #   `609.38` <int>, `625` <int>, `640.63` <int>, `656.25` <int>,
-#> #   `671.88` <int>, `687.5` <int>, `703.13` <int>, `718.75` <int>,
-#> #   `734.38` <int>, `750` <int>, `765.63` <int>, `781.25` <int>,
-#> #   `796.88` <int>, `812.5` <int>, `828.13` <int>, `843.75` <int>,
-#> #   `859.38` <int>, `875` <int>, `890.63` <int>, `906.25` <int>,
-#> #   `921.88` <int>, `937.5` <int>, `953.13` <int>, `968.75` <int>,
-#> #   `984.38` <int>, `1000` <int>, `1015.63` <int>, `1031.25` <int>,
-#> #   `1046.88` <int>, `1062.5` <int>, `1078.13` <int>, `1093.75` <int>,
-#> #   `1109.38` <int>, `1125` <int>, `1140.63` <int>, `1156.25` <int>,
-#> #   `1171.88` <int>, `1187.5` <int>, `1203.13` <int>, `1218.75` <int>,
-#> #   `1234.38` <int>, `1250` <int>, `1265.63` <int>, `1281.25` <int>,
-#> #   `1296.88` <int>, `1312.5` <int>, `1328.13` <int>, `1343.75` <int>,
-#> #   `1359.38` <int>, `1375` <int>, `1390.63` <int>, `1406.25` <int>,
-#> #   `1421.88` <int>, `1437.5` <int>, `1453.13` <int>, `1468.75` <int>,
-#> #   `1484.38` <int>, `1500` <int>, `1515.63` <int>, `1531.25` <int>,
-#> #   `1546.88` <int>, ...
+#>    Time                Comment `Temperature [C~ `Humidity [%]` `Sequence #`
+#>    <dttm>              <chr>              <dbl>          <dbl>        <dbl>
+#>  1 2019-10-10 19:04:39 "Time ~             -1.6           34.3           15
+#>  2 2019-10-10 19:04:40 ""                  -1.6           34.3           16
+#>  3 2019-10-10 19:04:41 ""                  -1.6           34.3           17
+#>  4 2019-10-10 19:04:42 ""                  -1.7           34.1           18
+#>  5 2019-10-10 19:04:43 ""                  -1.6           34.1           19
+#>  6 2019-10-10 19:04:44 ""                  -1.6           34.1           20
+#>  7 2019-10-10 19:04:45 ""                  -1.6           34.1           21
+#>  8 2019-10-10 19:04:46 ""                  -1.6           34.1           22
+#>  9 2019-10-10 19:04:47 ""                  -1.6           34.1           23
+#> 10 2019-10-10 19:04:48 ""                  -1.6           34.1           24
+#> # ... with 52 more rows, and 411 more variables: `Data Points` <dbl>,
+#> #   `0` <dbl>, `15.63` <dbl>, `31.25` <dbl>, `46.88` <dbl>, `62.5` <dbl>,
+#> #   `78.13` <dbl>, `93.75` <dbl>, `109.38` <dbl>, `125` <dbl>, `140.63` <dbl>,
+#> #   `156.25` <dbl>, `171.88` <dbl>, `187.5` <dbl>, `203.13` <dbl>,
+#> #   `218.75` <dbl>, `234.38` <dbl>, `250` <dbl>, `265.63` <dbl>,
+#> #   `281.25` <dbl>, `296.88` <dbl>, `312.5` <dbl>, `328.13` <dbl>,
+#> #   `343.75` <dbl>, `359.38` <dbl>, `375` <dbl>, `390.63` <dbl>,
+#> #   `406.25` <dbl>, `421.88` <dbl>, `437.5` <dbl>, `453.13` <dbl>,
+#> #   `468.75` <dbl>, `484.38` <dbl>, `500` <dbl>, `515.63` <dbl>,
+#> #   `531.25` <dbl>, `546.88` <dbl>, `562.5` <dbl>, `578.13` <dbl>,
+#> #   `593.75` <dbl>, `609.38` <dbl>, `625` <dbl>, `640.63` <dbl>,
+#> #   `656.25` <dbl>, `671.88` <dbl>, `687.5` <dbl>, `703.13` <dbl>,
+#> #   `718.75` <dbl>, `734.38` <dbl>, `750` <dbl>, `765.63` <dbl>,
+#> #   `781.25` <dbl>, `796.88` <dbl>, `812.5` <dbl>, `828.13` <dbl>,
+#> #   `843.75` <dbl>, `859.38` <dbl>, `875` <dbl>, `890.63` <dbl>,
+#> #   `906.25` <dbl>, `921.88` <dbl>, `937.5` <dbl>, `953.13` <dbl>,
+#> #   `968.75` <dbl>, `984.38` <dbl>, `1000` <dbl>, `1015.63` <dbl>,
+#> #   `1031.25` <dbl>, `1046.88` <dbl>, `1062.5` <dbl>, `1078.13` <dbl>,
+#> #   `1093.75` <dbl>, `1109.38` <dbl>, `1125` <dbl>, `1140.63` <dbl>,
+#> #   `1156.25` <dbl>, `1171.88` <dbl>, `1187.5` <dbl>, `1203.13` <dbl>,
+#> #   `1218.75` <dbl>, `1234.38` <dbl>, `1250` <dbl>, `1265.63` <dbl>,
+#> #   `1281.25` <dbl>, `1296.88` <dbl>, `1312.5` <dbl>, `1328.13` <dbl>,
+#> #   `1343.75` <dbl>, `1359.38` <dbl>, `1375` <dbl>, `1390.63` <dbl>,
+#> #   `1406.25` <dbl>, `1421.88` <dbl>, `1437.5` <dbl>, `1453.13` <dbl>,
+#> #   `1468.75` <dbl>, `1484.38` <dbl>, `1500` <dbl>, `1515.63` <dbl>,
+#> #   `1531.25` <dbl>, ...
 read_imm(bs_example("imm/18082902.imm"))
 #> # A tibble: 1 x 6
 #>   date_time           serial_number temperature conductivity pressure sample
