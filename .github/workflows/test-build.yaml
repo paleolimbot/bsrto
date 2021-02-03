@@ -4,10 +4,10 @@ on:
       - main
       - master
 
-name: Test build 2019
+name: Test build realtime
 
 jobs:
-  build-2019:
+  test-build-realtime:
     runs-on: macOS-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
