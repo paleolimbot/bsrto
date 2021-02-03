@@ -17,20 +17,14 @@ bs_build_2019 <- function(out_dir = ".") {
   # Read functions are concerned with taking raw data files and filtering
   # out data that is corrupted or otherwise unreadable. These functions also
   # check for new files and download them if they aren't present locally.
-  # This object is ~500 MB and could benefit from laziness and/or intermediary
-  # files.
-  built <- list(
-    met = read_2019_met(),
-    hpb = read_2019_hpb(),
-    icl = read_2019_icl(),
-    ips = read_2019_ips(),
-    lgh = read_2019_lgh(),
-    mca = read_2019_mca(),
-    mch = read_2019_mch(),
-    mci = read_2019_mci(),
-    pcm = read_2019_pcm(),
-    rdi = read_2019_rdi()
+  steps <- c(
+    "met", "hpb", "icl", "ips", "lgh",
+    "mca", "mch", "mci", "pcm", "rdi"
   )
+
+  names(steps) <- steps
+
+  built <- lapply(steps, read_2019_cached, out_dir = out_dir)
 
   # Write functions take care of corrections and QC checks that might require
   # values from other files (e.g., corrections for pressure, heading)
@@ -119,6 +113,37 @@ write_2019_rdi <- function(built, out_dir = ".") {
 
 
   readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
+}
+
+read_2019_cached <- function(step, out_dir = ".", use_cache = TRUE, save_cache = TRUE) {
+  cached_file <- file.path(out_dir, glue("{ step }.rds"))
+
+  if (use_cache && file.exists(cached_file)) {
+    cli::cat_line(glue("Using cached '{ step }'"))
+    readRDS(cached_file)
+  } else {
+    result <- switch(
+      step,
+      met = read_2019_met(),
+      hpb = read_2019_hpb(),
+      icl = read_2019_icl(),
+      ips = read_2019_ips(),
+      lgh = read_2019_lgh(),
+      mca = read_2019_mca(),
+      mch = read_2019_mch(),
+      mci = read_2019_mci(),
+      pcm = read_2019_pcm(),
+      rdi = read_2019_rdi(),
+      abort(glue("Unknown step: '{ step }'"))
+    )
+
+    if (save_cache) {
+      cli::cat_line(glue("Saving cached '{ step }'"))
+      saveRDS(result, cached_file)
+    }
+
+    result
+  }
 }
 
 # met here refers to environment canada hourly data from resolute
