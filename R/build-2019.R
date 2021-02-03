@@ -184,7 +184,7 @@ read_2019_met <- function() {
   station_info <- c("longitude", "latitude", "station_name", "climate_id")
   all <- all[setdiff(names(all), station_info)]
 
-  all
+  build_2019_with_files_ref(all, basename(ec_files$dest))
 }
 
 read_2019_hpb <- function() {
@@ -196,7 +196,7 @@ read_2019_hpb <- function() {
   all <- read_hpb_vector(cached)
   all$file <- build_2019_file_relative(all$file)
 
-  all
+  build_2019_with_files_ref(all, basename(cached))
 }
 
 read_2019_icl <- function() {
@@ -216,7 +216,7 @@ read_2019_icl <- function() {
   rows_valid <- time_valid & comment_valid & data_points_valid
 
   build_2019_log_qc(all, rows_valid)
-  all[rows_valid, ]
+  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
 }
 
 read_2019_ips <- function() {
@@ -230,7 +230,7 @@ read_2019_ips <- function() {
 
   all$bins <- vapply(all$bins, paste0, collapse = " ", FUN.VALUE = character(1))
 
-  all
+  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
 }
 
 read_2019_lgh <- function() {
@@ -242,7 +242,7 @@ read_2019_lgh <- function() {
   all <- read_lgh_vector(cached)
   all$file <- build_2019_file_relative(all$file)
 
-  all
+  build_2019_with_files_ref(all, basename(cached))
 }
 
 read_2019_mca <- function() {
@@ -261,7 +261,7 @@ read_2019_mca <- function() {
   rows_valid <- temp_valid & datetime_valid
 
   build_2019_log_qc(all, rows_valid)
-  all[rows_valid, ]
+  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
 }
 
 read_2019_mch <- function() {
@@ -280,7 +280,7 @@ read_2019_mch <- function() {
   rows_valid <- temp_valid & datetime_valid
 
   build_2019_log_qc(all, rows_valid)
-  all[rows_valid, ]
+  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
 }
 
 read_2019_mci <- function() {
@@ -299,7 +299,7 @@ read_2019_mci <- function() {
   rows_valid <- temp_valid & datetime_valid
 
   build_2019_log_qc(all, rows_valid)
-  all[rows_valid, ]
+  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
 }
 
 read_2019_pcm <- function() {
@@ -315,7 +315,7 @@ read_2019_pcm <- function() {
   # basic QC to filter out mangled rows
   rows_valid <- all$checksum_valid
   build_2019_log_qc(all, rows_valid)
-  all[rows_valid, ]
+  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
 }
 
 read_2019_rdi <- function() {
@@ -334,7 +334,7 @@ read_2019_rdi <- function() {
   # at least one row is missing values for the data sections
   rows_valid <- !vapply(all$range_msb, is.null, logical(1))
   build_2019_log_qc(all, rows_valid)
-  all[rows_valid, ]
+  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
 }
 
 build_2019_log_about_to_read <- function(cached) {
@@ -413,4 +413,9 @@ build_2019_friendly_file_size <- function(size) {
   } else {
     sprintf("%d byte", size)
   }
+}
+
+build_2019_with_files_ref <- function(all, files) {
+  attr(all, "files") <- files
+  all
 }
