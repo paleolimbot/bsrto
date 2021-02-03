@@ -6,6 +6,7 @@
 #'
 #' @examples
 #' bs_cache_dir()
+#' bs_build_cache_dir()
 #' bs_has_full_cache()
 #'
 bs_cache_dir <- function(...) {
@@ -24,6 +25,23 @@ bs_cache_dir <- function(...) {
 
 #' @rdname bs_cache_dir
 #' @export
+bs_build_cache_dir <- function(...) {
+  cache <- Sys.getenv("R_BSRTO_BUILD_CACHE", "")
+  if (!identical(cache, "")) {
+    return(file.path(cache, ...))
+  }
+
+  cache <- getOption("bsrto.build_cache", NULL)
+  if (!is.null(cache)) {
+    return(file.path(cache, ...))
+  }
+
+  file.path(bs_temp_dir_internal, "bsrto_build_cache", ...)
+}
+
+#' @rdname bs_cache_dir
+#' @export
 bs_has_full_cache <- function() {
-  bs_cache_dir() != file.path(bs_temp_dir_internal, "bsrto_cache")
+  # need to sort this out!
+  FALSE
 }

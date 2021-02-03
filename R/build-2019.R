@@ -24,7 +24,7 @@ bs_build_2019 <- function(out_dir = ".") {
 
   names(steps) <- steps
 
-  built <- lapply(steps, read_2019_cached, out_dir = out_dir)
+  built <- lapply(steps, read_2019_cached)
 
   # Write functions take care of corrections and QC checks that might require
   # values from other files (e.g., corrections for pressure, heading)
@@ -115,11 +115,12 @@ write_2019_rdi <- function(built, out_dir = ".") {
   readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
 }
 
-read_2019_cached <- function(step, out_dir = ".", use_cache = TRUE, save_cache = TRUE) {
-  cached_file <- file.path(out_dir, glue("{ step }.rds"))
+read_2019_cached <- function(step, build_cache = bs_build_cache_dir("realtime"),
+                             use_cache = TRUE, save_cache = TRUE) {
+  cached_file <- file.path(build_cache, glue("{ step }.rds"))
 
   if (use_cache && file.exists(cached_file)) {
-    cli::cat_line(glue("Using cached '{ step }'"))
+    cli::cat_line(glue("Loading previous '{ step }' from '{ build_cache }'"))
     previous <- readRDS(cached_file)
   } else {
     previous <- NULL
@@ -128,20 +129,21 @@ read_2019_cached <- function(step, out_dir = ".", use_cache = TRUE, save_cache =
   result <- switch(
     step,
     met = read_2019_met(previous),
-    hpb = read_2019_hpb(),
-    icl = read_2019_icl(),
-    ips = read_2019_ips(),
-    lgh = read_2019_lgh(),
-    mca = read_2019_mca(),
-    mch = read_2019_mch(),
-    mci = read_2019_mci(),
-    pcm = read_2019_pcm(),
-    rdi = read_2019_rdi(),
+    hpb = read_2019_hpb(previous),
+    icl = read_2019_icl(previous),
+    ips = read_2019_ips(previous),
+    lgh = read_2019_lgh(previous),
+    mca = read_2019_mca(previous),
+    mch = read_2019_mch(previous),
+    mci = read_2019_mci(previous),
+    pcm = read_2019_pcm(previous),
+    rdi = read_2019_rdi(previous),
     abort(glue("Unknown step: '{ step }'"))
   )
 
   if (save_cache) {
     cli::cat_line(glue("Saving cached '{ step }'"))
+    if (!dir.exists(build_cache)) dir.create(build_cache, recursive = TRUE)
     saveRDS(result, cached_file)
   }
 
@@ -200,154 +202,278 @@ read_2019_met <- function(previous = NULL) {
   all
 }
 
-read_2019_hpb <- function() {
+read_2019_hpb <- function(previous = NULL) {
   cli::cat_rule("read_2019_hpb()")
+
   dir <- "BSRTO/2019-2020/hpb"
   cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
 
-  build_2019_log_about_to_read(cached)
-  all <- read_hpb_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
+    build_2019_log_about_to_read(new_files)
+    all <- read_hpb_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
+    all <- rbind(previous, all)
+  } else {
+    cli::cat_line("Using `previous` (no new files since last build)")
+    all <- previous
+  }
 
   build_2019_with_files_ref(all, basename(cached))
 }
 
-read_2019_icl <- function() {
+read_2019_icl <- function(previous = NULL) {
   cli::cat_rule("read_2019_icl()")
+
   dir <- "BSRTO/2019-2020/icl"
   cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
 
-  build_2019_log_about_to_read(cached)
-  all <- read_icl_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
+    build_2019_log_about_to_read(new_files)
+    all <- read_icl_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
 
-  # there are a lot of malformed files...can check Time
-  # Comment, and data_points columns for validity
-  time_valid <- !is.na(all$Time)
-  comment_valid <- all$Comment %in% c("", "Time Adjusted")
-  data_points_valid <- is.finite(all$`Data Points`) & all$`Data Points` == 410
-  rows_valid <- time_valid & comment_valid & data_points_valid
+    # there are a lot of malformed files...can check Time
+    # Comment, and data_points columns for validity
+    time_valid <- !is.na(all$Time)
+    comment_valid <- all$Comment %in% c("", "Time Adjusted")
+    data_points_valid <- is.finite(all$`Data Points`) & all$`Data Points` == 410
+    rows_valid <- time_valid & comment_valid & data_points_valid
 
-  build_2019_log_qc(all, rows_valid)
-  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
-}
+    build_2019_log_qc(all, rows_valid)
 
-read_2019_ips <- function() {
-  cli::cat_rule("read_2019_ips()")
-  dir <- "BSRTO/2019-2020/ips"
-  cached <- build_2019_list_and_cache(dir)
-
-  build_2019_log_about_to_read(cached)
-  all <- read_ips_bn_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
-
-  all$bins <- vapply(all$bins, paste0, collapse = " ", FUN.VALUE = character(1))
-
-  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
-}
-
-read_2019_lgh <- function() {
-  cli::cat_rule("read_2019_lgh()")
-  dir <- "BSRTO/2019-2020/lgH"
-  cached <- build_2019_list_and_cache(dir)
-
-  build_2019_log_about_to_read(cached)
-  all <- read_lgh_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
+    all <- rbind(previous, all[rows_valid, ])
+  } else {
+    cli::cat_line("Using `previous` (no new files since last build)")
+    all <- previous
+  }
 
   build_2019_with_files_ref(all, basename(cached))
 }
 
-read_2019_mca <- function() {
+read_2019_ips <- function(previous = NULL) {
+  cli::cat_rule("read_2019_ips()")
+
+  dir <- "BSRTO/2019-2020/ips"
+  cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
+
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
+
+    build_2019_log_about_to_read(new_files)
+    all <- read_ips_bn_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
+
+    all <- rbind(previous, all)
+  } else {
+    cli::cat_line("Using `previous` (no new files since last build)")
+    all <- previous
+  }
+
+  build_2019_with_files_ref(all, basename(cached))
+}
+
+read_2019_lgh <- function(previous = NULL) {
+  cli::cat_rule("read_2019_lgh()")
+
+  dir <- "BSRTO/2019-2020/lgH"
+  cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
+
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
+
+    build_2019_log_about_to_read(new_files)
+    all <- read_lgh_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
+    all <- rbind(previous, all)
+  } else {
+    cli::cat_line("Using `previous` (no new files since last build)")
+    all <- previous
+  }
+
+  build_2019_with_files_ref(all, basename(cached))
+}
+
+read_2019_mca <- function(previous = NULL) {
   cli::cat_rule("read_2019_mca()")
+
   dir <- "BSRTO/2019-2020/mcA"
-
   cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
 
-  build_2019_log_about_to_read(cached)
-  all <- read_mc_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
 
-  # basic QC to filter out mangled rows
-  temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
-  datetime_valid <- !is.na(all$date_time)
-  rows_valid <- temp_valid & datetime_valid
+    build_2019_log_about_to_read(new_files)
+    all <- read_mc_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
 
-  build_2019_log_qc(all, rows_valid)
-  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
+    # basic QC to filter out mangled rows
+    temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
+    datetime_valid <- !is.na(all$date_time)
+    rows_valid <- temp_valid & datetime_valid
+
+    build_2019_log_qc(all, rows_valid)
+    all <- rbind(previous, all[rows_valid, ])
+  } else {
+    all <- previous
+  }
+
+  build_2019_with_files_ref(all, basename(cached))
 }
 
-read_2019_mch <- function() {
+read_2019_mch <- function(previous = NULL) {
   cli::cat_rule("read_2019_mch()")
+
   dir <- "BSRTO/2019-2020/mcH"
-
   cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
 
-  build_2019_log_about_to_read(cached)
-  all <- read_mc_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
 
-  # basic QC to filter out mangled rows
-  temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
-  datetime_valid <- !is.na(all$date_time)
-  rows_valid <- temp_valid & datetime_valid
+    build_2019_log_about_to_read(new_files)
+    all <- read_mc_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
 
-  build_2019_log_qc(all, rows_valid)
-  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
+    # basic QC to filter out mangled rows
+    temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
+    datetime_valid <- !is.na(all$date_time)
+    rows_valid <- temp_valid & datetime_valid
+
+    build_2019_log_qc(all, rows_valid)
+    all <- rbind(previous, all[rows_valid, ])
+  } else {
+    cli::cat_line("Using `previous` (no new files since last build)")
+    all <- previous
+  }
+
+  build_2019_with_files_ref(all, basename(cached))
 }
 
-read_2019_mci <- function() {
+read_2019_mci <- function(previous = NULL) {
   cli::cat_rule("read_2019_mci()")
+
   dir <- "BSRTO/2019-2020/mcI"
-
   cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
 
-  build_2019_log_about_to_read(cached)
-  all <- read_mc_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
 
-  # basic QC to filter out mangled rows
-  temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
-  datetime_valid <- !is.na(all$date_time)
-  rows_valid <- temp_valid & datetime_valid
+    build_2019_log_about_to_read(new_files)
+    all <- read_mc_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
 
-  build_2019_log_qc(all, rows_valid)
-  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
+    # basic QC to filter out mangled rows
+    temp_valid <- !is.na(all$temperature) & (all$temperature > -20) &( all$temperature < 20)
+    datetime_valid <- !is.na(all$date_time)
+    rows_valid <- temp_valid & datetime_valid
+
+    build_2019_log_qc(all, rows_valid)
+    all <- rbind(previous, all[rows_valid, ])
+  } else {
+    cli::cat_line("Using `previous` (no new files since last build)")
+    all <- previous
+  }
+
+  build_2019_with_files_ref(all, basename(cached))
 }
 
-read_2019_pcm <- function() {
+read_2019_pcm <- function(previous = NULL) {
   cli::cat_rule("read_2019_pcm()")
+
   dir <- "BSRTO/2019-2020/pcm"
-
   cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
 
-  build_2019_log_about_to_read(cached)
-  all <- read_pcm_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
 
-  # basic QC to filter out mangled rows
-  rows_valid <- all$checksum_valid
-  build_2019_log_qc(all, rows_valid)
-  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
+    build_2019_log_about_to_read(new_files)
+    all <- read_pcm_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
+
+    # basic QC to filter out mangled rows
+    rows_valid <- all$checksum_valid
+    build_2019_log_qc(all, rows_valid)
+    all <- rbind(previous, all[rows_valid, ])
+  } else {
+    cli::cat_line("Using `previous` (no new files since last build)")
+    all <- previous
+  }
+
+  build_2019_with_files_ref(all, basename(cached))
 }
 
-read_2019_rdi <- function() {
+read_2019_rdi <- function(previous = NULL) {
   cli::cat_rule("read_2019_rdi()")
+
   dir <- "BSRTO/2019-2020/rdi"
-
   cached <- build_2019_list_and_cache(dir)
+  new_files <- cached[!(basename(cached) %in% attr(previous, "files"))]
 
-  build_2019_log_about_to_read(cached)
-  all <- read_rdi_vector(cached)
-  all$file <- build_2019_file_relative(all$file)
+  if (length(new_files) > 0) {
+    cli::cat_line(
+      glue(
+        "Using previously read value for { length(attr(previous, 'files')) } files"
+      )
+    )
 
-  # use 'date_time' instead of 'real_time_clock' like the others
-  names(all)[names(all) == "real_time_clock"] <- "date_time"
+    build_2019_log_about_to_read(new_files)
+    all <- read_rdi_vector(new_files)
+    all$file <- build_2019_file_relative(all$file)
 
-  # at least one row is missing values for the data sections
-  rows_valid <- !vapply(all$range_msb, is.null, logical(1))
-  build_2019_log_qc(all, rows_valid)
-  build_2019_with_files_ref(all[rows_valid, ], basename(cached))
+    # use 'date_time' instead of 'real_time_clock' like the others
+    names(all)[names(all) == "real_time_clock"] <- "date_time"
+
+    # at least one row is missing values for the data sections
+    rows_valid <- !vapply(all$range_msb, is.null, logical(1))
+    build_2019_log_qc(all, rows_valid)
+    all <- rbind(previous, all[rows_valid, ])
+  } else {
+    cli::cat_line("Using `previous` (no new files since last build)")
+    all <- previous
+  }
+
+  build_2019_with_files_ref(all, basename(cached))
 }
 
 build_2019_log_about_to_read <- function(cached) {
