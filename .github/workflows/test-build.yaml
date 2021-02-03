@@ -65,5 +65,5 @@ jobs:
         env:
           R_BSRTO_CACHE: ${{ runner.temp }}/bsrto-cache-dir
           R_BSRTO_BUILD_CACHE: ${{ runner.temp }}/bsrto-build-cache-dir
-        run: bsrto::bs_build_2019()
+        run: bsrto::bs_build_realtime()
         shell: Rscript {0}
