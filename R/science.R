@@ -3,14 +3,15 @@
 #'
 #' Formula from <https://en.wikipedia.org/wiki/Atmospheric_pressure>.
 #'
-#' @param p Measured barometric pressure in Pascals
-#' @param p0 Pressure at sea level in Pascals
+#' @param p Measured barometric pressure (can be any pressure unit)
+#' @param p0 Pressure at sea level in (can be any pressure unit)
 #' @param h Elevation of barometric pressure measurement in meters
 #' @param g Accelleration due to gravity in m/s2
 #' @param M Molar mass of dry air (kg / mol)
 #' @param R0 Universal gas constant (mol-Kelvins)
 #' @param T0 Sea level standard temperature (Kelvins)
 #'
+#' @return The corrected pressure in the same unit as `p` or `p0`.
 #' @export
 #'
 #' @examples

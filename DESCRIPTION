@@ -24,7 +24,8 @@ Imports:
     curl,
     hms,
     progress,
-    cli
+    cli,
+    ncdf4
 Suggests: 
     testthat,
     withr,

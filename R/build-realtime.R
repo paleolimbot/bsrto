@@ -40,16 +40,71 @@ bs_build_realtime <- function(out_dir = ".") {
   names(steps) <- steps
   built <- lapply(steps, read_realtime_cached)
 
+  # Here `built` mutable, so changes made by subsequent steps
+  # are available for the following steps. This is useful to keep functions
+  # small but means they are less isolated.
+  # TODO: make explicit the objects each step needs and have each step
+  # return anything needed by subsequent steps
+  built <- as.environment(built)
+
+  # these processed values are used as corrections in later outputs
+  baro <- write_realtime_baro(built, out_dir)
+  met <- write_realtime_met(built, out_dir)
+  pc <- write_realtime_pcm(built, out_dir)
+
   write_realtime_adp(built, out_dir)
-  write_realtime_baro(built, out_dir)
-  write_realtime_met(built, out_dir)
+
   write_realtime_icl(built, out_dir)
   write_realtime_ips(built, out_dir)
   write_realtime_lgh(built, out_dir)
   write_realtime_mc(built, out_dir)
-  write_realtime_pcm(built, out_dir)
+
 
   invisible(out_dir)
+}
+
+
+
+write_realtime_baro <- function(built, out_dir = ".") {
+  cli::cat_rule("write_realtime_baro()")
+
+  # same naming convention and units as environment canada values
+  baro <- tibble::tibble(
+    file = built$hpb$file,
+    date_time = built$hpb$date_time,
+    shore_press = built$hpb$atm_pres_mbar / 10, # mbar -> kPa
+    shore_press_flag = NA_character_,
+    shore_temp = built$hpb$temp_c,
+    shore_temp_flag = NA_character_
+  )
+
+  readr::write_csv(baro, file.path(out_dir, "baro.csv"))
+}
+
+write_realtime_met <- function(built, out_dir = ".") {
+  cli::cat_rule("write_realtime_met()")
+
+  # Resolute station altitude is 68 m above sea level
+  met <- built$met
+  met$sea_level_press <-
+    sea_level_pressure_from_barometric(built$met$stn_press, 68)
+  met$sea_level_press_flag <- built$met$stn_press_flag
+
+  # check correction
+  # plot(built$met$stn_press, built$met$sea_level_press)
+
+  # give every variable a _flag column
+  met$weather_flag <- NA_character_
+
+  readr::write_csv(met, file.path(out_dir, "met.csv"))
+}
+
+write_realtime_pcm <- function(built, out_dir = ".") {
+  cli::cat_rule("write_realtime_pcm()")
+
+  # https://github.com/richardsc/bsrto/blob/master/pc.R#L28-L45
+
+  readr::write_csv(built$pcm, file.path(out_dir, "pcm.csv"))
 }
 
 write_realtime_adp <- function(built, out_dir = ".") {
@@ -67,28 +122,137 @@ write_realtime_adp <- function(built, out_dir = ".") {
   readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
 }
 
-write_realtime_baro <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_baro()")
-
-  # met is doing a similar thing here...process together?
-
-  # https://github.com/richardsc/bsrto/blob/master/baro.R#L11
-  # https://github.com/richardsc/bsrto/blob/master/met.R#L5-L37
-
-  readr::write_csv(built$hpb, file.path(out_dir, "baro.csv"))
-}
-
-write_realtime_met <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_met()")
-  readr::write_csv(built$met, file.path(out_dir, "met.csv"))
-}
-
 write_realtime_icl <- function(built, out_dir = ".") {
   cli::cat_rule("write_realtime_icl()")
 
-  # ordering on time here
+  # This data is exportable as .csv but fits more naturally as a NetCDF
+  # Use column names and flag conventions following that of Env Canada
+  # climate data
 
-  readr::write_csv(built$icl, file.path(out_dir, "icl.csv"))
+  # Need to make sure each row represents a unique date/time or the
+  # netCDF magic below won't work. These are all (as far as I can tell)
+  # a result of mangled files. While there's no guarantee that the first
+  # non-duplicated date-time is the valid one, it's the most likely. This
+  # only represents ~40 rows.
+  icl <- built$icl
+  duplicated_date_times <- duplicated(icl$Time)
+
+  # flag wildly out-of-range values (mangled data, not bad measurements)
+  temp_out_of_range <- (icl$`Temperature [C]` > 10) | (icl$`Temperature [C]` < -10)
+  hum_out_of_range <- (icl$`Humidity [%]` > 100) | (icl$`Humidity [%]` < 0)
+
+  # not logging because this should be moved to the read_icl_realtime function
+  rows_invalid <- duplicated_date_times | temp_out_of_range | hum_out_of_range
+  icl <- icl[!rows_invalid, ]
+
+  # separate meta information for now
+  icl_meta <- tibble::tibble(
+    file = icl$file,
+    date_time = icl$Time,
+    icl_temp = icl$`Temperature [C]`,
+    icl_temp_flag = 0L,
+    icl_rel_hum = icl$`Humidity [%]`,
+    icl_rel_hum_flag = 0L
+  )
+
+  # separate spectra
+  spec_wide <- icl[grepl("^[0-9.]+$", names(icl))]
+  frequencies <- as.numeric(names(spec_wide))
+  # using t() here to keep values from the same spectrum together
+  # rather than values from the same frequency (because matrices are
+  # column-major in R)
+  intensity <- as.numeric(t(as.matrix(spec_wide)))
+
+  # flag suspected bad intensity values using int type
+  # (because we're headed to NetCDF where character is hard)
+  intensity_flag <- as.integer(
+    (intensity > 500) |
+      (intensity < -50) |
+      (suppressWarnings(intensity %% 1) != 0)
+  )
+  intensity_flag[is.na(intensity)] <- 2L
+
+
+  # define NetCDF dimensions and variables
+  dim_date_time <- ncdf4::ncdim_def(
+    "date_time",
+    units = "seconds since 1970-01-01 00:00:00 UTC",
+    vals = as.numeric(icl_meta$date_time, origin = "1970-01-01 00:00:00")
+  )
+
+  dim_frequency <- ncdf4::ncdim_def(
+    "frequency",
+    units = "Hz",
+    vals = frequencies
+  )
+
+  dim_string23 <- ncdf4::ncdim_def(
+    "string23",
+    units = "count",
+    vals = 1:23
+  )
+
+  # create NetCDF
+  nc <- ncdf4::nc_create(
+    file.path(out_dir, "icl.nc"),
+    list(
+      ncdf4::ncvar_def(
+        "file",
+        units = "character",
+        dim = list(dim_string23, dim_date_time),
+        longname = "Source filename",
+        prec = "char"
+      ),
+      ncdf4::ncvar_def(
+        "icl_temp",
+        units = "Degrees C",
+        dim = list(dim_date_time),
+        longname = "Operating temperature",
+        prec = "float"
+      ),
+      ncdf4::ncvar_def(
+        "icl_temp_flag",
+        units = "Non-zero for possible bad data",
+        dim = list(dim_date_time),
+        prec = "short"
+      ),
+      ncdf4::ncvar_def(
+        "icl_rel_hum",
+        units = "%",
+        dim = list(dim_date_time),
+        longname = "Operating relative humidity",
+        prec = "float"
+      ),
+      ncdf4::ncvar_def(
+        "icl_rel_hum_flag",
+        units = "Non-zero for possible bad data",
+        dim = list(dim_date_time),
+        prec = "short"
+      ),
+      ncdf4::ncvar_def(
+        "icl_intensity",
+        units = "Relative intensity",
+        dim = list(dim_date_time, dim_frequency),
+        prec = "integer"
+      ),
+      ncdf4::ncvar_def(
+        "icl_intensity_flag",
+        units = "Non-zero for possible bad data",
+        dim = list(dim_date_time, dim_frequency),
+        prec = "short"
+      )
+    )
+  )
+  on.exit(ncdf4::nc_close(nc))
+
+  ncdf4::ncvar_put(nc, "file", icl_meta$file)
+  ncdf4::ncvar_put(nc, "icl_temp", icl_meta$icl_temp)
+  ncdf4::ncvar_put(nc, "icl_temp_flag", icl_meta$icl_temp_flag)
+  ncdf4::ncvar_put(nc, "icl_rel_hum", icl_meta$icl_rel_hum)
+  ncdf4::ncvar_put(nc, "icl_rel_hum_flag", icl_meta$icl_rel_hum_flag)
+  ncdf4::ncvar_put(nc, "icl_intensity", as.integer(intensity))
+  ncdf4::ncvar_put(nc, "icl_intensity_flag", intensity_flag)
+
 }
 
 write_realtime_ips <- function(built, out_dir = ".") {
@@ -126,14 +290,6 @@ write_realtime_mc <- function(built, out_dir = ".") {
   readr::write_csv(built$mca, file.path(out_dir, "mca.csv"))
   readr::write_csv(built$mch, file.path(out_dir, "mch.csv"))
   readr::write_csv(built$mci, file.path(out_dir, "mci.csv"))
-}
-
-write_realtime_pcm <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_pcm()")
-
-  # https://github.com/richardsc/bsrto/blob/master/pc.R#L28-L45
-
-  readr::write_csv(built$pcm, file.path(out_dir, "pcm.csv"))
 }
 
 read_realtime_cached <- function(step, build_cache = bs_build_cache_dir("realtime"),
