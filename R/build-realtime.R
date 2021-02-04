@@ -40,55 +40,46 @@ bs_build_realtime <- function(out_dir = ".") {
   names(steps) <- steps
   built <- lapply(steps, read_realtime_cached)
 
-  # Here `built` mutable, so changes made by subsequent steps
-  # are available for the following steps. This is useful to keep functions
-  # small but means they are less isolated.
-  # TODO: make explicit the objects each step needs and have each step
-  # return anything needed by subsequent steps
-  built <- as.environment(built)
-
   # these processed values are used as corrections in later outputs
-  baro <- write_realtime_baro(built, out_dir)
-  met <- write_realtime_met(built, out_dir)
-  pc <- write_realtime_pcm(built, out_dir)
+  baro <- write_realtime_baro(built$hpb, out_dir)
+  met <- write_realtime_met(built$met, out_dir)
+  pc <- write_realtime_pcm(built$pcm, out_dir)
 
-  write_realtime_adp(built, out_dir)
-
-  write_realtime_icl(built, out_dir)
-  write_realtime_ips(built, out_dir)
-  write_realtime_lgh(built, out_dir)
-  write_realtime_mc(built, out_dir)
-
+  write_realtime_adp(built$rdi, out_dir)
+  write_realtime_icl(built$icl, out_dir)
+  write_realtime_ips(built$ips, out_dir)
+  write_realtime_lgh(built$lgh, out_dir)
+  write_realtime_mc(built[c("mca", "mch", "mci")], out_dir)
 
   invisible(out_dir)
 }
 
-
-
-write_realtime_baro <- function(built, out_dir = ".") {
+write_realtime_baro <- function(hpb, out_dir = ".") {
   cli::cat_rule("write_realtime_baro()")
 
   # same naming convention and units as environment canada values
   baro <- tibble::tibble(
-    file = built$hpb$file,
-    date_time = built$hpb$date_time,
-    shore_press = built$hpb$atm_pres_mbar / 10, # mbar -> kPa
+    file = hpb$file,
+    date_time = hpb$date_time,
+    shore_press = hpb$atm_pres_mbar / 10, # mbar -> kPa
     shore_press_flag = NA_character_,
-    shore_temp = built$hpb$temp_c,
+    shore_temp = hpb$temp_c,
     shore_temp_flag = NA_character_
   )
 
-  readr::write_csv(baro, file.path(out_dir, "baro.csv"))
+  out_file <- file.path(out_dir, "baro.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(baro, out_file)
 }
 
-write_realtime_met <- function(built, out_dir = ".") {
+write_realtime_met <- function(met, out_dir = ".") {
   cli::cat_rule("write_realtime_met()")
 
   # Resolute station altitude is 68 m above sea level
-  met <- built$met
   met$sea_level_press <-
-    sea_level_pressure_from_barometric(built$met$stn_press, 68)
-  met$sea_level_press_flag <- built$met$stn_press_flag
+    sea_level_pressure_from_barometric(met$stn_press, 68)
+  met$sea_level_press_flag <- met$stn_press_flag
 
   # check correction
   # plot(built$met$stn_press, built$met$sea_level_press)
@@ -96,33 +87,41 @@ write_realtime_met <- function(built, out_dir = ".") {
   # give every variable a _flag column
   met$weather_flag <- NA_character_
 
-  readr::write_csv(met, file.path(out_dir, "met.csv"))
+  out_file <- file.path(out_dir, "met.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(met, out_file)
 }
 
-write_realtime_pcm <- function(built, out_dir = ".") {
+write_realtime_pcm <- function(pcm, out_dir = ".") {
   cli::cat_rule("write_realtime_pcm()")
 
   # https://github.com/richardsc/bsrto/blob/master/pc.R#L28-L45
 
-  readr::write_csv(built$pcm, file.path(out_dir, "pcm.csv"))
+  out_file <- file.path(out_dir, "pcm.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(pcm, out_file)
 }
 
-write_realtime_adp <- function(built, out_dir = ".") {
+write_realtime_adp <- function(rdi, out_dir = ".") {
   cli::cat_rule("write_realtime_adp()")
 
   # https://github.com/richardsc/bsrto/blob/master/adp.R#L32-L94
 
   # list columns need to be joined by whitespace before writing
-  is_list <- vapply(built$rdi, is.list, logical(1))
-  built$rdi[is_list] <- lapply(built$rdi[is_list], function(col) {
+  is_list <- vapply(rdi, is.list, logical(1))
+  rdi[is_list] <- lapply(rdi[is_list], function(col) {
     vapply(col, paste0, collapse = " ", FUN.VALUE = character(1))
   })
 
+  out_file <- file.path(out_dir, "rdi.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
 
-  readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
+  readr::write_csv(rdi, out_file)
 }
 
-write_realtime_icl <- function(built, out_dir = ".") {
+write_realtime_icl <- function(icl, out_dir = ".") {
   cli::cat_rule("write_realtime_icl()")
 
   # This data is exportable as .csv but fits more naturally as a NetCDF
@@ -134,7 +133,6 @@ write_realtime_icl <- function(built, out_dir = ".") {
   # a result of mangled files. While there's no guarantee that the first
   # non-duplicated date-time is the valid one, it's the most likely. This
   # only represents ~40 rows.
-  icl <- built$icl
   duplicated_date_times <- duplicated(icl$Time)
 
   # flag wildly out-of-range values (mangled data, not bad measurements)
@@ -172,6 +170,9 @@ write_realtime_icl <- function(built, out_dir = ".") {
   )
   intensity_flag[is.na(intensity)] <- 2L
 
+  # some of the bad values are outside the integer range, which causes
+  # warnings that we don't care about
+  intensity <- suppressWarnings(as.integer(intensity))
 
   # define NetCDF dimensions and variables
   dim_date_time <- ncdf4::ncdim_def(
@@ -193,53 +194,70 @@ write_realtime_icl <- function(built, out_dir = ".") {
   )
 
   # create NetCDF
+  out_file <- file.path(out_dir, "icl.nc")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  # without compression, this file is >300 MB, which is bigger than the
+  # CSV that would result from writing it without processing. A value of
+  # 5 drops the size by a factor of 10.
+  compression <- 5
+
   nc <- ncdf4::nc_create(
-    file.path(out_dir, "icl.nc"),
+    out_file,
     list(
       ncdf4::ncvar_def(
         "file",
         units = "character",
         dim = list(dim_string23, dim_date_time),
         longname = "Source filename",
-        prec = "char"
+        prec = "char",
+        compression = compression
       ),
       ncdf4::ncvar_def(
         "icl_temp",
         units = "Degrees C",
         dim = list(dim_date_time),
         longname = "Operating temperature",
-        prec = "float"
+        prec = "float",
+        compression = compression
       ),
       ncdf4::ncvar_def(
         "icl_temp_flag",
         units = "Non-zero for possible bad data",
         dim = list(dim_date_time),
-        prec = "short"
+        prec = "short",
+        compression = compression
       ),
       ncdf4::ncvar_def(
         "icl_rel_hum",
         units = "%",
         dim = list(dim_date_time),
         longname = "Operating relative humidity",
-        prec = "float"
+        prec = "float",
+        compression = compression
       ),
       ncdf4::ncvar_def(
         "icl_rel_hum_flag",
         units = "Non-zero for possible bad data",
         dim = list(dim_date_time),
-        prec = "short"
+        prec = "short",
+        compression = compression
       ),
       ncdf4::ncvar_def(
         "icl_intensity",
         units = "Relative intensity",
         dim = list(dim_date_time, dim_frequency),
-        prec = "integer"
+        # note that using "short" here doesn't result in a smaller file
+        # if compression is enabled
+        prec = "integer",
+        compression = compression
       ),
       ncdf4::ncvar_def(
         "icl_intensity_flag",
         units = "Non-zero for possible bad data",
         dim = list(dim_date_time, dim_frequency),
-        prec = "short"
+        prec = "short",
+        compression = compression
       )
     )
   )
@@ -250,36 +268,43 @@ write_realtime_icl <- function(built, out_dir = ".") {
   ncdf4::ncvar_put(nc, "icl_temp_flag", icl_meta$icl_temp_flag)
   ncdf4::ncvar_put(nc, "icl_rel_hum", icl_meta$icl_rel_hum)
   ncdf4::ncvar_put(nc, "icl_rel_hum_flag", icl_meta$icl_rel_hum_flag)
-  ncdf4::ncvar_put(nc, "icl_intensity", as.integer(intensity))
+  ncdf4::ncvar_put(nc, "icl_intensity", intensity)
   ncdf4::ncvar_put(nc, "icl_intensity_flag", intensity_flag)
 
+  invisible(icl_meta)
 }
 
-write_realtime_ips <- function(built, out_dir = ".") {
+write_realtime_ips <- function(ips, out_dir = ".") {
   cli::cat_rule("write_realtime_ips()")
 
   # https://github.com/richardsc/bsrto/blob/master/ips.R#L74-L94
   # https://github.com/richardsc/bsrto/blob/master/save_data_file.R#L15
 
   # bins is a list-col: join by whitespace
-  built$ips$bins <- vapply(built$ips$bins, paste0, collapse = " ", FUN.VALUE = character(1))
+  ips$bins <- vapply(ips$bins, paste0, collapse = " ", FUN.VALUE = character(1))
 
-  readr::write_csv(built$ips, file.path(out_dir, "ips.csv"))
+  out_file <- file.path(out_dir, "ips.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(ips, out_file)
 }
 
-write_realtime_lgh <- function(built, out_dir = ".") {
+write_realtime_lgh <- function(lgh, out_dir = ".") {
   cli::cat_rule("write_realtime_lgh()")
 
   # no processing of these in current app
 
   # log_text is a list-col, but we can unnest it
-  log_text <- built$lgh$log_text
+  log_text <- lgh$log_text
   lengths <- vapply(log_text, length, integer(1))
-  built$lgh$log_text <- NULL
-  built$lgh <- vctrs::vec_rep_each(built$lgh, lengths)
-  built$lgh$log_text <- do.call(c, log_text)
+  lgh$log_text <- NULL
+  lgh <- vctrs::vec_rep_each(lgh, lengths)
+  lgh$log_text <- do.call(c, log_text)
 
-  readr::write_csv(built$lgh, file.path(out_dir, "lgh.csv"))
+  out_file <- file.path(out_dir, "lgh.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(lgh, out_file)
 }
 
 write_realtime_mc <- function(built, out_dir = ".") {
@@ -292,19 +317,19 @@ write_realtime_mc <- function(built, out_dir = ".") {
   readr::write_csv(built$mci, file.path(out_dir, "mci.csv"))
 }
 
-read_realtime_cached <- function(step, build_cache = bs_build_cache_dir("realtime"),
+read_realtime_cached <- function(file_type, build_cache = bs_build_cache_dir("realtime"),
                              use_cache = TRUE, save_cache = TRUE) {
-  cached_file <- file.path(build_cache, glue("{ step }.rds"))
+  cached_file <- file.path(build_cache, glue("{ file_type }.rds"))
 
   if (use_cache && file.exists(cached_file)) {
-    cli::cat_line(glue("Loading previous '{ step }' from '{ build_cache }'"))
+    cli::cat_line(glue("Loading previous '{ file_type }' from '{ build_cache }'"))
     previous <- readRDS(cached_file)
   } else {
     previous <- NULL
   }
 
   result <- switch(
-    step,
+    file_type,
     met = read_realtime_met(previous),
     hpb = read_realtime_hpb(previous),
     icl = read_realtime_icl(previous),
@@ -315,16 +340,16 @@ read_realtime_cached <- function(step, build_cache = bs_build_cache_dir("realtim
     mci = read_realtime_mci(previous),
     pcm = read_realtime_pcm(previous),
     rdi = read_realtime_rdi(previous),
-    abort(glue("Unknown step: '{ step }'"))
+    abort(glue("Unknown file_type: '{ file_type }'"))
   )
 
   # nice for build logs to have a glimpse of the raw outputs
-  cli::cat_rule(glue("[built${ step }]"))
+  cli::cat_rule(glue("[built${ file_type }]"))
   print(tibble::as_tibble(result))
-  cli::cat_rule(glue("[/built${ step }]"))
+  cli::cat_rule(glue("[/built${ file_type }]"))
 
   if (save_cache) {
-    cli::cat_line(glue("Saving cached '{ step }'"))
+    cli::cat_line(glue("Saving cached '{ file_type }'"))
     if (!dir.exists(build_cache)) dir.create(build_cache, recursive = TRUE)
     # compression doesn't make a difference with speed here but makes a huge
     # difference with the size of the cache
