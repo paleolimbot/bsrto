@@ -25,7 +25,8 @@ Imports:
     hms,
     progress,
     cli,
-    ncdf4
+    ncdf4,
+    dplyr
 Suggests: 
     testthat,
     withr,

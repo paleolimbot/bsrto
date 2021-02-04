@@ -19,3 +19,39 @@ test_that("pressure correction works", {
     1.2
   )
 })
+
+test_that("uv--heading conversion works", {
+  headings <- 0:360
+
+  expect_equal(
+    heading_from_uv(uv_from_heading(headings)),
+    c(headings[-length(headings)], 0)
+  )
+
+  expect_equal(
+    uv_from_heading(0),
+    tibble::tibble(u = 0, v = 1)
+  )
+
+  expect_equal(
+    uv_from_heading(90),
+    tibble::tibble(u = 1, v = 0)
+  )
+
+  expect_equal(
+    uv_from_heading(180),
+    tibble::tibble(u = 0, v = -1)
+  )
+
+  expect_equal(
+    uv_from_heading(270),
+    tibble::tibble(u = -1, v = 0)
+  )
+})
+
+test_that("mean and sd of headings works", {
+  expect_equal(heading_mean(0:10), 5)
+  expect_equal(heading_mean(-5:5), 0)
+  expect_equal(heading_mean(c(350, 10)), 0)
+  expect_equal(heading_sd(-5:5), sd(0:10))
+})

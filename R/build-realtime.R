@@ -96,12 +96,34 @@ write_realtime_met <- function(met, out_dir = ".") {
 write_realtime_pcm <- function(pcm, out_dir = ".") {
   cli::cat_rule("write_realtime_pcm()")
 
-  # https://github.com/richardsc/bsrto/blob/master/pc.R#L28-L45
+  # Zero readings are suspected to be bad readings and often are
+  # there are so many measurements that removing them doesn't impact
+  # data quality
+  zero_heading <- pcm$true_heading == 0
+  pcm$true_heading_flag <- ifelse(zero_heading, "likely bad", NA_character_)
 
-  out_file <- file.path(out_dir, "pcm.csv")
+  # calculate u (west-east) and v (south-north)
+  pcm[c("u", "v")] <- uv_from_heading(pcm$true_heading)
+
+  # Summarise to once per file (roughly once every two hours)
+  # there are ~14-20 measurements per file, but they seem to be clumped
+  # such that I'm not sure one can assume equal spacing of the measurements
+  # over a two-hour period. Best assumption is that they are representative
+  # of the start time of the file.
+  pcm_summary <- pcm %>%
+    group_by(.data$file) %>%
+    summarise(
+      date_time = last_date_time[1],
+      true_heading_sd = heading_sd(true_heading[is.na(true_heading_flag)]),
+      true_heading = heading_mean(true_heading[is.na(true_heading_flag)]),
+      true_heading_n = sum(is.na(true_heading_flag)),
+      .groups = "drop"
+    )
+
+  out_file <- file.path(out_dir, "pcm_summary.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
 
-  readr::write_csv(pcm, out_file)
+  readr::write_csv(pcm_summary, out_file)
 }
 
 write_realtime_adp <- function(rdi, out_dir = ".") {

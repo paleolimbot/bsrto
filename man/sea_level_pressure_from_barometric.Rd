@@ -24,7 +24,7 @@ barometric_pressure_from_sea_level(
 )
 }
 \arguments{
-\item{p}{Measured barometric pressure in Pascals}
+\item{p}{Measured barometric pressure (can be any pressure unit)}
 
 \item{h}{Elevation of barometric pressure measurement in meters}
 
@@ -36,7 +36,10 @@ barometric_pressure_from_sea_level(
 
 \item{T0}{Sea level standard temperature (Kelvins)}
 
-\item{p0}{Pressure at sea level in Pascals}
+\item{p0}{Pressure at sea level in (can be any pressure unit)}
+}
+\value{
+The corrected pressure in the same unit as \code{p} or \code{p0}.
 }
 \description{
 Formula from \url{https://en.wikipedia.org/wiki/Atmospheric_pressure}.
