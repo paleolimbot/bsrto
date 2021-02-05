@@ -20,6 +20,28 @@ test_that("pressure correction works", {
   )
 })
 
+test_that("barrow_strait_declination() is a reasonable approximation", {
+  skip_if_not_installed("oce")
+
+  lon <- -91.25105
+  lat <- 74.60635
+  date_time <- seq(
+    as.POSIXct("2019-01-01 00:00:00", tz = "UTC"),
+    as.POSIXct("2025-12-31 11:59:00", tz = "UTC"),
+    by = "day"
+  )
+  dec_model <- oce::magneticField(
+    rep(lon, length(date_time)),
+    rep(lat, length(date_time)),
+    date_time
+  )
+  dec_approx <- barrow_strait_declination(date_time)
+
+  expect_true(
+    max(abs(dec_model$declination - dec_approx)) < 0.02
+  )
+})
+
 test_that("uv--heading conversion works", {
   headings <- 0:360
 
