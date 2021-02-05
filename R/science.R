@@ -50,12 +50,20 @@ heading_from_uv <- function(uv) {
   (result + 360) %% 360
 }
 
-heading_mean <- function(true_heading) {
+heading_mean <- function(true_heading, na.rm = FALSE) {
+  if (na.rm) {
+    true_heading <- true_heading[!is.na(true_heading)]
+  }
+
   uv <- uv_from_heading(true_heading)
   heading_from_uv(lapply(uv, sum))
 }
 
-heading_sd <- function(true_heading) {
+heading_sd <- function(true_heading, na.rm = FALSE) {
+  if (na.rm) {
+    true_heading <- true_heading[!is.na(true_heading)]
+  }
+
   uv <- uv_from_heading(true_heading)
 
   # need the mean as a unit vector

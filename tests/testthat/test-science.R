@@ -54,4 +54,9 @@ test_that("mean and sd of headings works", {
   expect_equal(heading_mean(-5:5), 0)
   expect_equal(heading_mean(c(350, 10)), 0)
   expect_equal(heading_sd(-5:5), sd(0:10))
+
+  expect_identical(heading_mean(c(1, 1, NA), na.rm = FALSE), NA_real_)
+  expect_identical(heading_mean(c(1, 1, NA), na.rm = TRUE), 1)
+  expect_identical(heading_sd(c(1, 1, NA), na.rm = FALSE), NA_real_)
+  expect_identical(heading_sd(c(1, 1, NA), na.rm = TRUE), 0)
 })
