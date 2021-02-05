@@ -71,6 +71,11 @@ test_that("uv--heading conversion works", {
   )
 })
 
+test_that("heading diff works", {
+  expect_equal(heading_diff(-179:179, 0), -179:179)
+  expect_equal(heading_diff(-179:179 + 180, 180), -179:179)
+})
+
 test_that("mean and sd of headings works", {
   expect_equal(heading_mean(0:10), 5)
   expect_equal(heading_mean(-5:5), 0)

@@ -45,7 +45,7 @@ bs_build_realtime <- function(out_dir = ".") {
   met <- write_realtime_met(built$met, out_dir)
   pc <- write_realtime_pcm(built$pcm, out_dir)
 
-  write_realtime_adp(built$rdi, out_dir)
+  write_realtime_adp(built$rdi, pc, out_dir)
   write_realtime_icl(built$icl, out_dir)
   write_realtime_ips(built$ips, out_dir)
   write_realtime_lgh(built$lgh, out_dir)
@@ -96,51 +96,213 @@ write_realtime_met <- function(met, out_dir = ".") {
 write_realtime_pcm <- function(pcm, out_dir = ".") {
   cli::cat_rule("write_realtime_pcm()")
 
+  # Given that the existing ADP code corrects these for magnetic declination,
+  # they are magnetic and not true measurements. (Name of column should be
+  # fixed upstream).
+  pcm$pc_heading <- pcm$true_heading
+  pcm$true_heading <- NULL
+
   # Zero readings are suspected to be bad readings and often are
   # there are so many measurements that removing them doesn't impact
   # data quality
-  zero_heading <- pcm$true_heading == 0
-  pcm$true_heading_flag <- ifelse(zero_heading, "likely bad", NA_character_)
-
-  # calculate u (west-east) and v (south-north)
-  pcm[c("u", "v")] <- uv_from_heading(pcm$true_heading)
+  zero_heading <- pcm$pc_heading == 0
+  pcm$pc_heading_flag <- ifelse(zero_heading, "likely bad", NA_character_)
 
   # Summarise to once per file (roughly once every two hours)
   # there are ~14-20 measurements per file, but they seem to be clumped
   # such that I'm not sure one can assume equal spacing of the measurements
-  # over a two-hour period. Best assumption is that they are representative
+  # over a two-hour period. Assumption here is that they are representative
   # of the start time of the file.
-  pcm_summary <- pcm %>%
+  pc <- pcm %>%
     group_by(.data$file) %>%
     summarise(
       date_time = last_date_time[1],
-      true_heading_sd = heading_sd(true_heading[is.na(true_heading_flag)]),
-      true_heading = heading_mean(true_heading[is.na(true_heading_flag)]),
-      true_heading_n = sum(is.na(true_heading_flag)),
+      pc_heading_sd = heading_sd(pc_heading[is.na(pc_heading_flag)]),
+      pc_heading = heading_mean(pc_heading[is.na(pc_heading_flag)]),
+      pc_true_heading = heading_normalize(
+        pc_heading + barrow_strait_declination(date_time)
+      ),
+      pc_heading_n = sum(is.na(pc_heading_flag)),
       .groups = "drop"
     )
 
   out_file <- file.path(out_dir, "pcm_summary.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
 
-  readr::write_csv(pcm_summary, out_file)
+  readr::write_csv(pc, out_file)
 }
 
-write_realtime_adp <- function(rdi, out_dir = ".") {
+write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   cli::cat_rule("write_realtime_adp()")
 
-  # https://github.com/richardsc/bsrto/blob/master/adp.R#L32-L94
+  # Declare variables ----
 
-  # list columns need to be joined by whitespace before writing
-  is_list <- vapply(rdi, is.list, logical(1))
-  rdi[is_list] <- lapply(rdi[is_list], function(col) {
-    vapply(col, paste0, collapse = " ", FUN.VALUE = character(1))
-  })
+  # These columns had a constant value between the start of the
+  # deployment and 2021-02-01.
+  cols_config <- c(
+    "firmware_version", "system_config", "real_sim_flag", "lag_length",
+    "n_beams", "n_cells", "pings_per_ensemble", "cell_size", "blank_after_transmit",
+    "profiling_mode", "low_corr_thresh", "n_code_reps", "pct_gd_min",
+    "error_velocity_maximum", "tpp_minutes", "tpp_seconds", "tpp_hundredths",
+    "coord_transform", "heading_alignment", "heading_bias", "sensor_source",
+    "sensors_available", "wp_ref_layer_average", "false_target_threshold",
+    "transmit_lag_distance", "cpu_board_serial_number", "system_bandwidth",
+    "system_power", "serial_number", "beam_angle",
+    # Treating bin1_distance as a constant
+    # (6.02) even though it is 6.03 in a handful of profiles. Treating
+    # transmit_pulse_length as a constant (4.06) even though it can be
+    # 4.05 or 4.07 in a handful of profiles.
+    "bin1_distance", "transmit_pulse_length"
+  )
 
-  out_file <- file.path(out_dir, "rdi.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
+  # These columns are list(matrix(n_beams * n_cells))
+  cols_n_beams_n_cells <- c(
+    "velocity", "correlation",
+    "echo_intensity", "pct_good"
+  )
 
-  readr::write_csv(rdi, out_file)
+  # These columns are list(c(n_beams))
+  cols_n_beams <- c("range_lsb", "range_msb", "bv", "bc", "ba", "bg")
+
+  # All other columns have one value per profile
+  cols_prof_meta <- setdiff(
+    names(rdi),
+    c(cols_config, cols_n_beams_n_cells, cols_n_beams)
+  )
+
+  # Make objects ----
+
+  rdi_config <- rdi[1, cols_config]
+  rdi_meta <- rdi[cols_prof_meta]
+
+  # These will be along date_time, n_beams, n_cells
+  rdi_n_beams_n_cells <- lapply(
+    rdi[cols_n_beams_n_cells],
+    abind::abind, along = 0
+  )
+
+  # These will be along date_time, n_beams
+  rdi_n_beams <- lapply(rdi[cols_n_beams], abind::abind, along = 0)
+
+  # Distance is a more meaningful way to dimension along n_cells
+  n_cell_distance <- seq(
+    rdi_config$bin1_distance,
+    by = rdi_config$cell_size,
+    length.out = rdi_config$n_cells
+  )
+
+  # Apply corrections! ----
+
+  # Get the nearest pole compass true heading
+  pc_true_heading_interp <- resample_nearest(
+    pc$date_time,
+    pc$pc_true_heading,
+    rdi_meta$date_time,
+    # Approximately 95% of profiles have a nearest neighbour measurement
+    # within 9 hours. These values can change rapidly, so it's not a
+    # good assumption to take values farther away (9 hours might be a stretch)
+    max_distance = 9 * 60
+  )
+
+  # correct for beam alignment to the pole compass
+  rdi_meta$beam_heading_corrected <- heading_normalize(pc_true_heading_interp + 45)
+
+  # compare to heading from rdi file...you can theoretically predict the error
+  # based on the original heading (bumped slightly for continuity)
+
+  # heading_orig <- ifelse(rdi_meta$heading > 240, rdi_meta$heading - 360, rdi_meta$heading)
+  # beam_heading_diff <- heading_diff(rdi_meta$beam_heading_corrected, heading_orig)
+  # plot(heading_orig, beam_heading_diff)
+  # fit <- lm(beam_heading_diff ~ poly(heading_orig, 5), na.action = na.exclude)
+  # vals <- tibble::tibble(heading_orig, pred = predict(fit))
+  # lines(vals[order(vals$heading_orig), ], col = "red")
+  # sqrt(mean(residuals(fit) ^ 2, na.rm = TRUE)) # ~12 degrees
+
+
+  # Flag bins (same dimensions as rdi_n_beams_n_cells) ----
+
+  # TODO: Can't tell from original code which bins are getting the ax
+  # based on distance to surface
+  # https://github.com/richardsc/bsrto/blob/master/adp.R#L61-L71
+
+  # Beam coverage: should have less than 50% NA per profile per beam
+  # I can't find any profiles that have this property
+  # date_time x n_beams
+  velocity_na_beam <- apply(
+    rdi_n_beams_n_cells$velocity,
+    c(1, 2),
+    function(x) mean(is.na(x))
+  )
+
+  # need to fix in read_rdi()...should also fix col name to be more informative
+  # about 2% of measurements
+  rdi_n_beams$bottom_track_velocity <- rdi_n_beams$bv / 1000
+  improbable_bottom_velocities <-
+    (rdi_n_beams$bottom_track_velocity > 2) |
+    (rdi_n_beams$bottom_track_velocity < -2)
+
+  # make flag variables from above
+  # cell flag is a todo...not sure how these are being flagged above
+  rdi_n_beams_n_cells$cell_flag <- array(0L, dim = dim(rdi_n_beams_n_cells$velocity))
+  rdi_n_beams_n_cells$beam_flag <- as.integer(improbable_bottom_velocities)
+
+  # Write NetCDF ----
+
+  dim_date_time <- ncdf4::ncdim_def(
+    "date_time",
+    units = "seconds since 1970-01-01 00:00:00 UTC",
+    vals = as.numeric(rdi_meta$date_time, origin = "1970-01-01 00:00:00")
+  )
+
+  dim_string23 <- ncdf4::ncdim_def(
+    "string23",
+    units = "count",
+    vals = 1:23
+  )
+
+  dim_n_beams <- ncdf4::ncdim_def(
+    "n_beams",
+    units = "count",
+    vals = rdi_config$n_beams
+  )
+
+  dim_distance <- ncdf4::ncdim_def(
+    "distance",
+    units = "meters",
+    vals = n_cell_distance
+  )
+
+  stop("Didn't quite make it to NetCDF generation for adp!")
+
+#
+#
+#   nc <- ncdf4::nc_create(
+#     out_file,
+#     list(
+#       ncdf4::ncvar_def(
+#         "file",
+#         units = "character",
+#         dim = list(dim_string23, dim_date_time),
+#         longname = "Source filename",
+#         prec = "char",
+#         compression = compression
+#       ),
+#       ncdf4::ncvar_def(
+#         "icl_temp",
+#         units = "Degrees C",
+#         dim = list(dim_date_time),
+#         longname = "Operating temperature",
+#         prec = "float",
+#         compression = compression
+#       )
+#     )
+#   )
+#   on.exit(ncdf4::nc_close(nc))
+#
+#   out_file <- file.path(out_dir, "rdi.csv")
+#   cli::cat_line(glue("Writing '{ out_file }'"))
+#
+#   readr::write_csv(rdi, out_file)
 }
 
 write_realtime_icl <- function(icl, out_dir = ".") {

@@ -73,6 +73,10 @@ barrow_strait_declination <- function(date_time) {
   -119.131004244733 + 8.48874014258752e-08 * t -1.61908017786388e-17 * t ^ 2
 }
 
+heading_normalize <- function(heading) {
+  (heading + 360) %% 360
+}
+
 uv_from_heading <- function(true_heading) {
   tibble::tibble(
     u = cos((90 - true_heading) * pi / 180),
@@ -97,6 +101,25 @@ heading_mean <- function(true_heading, na.rm = FALSE) {
 
   uv <- uv_from_heading(true_heading)
   heading_from_uv(lapply(uv, sum))
+}
+
+heading_diff <- function(h1, h2) {
+  common <- vctrs::vec_recycle_common(h1 = h1, h2 = h2)
+  uv1 <- uv_from_heading(common$h1)
+  uv2 <- uv_from_heading(common$h2)
+
+  # get the chord lengths
+  uv_chord <- Map("-", uv1, uv2)
+  chord_len <- sqrt(uv_chord$u ^ 2 + uv_chord$v ^ 2)
+  angle_chord <- 2 * asin(chord_len / 2) * 180 / pi
+
+  # apply sign of cross-product for direction
+  # in this case the sign aligns with negative values counterclockwise
+  # on the compass and positive values clockwise on the compass
+  direction <- sign(uv1$u * uv2$v - uv1$v * uv2$u)
+  direction[direction == 0] <- 1
+
+  angle_chord * direction
 }
 
 heading_sd <- function(true_heading, na.rm = FALSE) {
