@@ -23,27 +23,7 @@ read_ec_climate_hourly <- function(file, pb = NULL, utc_offset = 0) {
   result <- suppressWarnings(
     readr::read_csv(
       file,
-      col_types = readr::cols(
-        .default = readr::col_character(),
-        `Longitude (x)` = readr::col_double(),
-        `Latitude (y)` = readr::col_double(),
-        `Climate ID` = readr::col_double(),
-        `Date/Time (LST)` = readr::col_datetime(),
-        Year = readr::col_skip(),
-        Month = readr::col_skip(),
-        Day = readr::col_skip(),
-        `Time (LST)` = readr::col_skip(),
-        "Temp (\u00B0C)" = readr::col_double(),
-        "Dew Point Temp (\u00B0C)" = readr::col_double(),
-        `Rel Hum (%)` = readr::col_double(),
-        `Precip. Amount (mm)` = readr::col_double(),
-        `Wind Dir (10s deg)` = readr::col_double(),
-        `Wind Spd (km/h)` = readr::col_double(),
-        `Visibility (km)` = readr::col_double(),
-        `Stn Press (kPa)` = readr::col_double(),
-        Hmdx = readr::col_double(),
-        `Wind Chill` = readr::col_double()
-      ),
+      col_types = ec_cols_hourly(),
       locale = readr::locale(tz = "UTC")
     )
   )
@@ -129,4 +109,32 @@ ec_bulk_data_url <- function(timeframe, station_id, Year = NULL, Month = NULL) {
 
   base_url <- "http://climate.weather.gc.ca/climate_data/bulk_data_e.html"
   glue("{base_url}?format=csv&{ url_query }&submit=Download+Data")
+}
+
+ec_cols_hourly <- function() {
+  cols <- readr::cols(
+    .default = readr::col_character(),
+    `Longitude (x)` = readr::col_double(),
+    `Latitude (y)` = readr::col_double(),
+    `Climate ID` = readr::col_double(),
+    `Date/Time (LST)` = readr::col_datetime(),
+    Year = readr::col_skip(),
+    Month = readr::col_skip(),
+    Day = readr::col_skip(),
+    `Time (LST)` = readr::col_skip(),
+    `Temp (DEGREESC)` = readr::col_double(),
+    `Dew Point Temp (DEGREESC)` = readr::col_double(),
+    `Rel Hum (%)` = readr::col_double(),
+    `Precip. Amount (mm)` = readr::col_double(),
+    `Wind Dir (10s deg)` = readr::col_double(),
+    `Wind Spd (km/h)` = readr::col_double(),
+    `Visibility (km)` = readr::col_double(),
+    `Stn Press (kPa)` = readr::col_double(),
+    Hmdx = readr::col_double(),
+    `Wind Chill` = readr::col_double()
+  )
+
+  # hack to fix the "\u00B0" can't be translated to native encoding error
+  names(cols$cols) <- gsub("DEGREES", "\u00B0", names(cols$cols))
+  cols
 }
