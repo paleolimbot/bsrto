@@ -244,9 +244,11 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   # make flag variables from above
   # cell flag is a todo...not sure how these are being flagged above
   rdi_n_beams_n_cells$cell_flag <- array(0L, dim = dim(rdi_n_beams_n_cells$velocity))
-  rdi_n_beams_n_cells$beam_flag <- as.integer(improbable_bottom_velocities)
+  rdi_n_beams$beam_flag <- as.integer(improbable_bottom_velocities)
 
-  # Write NetCDF ----
+  # Prepare NetCDF ----
+
+  compression <- 5
 
   dim_date_time <- ncdf4::ncdim_def(
     "date_time",
@@ -263,7 +265,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   dim_n_beams <- ncdf4::ncdim_def(
     "n_beams",
     units = "count",
-    vals = rdi_config$n_beams
+    vals = seq_len(rdi_config$n_beams)
   )
 
   dim_distance <- ncdf4::ncdim_def(
@@ -272,37 +274,107 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
     vals = n_cell_distance
   )
 
-  stop("Didn't quite make it to NetCDF generation for adp!")
+  file_var <- ncdf4::ncvar_def(
+    "file",
+    units = "character",
+    dim = list(dim_string23, dim_date_time),
+    longname = "Source filename",
+    prec = "char",
+    compression = compression
+  )
 
-#
-#
-#   nc <- ncdf4::nc_create(
-#     out_file,
-#     list(
-#       ncdf4::ncvar_def(
-#         "file",
-#         units = "character",
-#         dim = list(dim_string23, dim_date_time),
-#         longname = "Source filename",
-#         prec = "char",
-#         compression = compression
-#       ),
-#       ncdf4::ncvar_def(
-#         "icl_temp",
-#         units = "Degrees C",
-#         dim = list(dim_date_time),
-#         longname = "Operating temperature",
-#         prec = "float",
-#         compression = compression
-#       )
-#     )
-#   )
-#   on.exit(ncdf4::nc_close(nc))
-#
-#   out_file <- file.path(out_dir, "rdi.csv")
-#   cli::cat_line(glue("Writing '{ out_file }'"))
-#
-#   readr::write_csv(rdi, out_file)
+  meta_vars <- lapply(
+    setdiff(names(rdi_meta), c("file", "date_time")),
+    function(col) {
+      val <- rdi_meta[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time),
+        missval = val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "double",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+  })
+
+  n_beams_vars <- lapply(
+    names(rdi_n_beams),
+    function(col) {
+      val <- rdi_n_beams[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time, dim_n_beams),
+        missval = val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "double",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
+
+  n_beams_n_cells_vars <- lapply(
+    names(rdi_n_beams_n_cells),
+    function(col) {
+      val <- rdi_n_beams_n_cells[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time, dim_n_beams, dim_distance),
+        missval = if (!is.raw(val)) val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "float",
+          raw = "integer",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
+
+  # Write NetCDF ----
+
+  out_file <- file.path(out_dir, "adp.nc")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  nc <- ncdf4::nc_create(
+    out_file,
+    c(
+      list(file_var),
+      meta_vars,
+      n_beams_vars,
+      n_beams_n_cells_vars
+    )
+  )
+  on.exit(ncdf4::nc_close(nc))
+
+  # write rdi_config as global metadata
+  for (col in names(rdi_config)) {
+    ncdf4::ncatt_put(nc, 0, col, as.character(rdi_config[[col]]))
+  }
+
+  for (col in setdiff(names(rdi_meta), "date_time")) {
+    ncdf4::ncvar_put(nc, col, rdi_meta[[col]])
+  }
+
+  for (col in names(rdi_n_beams)) {
+    ncdf4::ncvar_put(nc, col, rdi_n_beams[[col]])
+  }
+
+  for (col in names(rdi_n_beams_n_cells)) {
+    ncdf4::ncvar_put(nc, col, rdi_n_beams_n_cells[[col]])
+  }
+
+  # on.exit() takes care of nc_close(nc)
 }
 
 write_realtime_icl <- function(icl, out_dir = ".") {
@@ -455,7 +527,7 @@ write_realtime_icl <- function(icl, out_dir = ".") {
   ncdf4::ncvar_put(nc, "icl_intensity", intensity)
   ncdf4::ncvar_put(nc, "icl_intensity_flag", intensity_flag)
 
-  invisible(icl_meta)
+  # on.exit() takes care of nc_close(nc)
 }
 
 write_realtime_ips <- function(ips, out_dir = ".") {
