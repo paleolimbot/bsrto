@@ -64,6 +64,7 @@ read_ips_bn_single <- function(file, regex = ips_bn_entry_regex(), pb = NULL) {
 
 ips_bn_empty <- function() {
   tibble::tibble(
+    # measurement_id is the number of seconds since 1970-01-01 00:00:00
     measurement_id = character(),
     date_time = as.POSIXct(character()),
     # line 2

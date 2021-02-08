@@ -47,7 +47,7 @@ bs_build_realtime <- function(out_dir = ".") {
 
   write_realtime_adp(built$rdi, pc, out_dir)
   write_realtime_icl(built$icl, out_dir)
-  write_realtime_ips(built$ips, out_dir)
+  write_realtime_ips(built$ips, baro, out_dir)
   write_realtime_lgh(built$lgh, out_dir)
   write_realtime_mc(built[c("mca", "mch", "mci")], out_dir)
 
@@ -197,11 +197,8 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   pc_true_heading_interp <- resample_nearest(
     pc$date_time,
     pc$pc_true_heading,
-    rdi_meta$date_time,
-    # Approximately 95% of profiles have a nearest neighbour measurement
-    # within 9 hours. These values can change rapidly, so it's not a
-    # good assumption to take values farther away (9 hours might be a stretch)
-    max_distance = 9 * 60
+    rdi_meta$date_time
+    # TODO: use max_distance to constrain this to within X hours
   )
 
   # correct for beam alignment to the pole compass
@@ -256,10 +253,10 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
     vals = as.numeric(rdi_meta$date_time, origin = "1970-01-01 00:00:00")
   )
 
-  dim_string23 <- ncdf4::ncdim_def(
-    "string23",
+  dim_string12 <- ncdf4::ncdim_def(
+    "string12",
     units = "count",
-    vals = 1:23
+    vals = 1:12
   )
 
   dim_n_beams <- ncdf4::ncdim_def(
@@ -277,7 +274,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   file_var <- ncdf4::ncvar_def(
     "file",
     units = "character",
-    dim = list(dim_string23, dim_date_time),
+    dim = list(dim_string12, dim_date_time),
     longname = "Source filename",
     prec = "char",
     compression = compression
@@ -530,32 +527,113 @@ write_realtime_icl <- function(icl, out_dir = ".") {
   # on.exit() takes care of nc_close(nc)
 }
 
-write_realtime_ips <- function(ips, out_dir = ".") {
+write_realtime_ips <- function(ips, baro, out_dir = ".") {
   cli::cat_rule("write_realtime_ips()")
 
-  # https://github.com/richardsc/bsrto/blob/master/ips.R#L74-L94
-  # https://github.com/richardsc/bsrto/blob/master/save_data_file.R#L15
+  # TODO: correct depth fields for atmospheric pressure
+  resampled_pressure <- resample_nearest(
+    baro$date_time,
+    baro$shore_press,
+    ips$date_time
+    # TODO: constrain using max_distance
+  )
 
-  # bins is a list-col: join by whitespace
-  ips$bins <- vapply(ips$bins, paste0, collapse = " ", FUN.VALUE = character(1))
+  # redundant vars that don't get used later
+  ips$measurement_id <- NULL
+  ips$station_id <- NULL
 
-  out_file <- file.path(out_dir, "ips.csv")
+  # use first 130 bins for each bin (pad shorter lengths with NA)
+  bin_lengths <- vapply(ips$bins, length, integer(1))
+  distance <- seq(9, by = 0.1, length.out = 130)
+  ips$bins <- lapply(ips$bins, "[", 1:130)
+
+  # define NetCDF dimensions and variables
+  compression <- 5
+
+  dim_date_time <- ncdf4::ncdim_def(
+    "date_time",
+    units = "seconds since 1970-01-01 00:00:00 UTC",
+    vals = as.numeric(ips$date_time, origin = "1970-01-01 00:00:00")
+  )
+
+  dim_string12 <- ncdf4::ncdim_def(
+    "string12",
+    units = "count",
+    vals = 1:12
+  )
+
+  dim_distance <- ncdf4::ncdim_def(
+    "distance",
+    units = "meters",
+    vals = distance
+  )
+
+  file_var <- ncdf4::ncvar_def(
+    "file",
+    units = "character",
+    dim = list(dim_string12, dim_date_time),
+    longname = "Source filename",
+    prec = "char",
+    compression = compression
+  )
+
+  meta_vars <- lapply(
+    setdiff(names(ips), c("file", "date_time", "bins")),
+    function(col) {
+      val <- ips[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time),
+        missval = val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "double",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
+
+  bins_var <- ncdf4::ncvar_def(
+    "ips_count",
+    units = "counts",
+    dim = list(dim_date_time, dim_distance),
+    prec = "integer",
+    compression = compression
+  )
+
+  # Write NetCDF
+
+  out_file <- file.path(out_dir, "ips.nc")
   cli::cat_line(glue("Writing '{ out_file }'"))
 
-  readr::write_csv(ips, out_file)
+  nc <- ncdf4::nc_create(
+    out_file,
+    c(
+      list(file_var),
+      meta_vars,
+      list(bins_var)
+    )
+  )
+  on.exit(ncdf4::nc_close(nc))
+
+  for (col in setdiff(names(ips), c("date_time", "bins"))) {
+    ncdf4::ncvar_put(nc, col, ips[[col]])
+  }
+
+  ncdf4::ncvar_put(nc, "ips_count", unlist(ips$bins))
+
+  # on.exit() takes care of nc_close(nc)
 }
 
 write_realtime_lgh <- function(lgh, out_dir = ".") {
   cli::cat_rule("write_realtime_lgh()")
 
-  # no processing of these in current app
-
-  # log_text is a list-col, but we can unnest it
-  log_text <- lgh$log_text
-  lengths <- vapply(log_text, length, integer(1))
-  lgh$log_text <- NULL
-  lgh <- vctrs::vec_rep_each(lgh, lengths)
-  lgh$log_text <- do.call(c, log_text)
+  # embedded newlines are possible in .csv and are better
+  # at keeping the relevant log text together
+  lgh$log_text <- vapply(lgh$log_text, paste, collapse = "\n", character(1))
 
   out_file <- file.path(out_dir, "lgh.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
@@ -566,11 +644,21 @@ write_realtime_lgh <- function(lgh, out_dir = ".") {
 write_realtime_mc <- function(built, out_dir = ".") {
   cli::cat_rule("write_realtime_mc()")
 
+  # TODO: recalculate salinity, calculate sound speed?
   # https://github.com/richardsc/bsrto/blob/master/mc.R#L55-L72
 
-  readr::write_csv(built$mca, file.path(out_dir, "mca.csv"))
-  readr::write_csv(built$mch, file.path(out_dir, "mch.csv"))
-  readr::write_csv(built$mci, file.path(out_dir, "mci.csv"))
+  # add label information for each mcX
+  built$mca$depth_label <- 40
+  built$mch$depth_label <- 60
+  built$mci$depth_label <- 160
+
+  out_file <- file.path(out_dir, "ctd.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  mc <- vctrs::vec_rbind(built$mca, built$mch, built$mci) %>%
+    dplyr::arrange(.data$depth_label, .data$date_time)
+
+  readr::write_csv(mc, out_file)
 }
 
 read_realtime_cached <- function(file_type, build_cache = bs_build_cache_dir("realtime"),
