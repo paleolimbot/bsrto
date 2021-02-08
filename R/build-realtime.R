@@ -1,6 +1,26 @@
 
 #' Build real-time data from the 2019 deployment
 #'
+#' The build of real-time data is split into multiple steps that allow
+#' certain types of changes to be applied without unnecessary loading
+#' of files. In the code these are split into "read" and "write" functions.
+#'
+#' Read functions are concerned with taking raw data files and filtering
+#' out data that is corrupted or otherwise unreadable. These functions also
+#' check for new files and download them if they aren't present locally.
+#' These functions add to the previously calculated version present in the
+#' build cache, which keeps the processing time to a minimum and keeps the
+#' build logs from being cluttered with parse errors from unreadable files
+#' that have already been parsed months ago. Note that the value of
+#' [bs_cache_dir()] and [bs_build_cache_dir()] are used to determine where
+#' FTP downloads and intermediary build files are stored.
+#'
+#' Whereas the output of read functions is generally stable, methods to
+#' flag bad measurements and perform corrections that require data from
+#' multiple sensors can and should be updated frequently. In the code these
+#' are grouped as "write" functions. These calculations are rarely expensive
+#' and thus the result is not cached.
+#'
 #' @param out_dir The directory in which output files should be
 #'   generated.
 #'
@@ -13,121 +33,647 @@
 #' }
 #'
 bs_build_realtime <- function(out_dir = ".") {
-
-  # Read functions are concerned with taking raw data files and filtering
-  # out data that is corrupted or otherwise unreadable. These functions also
-  # check for new files and download them if they aren't present locally.
   steps <- c(
     "met", "hpb", "icl", "ips", "lgh",
     "mca", "mch", "mci", "pcm", "rdi"
   )
-
   names(steps) <- steps
-
   built <- lapply(steps, read_realtime_cached)
 
-  # Write functions take care of corrections and QC checks that might require
-  # values from other files (e.g., corrections for pressure, heading)
-  write_realtime_met(built, out_dir)
-  write_realtime_hpb(built, out_dir)
-  write_realtime_icl(built, out_dir)
-  write_realtime_ips(built, out_dir)
-  write_realtime_lgh(built, out_dir)
-  write_realtime_mca(built, out_dir)
-  write_realtime_mch(built, out_dir)
-  write_realtime_mci(built, out_dir)
-  write_realtime_pcm(built, out_dir)
-  write_realtime_rdi(built, out_dir)
+  # these processed values are used as corrections in later outputs
+  baro <- write_realtime_baro(built$hpb, out_dir)
+  met <- write_realtime_met(built$met, out_dir)
+  pc <- write_realtime_pcm(built$pcm, out_dir)
 
-  # (any real-time outputs need to re-read these files, which are the source
-  # of truth for this deployment)
+  write_realtime_adp(built$rdi, pc, out_dir)
+  write_realtime_icl(built$icl, out_dir)
+  write_realtime_ips(built$ips, baro, out_dir)
+  write_realtime_lgh(built$lgh, out_dir)
+  write_realtime_mc(built[c("mca", "mch", "mci")], out_dir)
 
   invisible(out_dir)
 }
 
-write_realtime_met <- function(built, out_dir = ".") {
+write_realtime_baro <- function(hpb, out_dir = ".") {
+  cli::cat_rule("write_realtime_baro()")
+
+  # same naming convention and units as environment canada values
+  baro <- tibble::tibble(
+    file = hpb$file,
+    date_time = hpb$date_time,
+    shore_press = hpb$atm_pres_mbar / 10, # mbar -> kPa
+    shore_press_flag = NA_character_,
+    shore_temp = hpb$temp_c,
+    shore_temp_flag = NA_character_
+  )
+
+  out_file <- file.path(out_dir, "baro.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(baro, out_file)
+}
+
+write_realtime_met <- function(met, out_dir = ".") {
   cli::cat_rule("write_realtime_met()")
-  readr::write_csv(built$met, file.path(out_dir, "met.csv"))
+
+  # Resolute station altitude is 68 m above sea level
+  met$sea_level_press <-
+    sea_level_pressure_from_barometric(met$stn_press, 68)
+  met$sea_level_press_flag <- met$stn_press_flag
+
+  # check correction
+  # plot(built$met$stn_press, built$met$sea_level_press)
+
+  # give every variable a _flag column
+  met$weather_flag <- NA_character_
+
+  out_file <- file.path(out_dir, "met.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(met, out_file)
 }
 
-write_realtime_hpb <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_hpb()")
-  readr::write_csv(built$hpb, file.path(out_dir, "icl.csv"))
-}
-
-write_realtime_icl <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_icl()")
-  readr::write_csv(built$icl, file.path(out_dir, "icl.csv"))
-}
-
-write_realtime_ips <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_ips()")
-
-  # bins is a list-col: join by whitespace
-  built$ips$bins <- vapply(built$ips$bins, paste0, collapse = " ", FUN.VALUE = character(1))
-
-  readr::write_csv(built$ips, file.path(out_dir, "ips.csv"))
-}
-
-write_realtime_lgh <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_lgh()")
-
-  # log_text is a list-col, but we can unnest it
-  log_text <- built$lgh$log_text
-  lengths <- vapply(log_text, length, integer(1))
-  built$lgh$log_text <- NULL
-  built$lgh <- vctrs::vec_rep_each(built$lgh, lengths)
-  built$lgh$log_text <- do.call(c, log_text)
-
-  readr::write_csv(built$lgh, file.path(out_dir, "lgh.csv"))
-}
-
-write_realtime_mca <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_mca()")
-  readr::write_csv(built$mca, file.path(out_dir, "mca.csv"))
-}
-
-write_realtime_mch <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_mch()")
-  readr::write_csv(built$mch, file.path(out_dir, "mch.csv"))
-}
-
-write_realtime_mci <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_mci()")
-  readr::write_csv(built$mci, file.path(out_dir, "mci.csv"))
-}
-
-write_realtime_pcm <- function(built, out_dir = ".") {
+write_realtime_pcm <- function(pcm, out_dir = ".") {
   cli::cat_rule("write_realtime_pcm()")
-  readr::write_csv(built$pcm, file.path(out_dir, "pcm.csv"))
+
+  # Given that the existing ADP code corrects these for magnetic declination,
+  # they are magnetic and not true measurements. (Name of column should be
+  # fixed upstream).
+  pcm$pc_heading <- pcm$true_heading
+  pcm$true_heading <- NULL
+
+  # Zero readings are suspected to be bad readings and often are
+  # there are so many measurements that removing them doesn't impact
+  # data quality
+  zero_heading <- pcm$pc_heading == 0
+  pcm$pc_heading_flag <- ifelse(zero_heading, "likely bad", NA_character_)
+
+  # Summarise to once per file (roughly once every two hours)
+  # there are ~14-20 measurements per file, but they seem to be clumped
+  # such that I'm not sure one can assume equal spacing of the measurements
+  # over a two-hour period. Assumption here is that they are representative
+  # of the start time of the file.
+  pc <- pcm %>%
+    group_by(.data$file) %>%
+    summarise(
+      date_time = .data$last_date_time[1],
+      pc_heading_sd = heading_sd(.data$pc_heading[is.na(.data$pc_heading_flag)]),
+      pc_heading = heading_mean(.data$pc_heading[is.na(.data$pc_heading_flag)]),
+      pc_true_heading = heading_normalize(
+        .data$pc_heading + barrow_strait_declination(.data$date_time)
+      ),
+      pc_heading_n = sum(is.na(.data$pc_heading_flag)),
+      .groups = "drop"
+    )
+
+  out_file <- file.path(out_dir, "pcm_summary.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(pc, out_file)
 }
 
-write_realtime_rdi <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_rdi()")
+write_realtime_adp <- function(rdi, pc, out_dir = ".") {
+  cli::cat_rule("write_realtime_adp()")
 
-  # list columns need to be joined by whitespace before writing
-  is_list <- vapply(built$rdi, is.list, logical(1))
-  built$rdi[is_list] <- lapply(built$rdi[is_list], function(col) {
-    vapply(col, paste0, collapse = " ", FUN.VALUE = character(1))
+  # Declare variables ----
+
+  # These columns had a constant value between the start of the
+  # deployment and 2021-02-01.
+  cols_config <- c(
+    "firmware_version", "system_config", "real_sim_flag", "lag_length",
+    "n_beams", "n_cells", "pings_per_ensemble", "cell_size", "blank_after_transmit",
+    "profiling_mode", "low_corr_thresh", "n_code_reps", "pct_gd_min",
+    "error_velocity_maximum", "tpp_minutes", "tpp_seconds", "tpp_hundredths",
+    "coord_transform", "heading_alignment", "heading_bias", "sensor_source",
+    "sensors_available", "wp_ref_layer_average", "false_target_threshold",
+    "transmit_lag_distance", "cpu_board_serial_number", "system_bandwidth",
+    "system_power", "serial_number", "beam_angle",
+    # Treating bin1_distance as a constant
+    # (6.02) even though it is 6.03 in a handful of profiles. Treating
+    # transmit_pulse_length as a constant (4.06) even though it can be
+    # 4.05 or 4.07 in a handful of profiles.
+    "bin1_distance", "transmit_pulse_length"
+  )
+
+  # These columns are list(matrix(n_beams * n_cells))
+  cols_n_beams_n_cells <- c(
+    "velocity", "correlation",
+    "echo_intensity", "pct_good"
+  )
+
+  # These columns are list(c(n_beams))
+  cols_n_beams <- c("range_lsb", "range_msb", "bv", "bc", "ba", "bg")
+
+  # All other columns have one value per profile
+  cols_prof_meta <- setdiff(
+    names(rdi),
+    c(cols_config, cols_n_beams_n_cells, cols_n_beams)
+  )
+
+  # Make objects ----
+
+  rdi_config <- rdi[1, cols_config]
+  rdi_meta <- rdi[cols_prof_meta]
+
+  # These will be along date_time, n_beams, n_cells
+  rdi_n_beams_n_cells <- lapply(
+    rdi[cols_n_beams_n_cells],
+    abind::abind, along = 0
+  )
+
+  # These will be along date_time, n_beams
+  rdi_n_beams <- lapply(rdi[cols_n_beams], abind::abind, along = 0)
+
+  # Distance is a more meaningful way to dimension along n_cells
+  n_cell_distance <- seq(
+    rdi_config$bin1_distance,
+    by = rdi_config$cell_size,
+    length.out = rdi_config$n_cells
+  )
+
+  # Apply corrections! ----
+
+  # Get the nearest pole compass true heading
+  pc_true_heading_interp <- resample_nearest(
+    pc$date_time,
+    pc$pc_true_heading,
+    rdi_meta$date_time
+    # TODO: use max_distance to constrain this to within X hours
+  )
+
+  # correct for beam alignment to the pole compass
+  rdi_meta$beam_heading_corrected <- heading_normalize(pc_true_heading_interp + 45)
+
+  # compare to heading from rdi file...you can theoretically predict the error
+  # based on the original heading (bumped slightly for continuity)
+
+  # heading_orig <- ifelse(rdi_meta$heading > 240, rdi_meta$heading - 360, rdi_meta$heading)
+  # beam_heading_diff <- heading_diff(rdi_meta$beam_heading_corrected, heading_orig)
+  # plot(heading_orig, beam_heading_diff)
+  # fit <- lm(beam_heading_diff ~ poly(heading_orig, 5), na.action = na.exclude)
+  # vals <- tibble::tibble(heading_orig, pred = predict(fit))
+  # lines(vals[order(vals$heading_orig), ], col = "red")
+  # sqrt(mean(residuals(fit) ^ 2, na.rm = TRUE)) # ~12 degrees
+
+
+  # Flag bins (same dimensions as rdi_n_beams_n_cells) ----
+
+  # TODO: Can't tell from original code which bins are getting the ax
+  # based on distance to surface
+  # https://github.com/richardsc/bsrto/blob/master/adp.R#L61-L71
+
+  # Beam coverage: should have less than 50% NA per profile per beam
+  # I can't find any profiles that have this property
+  # date_time x n_beams
+  velocity_na_beam <- apply(
+    rdi_n_beams_n_cells$velocity,
+    c(1, 2),
+    function(x) mean(is.na(x))
+  )
+
+  # need to fix in read_rdi()...should also fix col name to be more informative
+  # about 2% of measurements
+  rdi_n_beams$bottom_track_velocity <- rdi_n_beams$bv / 1000
+  improbable_bottom_velocities <-
+    (rdi_n_beams$bottom_track_velocity > 2) |
+    (rdi_n_beams$bottom_track_velocity < -2)
+
+  # make flag variables from above
+  # cell flag is a todo...not sure how these are being flagged above
+  rdi_n_beams_n_cells$cell_flag <- array(0L, dim = dim(rdi_n_beams_n_cells$velocity))
+  rdi_n_beams$beam_flag <- as.integer(improbable_bottom_velocities)
+
+  # Prepare NetCDF ----
+
+  compression <- 5
+
+  dim_date_time <- ncdf4::ncdim_def(
+    "date_time",
+    units = "seconds since 1970-01-01 00:00:00 UTC",
+    vals = as.numeric(rdi_meta$date_time, origin = "1970-01-01 00:00:00")
+  )
+
+  dim_string12 <- ncdf4::ncdim_def(
+    "string12",
+    units = "count",
+    vals = 1:12
+  )
+
+  dim_n_beams <- ncdf4::ncdim_def(
+    "n_beams",
+    units = "count",
+    vals = seq_len(rdi_config$n_beams)
+  )
+
+  dim_distance <- ncdf4::ncdim_def(
+    "distance",
+    units = "meters",
+    vals = n_cell_distance
+  )
+
+  file_var <- ncdf4::ncvar_def(
+    "file",
+    units = "character",
+    dim = list(dim_string12, dim_date_time),
+    longname = "Source filename",
+    prec = "char",
+    compression = compression
+  )
+
+  meta_vars <- lapply(
+    setdiff(names(rdi_meta), c("file", "date_time")),
+    function(col) {
+      val <- rdi_meta[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time),
+        missval = val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "double",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
   })
 
+  n_beams_vars <- lapply(
+    names(rdi_n_beams),
+    function(col) {
+      val <- rdi_n_beams[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time, dim_n_beams),
+        missval = val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "double",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
 
-  readr::write_csv(built$rdi, file.path(out_dir, "rdi.csv"))
+  n_beams_n_cells_vars <- lapply(
+    names(rdi_n_beams_n_cells),
+    function(col) {
+      val <- rdi_n_beams_n_cells[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time, dim_n_beams, dim_distance),
+        missval = if (!is.raw(val)) val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "float",
+          raw = "integer",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
+
+  # Write NetCDF ----
+
+  out_file <- file.path(out_dir, "adp.nc")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  nc <- ncdf4::nc_create(
+    out_file,
+    c(
+      list(file_var),
+      meta_vars,
+      n_beams_vars,
+      n_beams_n_cells_vars
+    )
+  )
+  on.exit(ncdf4::nc_close(nc))
+
+  # write rdi_config as global metadata
+  for (col in names(rdi_config)) {
+    ncdf4::ncatt_put(nc, 0, col, as.character(rdi_config[[col]]))
+  }
+
+  for (col in setdiff(names(rdi_meta), "date_time")) {
+    ncdf4::ncvar_put(nc, col, rdi_meta[[col]])
+  }
+
+  for (col in names(rdi_n_beams)) {
+    ncdf4::ncvar_put(nc, col, rdi_n_beams[[col]])
+  }
+
+  for (col in names(rdi_n_beams_n_cells)) {
+    ncdf4::ncvar_put(nc, col, rdi_n_beams_n_cells[[col]])
+  }
+
+  # on.exit() takes care of nc_close(nc)
 }
 
-read_realtime_cached <- function(step, build_cache = bs_build_cache_dir("realtime"),
+write_realtime_icl <- function(icl, out_dir = ".") {
+  cli::cat_rule("write_realtime_icl()")
+
+  # This data is exportable as .csv but fits more naturally as a NetCDF
+  # Use column names and flag conventions following that of Env Canada
+  # climate data
+
+  # Need to make sure each row represents a unique date/time or the
+  # netCDF magic below won't work. These are all (as far as I can tell)
+  # a result of mangled files. While there's no guarantee that the first
+  # non-duplicated date-time is the valid one, it's the most likely. This
+  # only represents ~40 rows.
+  duplicated_date_times <- duplicated(icl$Time)
+
+  # flag wildly out-of-range values (mangled data, not bad measurements)
+  temp_out_of_range <- (icl$`Temperature [C]` > 10) | (icl$`Temperature [C]` < -10)
+  hum_out_of_range <- (icl$`Humidity [%]` > 100) | (icl$`Humidity [%]` < 0)
+
+  # not logging because this should be moved to the read_icl_realtime function
+  rows_invalid <- duplicated_date_times | temp_out_of_range | hum_out_of_range
+  icl <- icl[!rows_invalid, ]
+
+  # separate meta information for now
+  icl_meta <- tibble::tibble(
+    file = icl$file,
+    date_time = icl$Time,
+    icl_temp = icl$`Temperature [C]`,
+    icl_temp_flag = 0L,
+    icl_rel_hum = icl$`Humidity [%]`,
+    icl_rel_hum_flag = 0L
+  )
+
+  # separate spectra
+  spec_wide <- icl[grepl("^[0-9.]+$", names(icl))]
+  frequencies <- as.numeric(names(spec_wide))
+  # using t() here to keep values from the same spectrum together
+  # rather than values from the same frequency (because matrices are
+  # column-major in R)
+  intensity <- as.numeric(t(as.matrix(spec_wide)))
+
+  # flag suspected bad intensity values using int type
+  # (because we're headed to NetCDF where character is hard)
+  intensity_flag <- as.integer(
+    (intensity > 500) |
+      (intensity < -50) |
+      (suppressWarnings(intensity %% 1) != 0)
+  )
+  intensity_flag[is.na(intensity)] <- 2L
+
+  # some of the bad values are outside the integer range, which causes
+  # warnings that we don't care about
+  intensity <- suppressWarnings(as.integer(intensity))
+
+  # define NetCDF dimensions and variables
+  dim_date_time <- ncdf4::ncdim_def(
+    "date_time",
+    units = "seconds since 1970-01-01 00:00:00 UTC",
+    vals = as.numeric(icl_meta$date_time, origin = "1970-01-01 00:00:00")
+  )
+
+  dim_frequency <- ncdf4::ncdim_def(
+    "frequency",
+    units = "Hz",
+    vals = frequencies
+  )
+
+  dim_string23 <- ncdf4::ncdim_def(
+    "string23",
+    units = "count",
+    vals = 1:23
+  )
+
+  # create NetCDF
+  out_file <- file.path(out_dir, "icl.nc")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  # without compression, this file is >300 MB, which is bigger than the
+  # CSV that would result from writing it without processing. A value of
+  # 5 drops the size by a factor of 10.
+  compression <- 5
+
+  nc <- ncdf4::nc_create(
+    out_file,
+    list(
+      ncdf4::ncvar_def(
+        "file",
+        units = "character",
+        dim = list(dim_string23, dim_date_time),
+        longname = "Source filename",
+        prec = "char",
+        compression = compression
+      ),
+      ncdf4::ncvar_def(
+        "icl_temp",
+        units = "Degrees C",
+        dim = list(dim_date_time),
+        longname = "Operating temperature",
+        prec = "float",
+        compression = compression
+      ),
+      ncdf4::ncvar_def(
+        "icl_temp_flag",
+        units = "Non-zero for possible bad data",
+        dim = list(dim_date_time),
+        prec = "short",
+        compression = compression
+      ),
+      ncdf4::ncvar_def(
+        "icl_rel_hum",
+        units = "%",
+        dim = list(dim_date_time),
+        longname = "Operating relative humidity",
+        prec = "float",
+        compression = compression
+      ),
+      ncdf4::ncvar_def(
+        "icl_rel_hum_flag",
+        units = "Non-zero for possible bad data",
+        dim = list(dim_date_time),
+        prec = "short",
+        compression = compression
+      ),
+      ncdf4::ncvar_def(
+        "icl_intensity",
+        units = "Relative intensity",
+        dim = list(dim_date_time, dim_frequency),
+        # note that using "short" here doesn't result in a smaller file
+        # if compression is enabled
+        prec = "integer",
+        compression = compression
+      ),
+      ncdf4::ncvar_def(
+        "icl_intensity_flag",
+        units = "Non-zero for possible bad data",
+        dim = list(dim_date_time, dim_frequency),
+        prec = "short",
+        compression = compression
+      )
+    )
+  )
+  on.exit(ncdf4::nc_close(nc))
+
+  ncdf4::ncvar_put(nc, "file", icl_meta$file)
+  ncdf4::ncvar_put(nc, "icl_temp", icl_meta$icl_temp)
+  ncdf4::ncvar_put(nc, "icl_temp_flag", icl_meta$icl_temp_flag)
+  ncdf4::ncvar_put(nc, "icl_rel_hum", icl_meta$icl_rel_hum)
+  ncdf4::ncvar_put(nc, "icl_rel_hum_flag", icl_meta$icl_rel_hum_flag)
+  ncdf4::ncvar_put(nc, "icl_intensity", intensity)
+  ncdf4::ncvar_put(nc, "icl_intensity_flag", intensity_flag)
+
+  # on.exit() takes care of nc_close(nc)
+}
+
+write_realtime_ips <- function(ips, baro, out_dir = ".") {
+  cli::cat_rule("write_realtime_ips()")
+
+  # TODO: correct depth fields for atmospheric pressure
+  resampled_pressure <- resample_nearest(
+    baro$date_time,
+    baro$shore_press,
+    ips$date_time
+    # TODO: constrain using max_distance
+  )
+
+  # redundant vars that don't get used later
+  ips$measurement_id <- NULL
+  ips$station_id <- NULL
+
+  # use first 130 bins for each bin (pad shorter lengths with NA)
+  bin_lengths <- vapply(ips$bins, length, integer(1))
+  distance <- seq(9, by = 0.1, length.out = 130)
+  ips$bins <- lapply(ips$bins, "[", 1:130)
+
+  # define NetCDF dimensions and variables
+  compression <- 5
+
+  dim_date_time <- ncdf4::ncdim_def(
+    "date_time",
+    units = "seconds since 1970-01-01 00:00:00 UTC",
+    vals = as.numeric(ips$date_time, origin = "1970-01-01 00:00:00")
+  )
+
+  dim_string12 <- ncdf4::ncdim_def(
+    "string12",
+    units = "count",
+    vals = 1:12
+  )
+
+  dim_distance <- ncdf4::ncdim_def(
+    "distance",
+    units = "meters",
+    vals = distance
+  )
+
+  file_var <- ncdf4::ncvar_def(
+    "file",
+    units = "character",
+    dim = list(dim_string12, dim_date_time),
+    longname = "Source filename",
+    prec = "char",
+    compression = compression
+  )
+
+  meta_vars <- lapply(
+    setdiff(names(ips), c("file", "date_time", "bins")),
+    function(col) {
+      val <- ips[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time),
+        missval = val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "double",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
+
+  bins_var <- ncdf4::ncvar_def(
+    "ips_count",
+    units = "counts",
+    dim = list(dim_date_time, dim_distance),
+    prec = "integer",
+    compression = compression
+  )
+
+  # Write NetCDF
+
+  out_file <- file.path(out_dir, "ips.nc")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  nc <- ncdf4::nc_create(
+    out_file,
+    c(
+      list(file_var),
+      meta_vars,
+      list(bins_var)
+    )
+  )
+  on.exit(ncdf4::nc_close(nc))
+
+  for (col in setdiff(names(ips), c("date_time", "bins"))) {
+    ncdf4::ncvar_put(nc, col, ips[[col]])
+  }
+
+  ncdf4::ncvar_put(nc, "ips_count", unlist(ips$bins))
+
+  # on.exit() takes care of nc_close(nc)
+}
+
+write_realtime_lgh <- function(lgh, out_dir = ".") {
+  cli::cat_rule("write_realtime_lgh()")
+
+  # embedded newlines are possible in .csv and are better
+  # at keeping the relevant log text together
+  lgh$log_text <- vapply(lgh$log_text, paste, collapse = "\n", character(1))
+
+  out_file <- file.path(out_dir, "lgh.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(lgh, out_file)
+}
+
+write_realtime_mc <- function(built, out_dir = ".") {
+  cli::cat_rule("write_realtime_mc()")
+
+  # TODO: recalculate salinity, calculate sound speed?
+  # https://github.com/richardsc/bsrto/blob/master/mc.R#L55-L72
+
+  # add label information for each mcX
+  built$mca$depth_label <- 40
+  built$mch$depth_label <- 60
+  built$mci$depth_label <- 160
+
+  out_file <- file.path(out_dir, "ctd.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  mc <- vctrs::vec_rbind(built$mca, built$mch, built$mci) %>%
+    dplyr::arrange(.data$depth_label, .data$date_time)
+
+  readr::write_csv(mc, out_file)
+}
+
+read_realtime_cached <- function(file_type, build_cache = bs_build_cache_dir("realtime"),
                              use_cache = TRUE, save_cache = TRUE) {
-  cached_file <- file.path(build_cache, glue("{ step }.rds"))
+  cached_file <- file.path(build_cache, glue("{ file_type }.rds"))
 
   if (use_cache && file.exists(cached_file)) {
-    cli::cat_line(glue("Loading previous '{ step }' from '{ build_cache }'"))
+    cli::cat_line(glue("Loading previous '{ file_type }' from '{ build_cache }'"))
     previous <- readRDS(cached_file)
   } else {
     previous <- NULL
   }
 
   result <- switch(
-    step,
+    file_type,
     met = read_realtime_met(previous),
     hpb = read_realtime_hpb(previous),
     icl = read_realtime_icl(previous),
@@ -138,16 +684,16 @@ read_realtime_cached <- function(step, build_cache = bs_build_cache_dir("realtim
     mci = read_realtime_mci(previous),
     pcm = read_realtime_pcm(previous),
     rdi = read_realtime_rdi(previous),
-    abort(glue("Unknown step: '{ step }'"))
+    abort(glue("Unknown file_type: '{ file_type }'"))
   )
 
   # nice for build logs to have a glimpse of the raw outputs
-  cli::cat_rule(glue("[built${ step }]"))
+  cli::cat_rule(glue("[built${ file_type }]"))
   print(tibble::as_tibble(result))
-  cli::cat_rule(glue("[/built${ step }]"))
+  cli::cat_rule(glue("[/built${ file_type }]"))
 
   if (save_cache) {
-    cli::cat_line(glue("Saving cached '{ step }'"))
+    cli::cat_line(glue("Saving cached '{ file_type }'"))
     if (!dir.exists(build_cache)) dir.create(build_cache, recursive = TRUE)
     # compression doesn't make a difference with speed here but makes a huge
     # difference with the size of the cache

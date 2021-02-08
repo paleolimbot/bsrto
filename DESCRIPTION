@@ -24,7 +24,10 @@ Imports:
     curl,
     hms,
     progress,
-    cli
+    cli,
+    ncdf4,
+    dplyr,
+    abind
 Suggests: 
     testthat,
     withr,
