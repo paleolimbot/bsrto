@@ -26,7 +26,8 @@ Imports:
     progress,
     cli,
     ncdf4,
-    dplyr
+    dplyr,
+    abind
 Suggests: 
     testthat,
     withr,

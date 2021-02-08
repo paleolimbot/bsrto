@@ -33,11 +33,11 @@ resample_exact <- function(x, y, xout) {
 }
 
 resample_linear <- function(x, y, xout) {
-  approx(as.numeric(x), y, as.numeric(xout))$y
+  stats::approx(as.numeric(x), y, as.numeric(xout))$y
 }
 
 resample_last <- function(x, y, xout) {
-  approx(
+  stats::approx(
     as.numeric(x), y,
     as.numeric(xout),
     method = "constant", f = 0, rule = 1:2

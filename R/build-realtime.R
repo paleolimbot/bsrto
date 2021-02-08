@@ -116,13 +116,13 @@ write_realtime_pcm <- function(pcm, out_dir = ".") {
   pc <- pcm %>%
     group_by(.data$file) %>%
     summarise(
-      date_time = last_date_time[1],
-      pc_heading_sd = heading_sd(pc_heading[is.na(pc_heading_flag)]),
-      pc_heading = heading_mean(pc_heading[is.na(pc_heading_flag)]),
+      date_time = .data$last_date_time[1],
+      pc_heading_sd = heading_sd(.data$pc_heading[is.na(.data$pc_heading_flag)]),
+      pc_heading = heading_mean(.data$pc_heading[is.na(.data$pc_heading_flag)]),
       pc_true_heading = heading_normalize(
-        pc_heading + barrow_strait_declination(date_time)
+        .data$pc_heading + barrow_strait_declination(.data$date_time)
       ),
-      pc_heading_n = sum(is.na(pc_heading_flag)),
+      pc_heading_n = sum(is.na(.data$pc_heading_flag)),
       .groups = "drop"
     )
 
