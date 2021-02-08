@@ -69,5 +69,21 @@ jobs:
         env:
           R_BSRTO_CACHE: ${{ runner.temp }}/bsrto-cache-dir
           R_BSRTO_BUILD_CACHE: ${{ runner.temp }}/bsrto-build-cache-dir
-        run: bsrto::bs_build_realtime()
+        run: |
+          dir.create("built")
+          bsrto::bs_build_realtime("built")
         shell: Rscript {0}
+
+      - name: Upload build cache
+        if: always()
+        uses: actions/upload-artifact@main
+        with:
+          name: bsrto-build-cache
+          path: ${{ runner.temp }}/bsrto-build-cache-dir
+
+      - name: Upload built data
+        if: always()
+        uses: actions/upload-artifact@main
+        with:
+          name: bsrto-built
+          path: built
