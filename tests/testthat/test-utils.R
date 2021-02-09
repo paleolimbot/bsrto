@@ -24,3 +24,9 @@ test_that("resample functions work", {
     c(20, NA, 18, NA, 16, NA, 14, NA, 12, NA)
   )
 })
+
+test_that("bs_version_info() works",{
+  expect_is(bs_version_info(), "character")
+  expect_length(bs_version_info(), 1)
+  expect_match(bs_version_info(), "^bsrto")
+})

@@ -57,3 +57,8 @@ resample_nearest <- function(x, y, xout, max_distance = Inf) {
 
   result
 }
+
+bs_version_info <- function() {
+  info <- sessioninfo::package_info("bsrto", include_base = FALSE, dependencies = FALSE)
+  glue("bsrto { info$source } ({ info$date }) / { R.version.string }")
+}
