@@ -647,10 +647,14 @@ write_realtime_mc <- function(built, out_dir = ".") {
   # TODO: recalculate salinity, calculate sound speed?
   # https://github.com/richardsc/bsrto/blob/master/mc.R#L55-L72
 
+
   # add label information for each mcX
-  built$mca$depth_label <- 40
-  built$mch$depth_label <- 60
-  built$mci$depth_label <- 160
+  # https://github.com/richardsc/bsrto/blob/master/server.R#L54-L65
+  built$mca$depth_label <- 60
+  built$mch$depth_label <- 160
+  built$mci$depth_label <- 40
+
+  # TODO: add QC flags here
 
   out_file <- file.path(out_dir, "ctd.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))

@@ -2,6 +2,7 @@
 test_that("bs_build_navigator() works for the example built data", {
   # update the example build data periodically:
   # bs_build_realtime()
+  # unlink("inst/ex-built/ctd.csv")
   # file.copy("ctd.csv", "inst/ex-built")
 
   built_dir <- system.file("ex-built", package = "bsrto")
