@@ -10,27 +10,75 @@
 #'   [bs_build_realtime()] that contains the built data files.
 #' @param out_dir Where the NetCDF files should be created.
 #'
-#' @return `out_dir`, invisibly.
+#' @return A vector of files that were written.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' bs_build_realtime()
-#' bs_build_realtime_navigator()
+#' out_file <- bs_build_navigator()
+#'
+#' library(tidync)
+#' tidync(out_file) %>% hyper_tibble()
 #' }
-bs_build_realtime_navigator <- function(built_dir = ".", out_dir = build_dir) {
+bs_build_navigator <- function(built_dir = ".", out_dir = built_dir) {
 
-  dims <- build_navigator_dims()
+  ctd_aligned <- build_navigator_ctd(built_dir)
+
+  dims <- build_navigator_dims(ctd_aligned)
   vars <- build_navigator_vars(dims)
-  meta <- build_navigator_meta()
+  meta <- build_navigator_meta(
+    date_start = min(ctd_aligned$date_time),
+    date_end = max(ctd_aligned$date_time),
+    date_update = Sys.time()
+  )
+  var_meta <- lapply(vars, navigator_var_meta)
 
-  out_file <- file.path(out_dir, "bsrto-navigator.nc")
-  cli::cat_line("Writing '{ out_file }'")
+  out_file <- file.path(out_dir, glue("{ meta$id }.nc"))
+  cli::cat_line(glue("Writing '{ out_file }'"))
+  if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
 
-  ctd <- build_navigator_ctd(out_dir)
+  nc <- ncdf4::nc_create(out_file, vars)
+  on.exit(ncdf4::nc_close(nc))
 
+  # write global meta
+  for (att_name in names(meta)) {
+    ncdf4::ncatt_put(nc, 0, att_name, meta[[att_name]])
+  }
 
-  invisible(out_dir)
+  # write variable meta
+  for (var_name in names(vars)) {
+    for (att_name in names(var_meta[[var_name]])) {
+      ncdf4::ncatt_put(nc, var_name, att_name, var_meta[[c(var_name, att_name)]])
+    }
+  }
+
+  # write variables
+  for (var_name in names(vars)) {
+    ncdf4::ncvar_put(nc, var_name, ctd_aligned[[var_name]])
+  }
+
+  invisible(out_file)
+}
+
+#' @rdname bs_build_realtime_navigator
+#' @export
+bs_plot_navigator_read <- function(out_file) {
+  nc <- ncdf4::nc_open(out_file)
+  on.exit(ncdf4::nc_close(nc))
+
+  ctd_vars <- c("PRES", "TEMP", "DOXY", "PSAL")
+  qc_vars <- paste0(ctd_vars, "_QC")
+
+  depth_dim <- nc$dim$DEPTH$vals
+  time_dim <- nc$dim$TIME$vals
+
+  df <- expand.grid(depth_dim, time_dim)
+  df[ctd_vars] <- lapply(ctd_vars, ncdf4::ncvar_get, nc = nc)
+
+  tibble::tibble(
+    DEPTH = vctrs::vec_rep()
+  )
 }
 
 build_navigator_ctd <- function(build_dir = ".") {
@@ -43,7 +91,7 @@ build_navigator_ctd <- function(build_dir = ".") {
     col_types = readr::cols(
       file = readr::col_character(),
       date_time = readr::col_datetime(format = ""),
-      .default = col_double()
+      .default = readr::col_double()
     )
   )
 
@@ -81,16 +129,22 @@ build_navigator_ctd <- function(build_dir = ".") {
   ) %>%
     dplyr::left_join(ctd, by = c("date_time", "depth_label")) %>%
     dplyr::transmute(
+      date_time = .data$date_time,
       DEPTH = .data$depth_label,
       TIME = as.numeric(
         .data$date_time - as.POSIXct("1950-01-01 00:00:00", tz = "UTC"),
         units = "days"
       ),
       PRES = .data$pressure,
+      TEMP = .data$temperature,
       DOXY = .data$oxygen,
       PSAL = .data$salinity,
-      COND = .data$conductivity,
-      SSPEED = .data$sound_speed
+
+      # In our flag scheme, 0L is "not assessed"
+      PRES_QC = 0L,
+      TEMP_QC = 0L,
+      DOXY_QC = 0L,
+      PSAL_QC = 0L,
     )
 
   ctd_aligned
@@ -113,14 +167,20 @@ build_navigator_dims <- function(ctd_aligned) {
 }
 
 build_navigator_vars <- function(dims) {
-  vars <- Map(
-    ncdf4::ncvar_def,
-    c("PRES", "DOXY", "PSAL", "COND", "SSPEED"),
-    c("dbar", "mg/L", "0.001", "", "meters per second"),
-    dim = list(list(dims$DEPTH, dims$TIME))
-  )
+  ctd_vars <- c("PRES", "TEMP", "DOXY", "PSAL")
 
-  c(vars, lapply(vars, navigator_var_qc))
+  vars <- lapply(
+    ctd_vars,
+    ncdf4::ncvar_def,
+    units = "",
+    dim = list(dims$DEPTH, dims$TIME)
+  )
+  names(vars) <- ctd_vars
+
+  vars_qc <- lapply(vars, navigator_var_qc)
+  names(vars_qc) <- paste0(ctd_vars, "_QC")
+
+  c(vars, vars_qc)
 }
 
 navigator_var_qc <- function(var) {
@@ -133,12 +193,44 @@ navigator_var_qc <- function(var) {
   )
 }
 
+navigator_var_meta <- function(var) {
+  if (endsWith(var$name, "_QC")) {
+    return(navigator_attrs_qc())
+  }
+
+  switch(
+    var$name,
+    PRES = list(
+      units = "dbar",
+      long_name = "Sea pressure",
+      standard_name = "sea_water_pressure",
+      axis = "Z",
+      positive = "down"
+    ),
+    TEMP = list(
+      units = "degrees_C",
+      long_name = "Sea temperature",
+      standard_name = "sea_water_temperature"
+    ),
+    PSAL = list(
+      units = "0.001",
+      long_name = "Practical salinity",
+      standard_name = "sea_water_practical_salinity"
+    ),
+    DOXY = list(
+      units = "micromole/kg",
+      long_name = "Dissolved oxygen",
+      standard_name = "moles_of_oxygen_per_unit_mass_in_sea_water"
+    )
+  )
+}
+
 navigator_attrs_qc <- function() {
   list(
     conventions = "OceanSITES reference table 2",
     valid_min = 0L,
     valid_max = 9L,
-    flag_values = 0:9,
+    flag_values = paste(0:9, collapse = " "),
     flag_meanings = paste(
       c("no_qc_performed", "good_data", "probably_good_data",
         "bad_data_that_are_potentially_correctable",
@@ -153,8 +245,10 @@ build_navigator_meta <- function(date_start, date_end, date_update = Sys.time())
   date_update <- navigator_datetime(date_update)
   station_lat <- "74.605"
   station_lon <- "-91.251"
+  min_depth <- "40"
+  max_depth <- "160"
 
-  meta <- list(
+  list(
     data_type = "Moored instrument",
     format_version = "0.1",
     platform_code = "68997",
@@ -172,21 +266,26 @@ build_navigator_meta <- function(date_start, date_end, date_update = Sys.time())
     quality_control_indicator = "6",
     quality_index = "A",
     references = "https://doi.org/10.1145/3148675.3152195",
-    comment = " ",
-    Conventions = "CF-1.6 OceanSITES-Manual-1.2 Copernicus-InSituTAC-SRD-1.4 Copernicus-InSituTAC-ParametersList-3.1.0",
+    comment = bs_version_info(),
+    Conventions = paste(
+      "CF-1.6 OceanSITES-Manual-1.2",
+      "Copernicus-InSituTAC-SRD-1.4",
+      "Copernicus-InSituTAC-ParametersList-3.1.0"
+    ),
     netcdf_version = "netCDF-4 classic model",
     title = "Global Ocean - In Situ Observation Copernicus",
     summary = " ",
     naming_authority = "OceanSITES",
-    id = "GL_PR_GL_68997_202010",
+    # TODO: this is totally made up
+    id = "BSRTO_03483",
     cdm_data_type = "vertical profile",
     area = "Global Ocean",
     geospatial_lat_min = station_lat,
     geospatial_lat_max = station_lat,
     geospatial_lon_min = station_lon,
     geospatial_lon_max = station_lon,
-    geospatial_vertical_min = "0",
-    geospatial_vertical_max = "160",
+    geospatial_vertical_min = min_depth,
+    geospatial_vertical_max = max_depth,
     time_coverage_start = navigator_datetime(date_start),
     time_coverage_end = navigator_datetime(date_end),
     institution_references = " ",

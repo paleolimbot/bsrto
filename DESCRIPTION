@@ -27,7 +27,8 @@ Imports:
     cli,
     ncdf4,
     dplyr,
-    abind
+    abind,
+    sessioninfo
 Suggests: 
     testthat,
     withr,
