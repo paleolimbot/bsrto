@@ -2,9 +2,12 @@
 % Please edit documentation in R/build-navigator.R
 \name{bs_build_navigator}
 \alias{bs_build_navigator}
+\alias{bs_check_navigator}
 \title{Build data for Navigator}
 \usage{
 bs_build_navigator(built_dir = ".", out_dir = built_dir)
+
+bs_check_navigator(out_file)
 }
 \arguments{
 \item{built_dir}{The output directory used for
@@ -25,8 +28,7 @@ the moorings that represent all three depths.
 \dontrun{
 bs_build_realtime()
 out_file <- bs_build_navigator()
-
-library(tidync)
-tidync(out_file) \%>\% hyper_tibble()
+bs_check_navigator(out_file)
 }
+
 }

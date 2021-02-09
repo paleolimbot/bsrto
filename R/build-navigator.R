@@ -17,10 +17,9 @@
 #' \dontrun{
 #' bs_build_realtime()
 #' out_file <- bs_build_navigator()
-#'
-#' library(tidync)
-#' tidync(out_file) %>% hyper_tibble()
+#' bs_check_navigator(out_file)
 #' }
+#'
 bs_build_navigator <- function(built_dir = ".", out_dir = built_dir) {
 
   ctd_aligned <- build_navigator_ctd(built_dir)
@@ -58,27 +57,46 @@ bs_build_navigator <- function(built_dir = ".", out_dir = built_dir) {
     ncdf4::ncvar_put(nc, var_name, ctd_aligned[[var_name]])
   }
 
-  invisible(out_file)
+  out_file
 }
 
-#' @rdname bs_build_realtime_navigator
+#' @rdname bs_build_navigator
 #' @export
-bs_plot_navigator_read <- function(out_file) {
-  nc <- ncdf4::nc_open(out_file)
-  on.exit(ncdf4::nc_close(nc))
+bs_check_navigator <- function(out_file) {
+  expect_true(file.exists(out_file))
 
+  out_nc <- ncdf4::nc_open(out_file)
+  on.exit(ncdf4::nc_close(out_nc))
+  expect_setequal(names(out_nc$dim), c("DEPTH", "TIME"))
+  expect_setequal(out_nc$dim$DEPTH$vals, c(40, 60, 160))
+  expect_true(all(round(diff(out_nc$dim$TIME$vals), 5) == round(2 / 24, 5)))
+
+  # check that the CTDs were assigned the right depth
   ctd_vars <- c("PRES", "TEMP", "DOXY", "PSAL")
   qc_vars <- paste0(ctd_vars, "_QC")
 
-  depth_dim <- nc$dim$DEPTH$vals
-  time_dim <- nc$dim$TIME$vals
+  expect_setequal(names(out_nc$var), c(ctd_vars, qc_vars))
 
-  df <- expand.grid(depth_dim, time_dim)
-  df[ctd_vars] <- lapply(ctd_vars, ncdf4::ncvar_get, nc = nc)
-
-  tibble::tibble(
-    DEPTH = vctrs::vec_rep()
+  df <- expand.grid(
+    DEPTH = out_nc$dim$DEPTH$vals,
+    TIME = out_nc$dim$TIME$vals
   )
+  df$date_time <- as.POSIXct("1950-01-01 00:00:00", tz = "UTC") +
+    as.difftime(df$TIME, units = "days")
+
+  df[ctd_vars] <- lapply(
+    ctd_vars,
+    function(var) as.numeric(ncdf4::ncvar_get(out_nc, var))
+  )
+  df[qc_vars] <- lapply(
+    qc_vars,
+    function(var) as.numeric(ncdf4::ncvar_get(out_nc, var))
+  )
+
+  pres_depth_diff <- df$PRES - df$DEPTH
+  expect_true(all(abs(pres_depth_diff < 20)))
+
+  tibble::as_tibble(df)
 }
 
 build_navigator_ctd <- function(build_dir = ".") {
