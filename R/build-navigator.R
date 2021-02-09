@@ -71,6 +71,9 @@ build_navigator_ctd <- function(build_dir = ".") {
   )
 
   # Use moored depth label as the DEPTH dimension
+  # The order of depth_label and date_time in expand.grid()
+  # must match the order of the dimensions in the NetCDF
+  # or the values will be misaligned
   date_time_range <- range(ctd$date_time)
   ctd_aligned <- expand.grid(
     depth_label = sort(unique(ctd$depth_label)),
@@ -93,19 +96,48 @@ build_navigator_ctd <- function(build_dir = ".") {
   ctd_aligned
 }
 
-build_navigator_dims <- function() {
+build_navigator_dims <- function(ctd_aligned) {
+  dims <- list(
+    ncdf4::ncdim_def(
+      "DEPTH", units = "meters",
+      vals = unique(sort(ctd_aligned$DEPTH))
+    ),
+    ncdf4::ncdim_def(
+      "TIME", units = "meters",
+      vals = unique(sort(ctd_aligned$TIME))
+    )
+  )
 
+  names(dims) <- vapply(dims, "[[", "name", FUN.VALUE = character(1))
+  dims
 }
 
 build_navigator_vars <- function(dims) {
+  vars <- Map(
+    ncdf4::ncvar_def,
+    c("PRES", "DOXY", "PSAL", "COND", "SSPEED"),
+    c("dbar", "mg/L", "0.001", "", "meters per second"),
+    dim = list(list(dims$DEPTH, dims$TIME))
+  )
 
+  c(vars, lapply(vars, navigator_var_qc))
 }
 
-navigator_var_qc <- function(name) {
-  attrs <- list(
-    long_name = "quality flag",
+navigator_var_qc <- function(var) {
+  ncdf4::ncvar_def(
+    paste0(var$name, "_QC"),
+    units = "flag",
+    dim = var$dim,
+    longname = "quality_flag",
+    prec = "byte"
+  )
+}
+
+navigator_attrs_qc <- function() {
+  list(
     conventions = "OceanSITES reference table 2",
-    valid_min = 0L, valid_max = 9L,
+    valid_min = 0L,
+    valid_max = 9L,
     flag_values = 0:9,
     flag_meanings = paste(
       c("no_qc_performed", "good_data", "probably_good_data",
