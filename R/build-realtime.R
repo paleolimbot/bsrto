@@ -648,11 +648,6 @@ write_realtime_mc <- function(built, out_dir = ".") {
   mch <- built$mch
   mci <- built$mci
 
-  # TODO: recalculate salinity, calculate sound speed?
-  # https://github.com/richardsc/bsrto/blob/master/mc.R#L55-L72
-
-
-
   # add label information for each mcX
   # https://github.com/richardsc/bsrto/blob/master/server.R#L54-L65
   mca$depth_label <- 60
@@ -687,16 +682,26 @@ write_realtime_mc <- function(built, out_dir = ".") {
   )
   mc$salinity_calc_flag <- bs_flag("not assessed")
   # RMSE: ~0.01
-  # mean((mc$salinity - mc$salinity_calc) ^ 2, na.rm = TRUE)
+  stopifnot(
+    mean(
+      (mc$salinity - mc$salinity_calc) ^ 2,
+      na.rm = TRUE
+    ) < 0.02
+  )
 
   mc$sound_speed_calc <- sound_speed_from_psal_temp_pres(
     mc$salinity_calc,
     mc$temperature,
     mc$pressure
   )
+  # Check ballpark values (mostly as a guard against unit problems)
+  stopifnot(
+    mean(
+      (mc$sound_speed - mc$sound_speed_calc) ^ 2,
+      na.rm = TRUE
+    ) < 1e-3
+  )
   mc$sound_speed_calc_flag <- bs_flag("not assessed")
-  # RMSE: ~1e-7
-  # mean((mc$sound_speed - mc$sound_speed_calc) ^ 2, na.rm = TRUE)
 
   # flag out-of-range values for some parameters
   temp_out_of_range <- (mc$temperature < -2) | (mc$temperature > 20)
@@ -720,8 +725,6 @@ write_realtime_mc <- function(built, out_dir = ".") {
     psal_calc_out_of_range,
     bs_flag("probably bad data")
   )
-
-  # update flags for all columns
 
   out_file <- file.path(out_dir, "ctd.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))

@@ -94,17 +94,37 @@ bs_check_navigator <- function(out_file) {
   )
   df[qc_vars] <- lapply(
     qc_vars,
-    function(var) as.numeric(ncdf4::ncvar_get(out_nc, var))
+    function(var) as.integer(ncdf4::ncvar_get(out_nc, var))
   )
 
+  # check for DEPTH dimension values that are obviously wrong
   pres_depth_diff <- df$PRES - df$DEPTH
   testthat::expect_true(all(abs(pres_depth_diff) < 20, na.rm = TRUE))
+
+  # check that stated time range matches the date/time of the file
+  testthat::expect_identical(
+    ncdf4::ncatt_get(out_nc, 0, "last_date_observation")$value,
+    navigator_datetime(max(df$date_time))
+  )
+  testthat::expect_identical(
+    ncdf4::ncatt_get(out_nc, 0, "time_coverage_start")$value,
+    navigator_datetime(min(df$date_time))
+  )
+  testthat::expect_identical(
+    ncdf4::ncatt_get(out_nc, 0, "time_coverage_end")$value,
+    navigator_datetime(max(df$date_time))
+  )
+
+  # check that file doesn't claim to be generated in the future
+  creation <- ncdf4::ncatt_get(out_nc, 0, "history")$value
+  creation_date <- stringr::str_match(creation, "^(.*?)\\s*:\\s*Creation")
+  testthat::expect_true(readr::parse_datetime(creation_date[, 2]) < Sys.time())
 
   tibble::as_tibble(df)
 }
 
-build_navigator_ctd <- function(build_dir = ".") {
-  ctd_file <- file.path(build_dir, "ctd.csv")
+build_navigator_ctd <- function(built_dir = ".") {
+  ctd_file <- file.path(built_dir, "ctd.csv")
   cli::cat_line(glue("Loading '{ ctd_file }'"))
   stopifnot(file.exists(ctd_file))
 
@@ -116,9 +136,6 @@ build_navigator_ctd <- function(build_dir = ".") {
       .default = readr::col_double()
     )
   )
-
-  # TODO: should add missing flag here to differentiate between the
-  # implicit missings we're about to add by gridding the data
 
   # The date_time reported is not aligned between moorings,
   # but is usually within a few seconds. To make a useful
@@ -160,13 +177,12 @@ build_navigator_ctd <- function(build_dir = ".") {
       PRES = .data$pressure,
       TEMP = .data$temperature,
       DOXY = .data$oxygen,
-      PSAL = .data$salinity,
+      PSAL = .data$salinity_calc,
 
-      # In our flag scheme, 0L is "not assessed"
-      PRES_QC = 0L,
-      TEMP_QC = 0L,
-      DOXY_QC = 0L,
-      PSAL_QC = 0L,
+      PRES_QC = dplyr::coalesce(.data$pressure_flag, bs_flag("not measured")),
+      TEMP_QC = dplyr::coalesce(.data$temperature_flag, bs_flag("not measured")),
+      DOXY_QC = dplyr::coalesce(.data$oxygen_flag, bs_flag("not measured")),
+      PSAL_QC = dplyr::coalesce(.data$salinity_calc_flag, bs_flag("not measured"))
     )
 
   ctd_aligned
@@ -272,6 +288,11 @@ build_navigator_meta <- function(date_start, date_end, date_update = Sys.time())
   max_depth <- "160"
 
   list(
+    title = "Global Ocean - In Situ Observation Copernicus",
+    summary = " ",
+    naming_authority = "OceanSITES",
+    # TODO: this is totally made up
+    id = "BSRTO_03483",
     data_type = "Moored instrument",
     format_version = "0.1",
     platform_code = "68997",
@@ -295,12 +316,7 @@ build_navigator_meta <- function(date_start, date_end, date_update = Sys.time())
       "Copernicus-InSituTAC-SRD-1.4",
       "Copernicus-InSituTAC-ParametersList-3.1.0"
     ),
-    netcdf_version = "netCDF-4 classic model",
-    title = "Global Ocean - In Situ Observation Copernicus",
-    summary = " ",
-    naming_authority = "OceanSITES",
-    # TODO: this is totally made up
-    id = "BSRTO_03483",
+    netcdf_version = ncdf4::nc_version(),
     cdm_data_type = "vertical profile",
     area = "Global Ocean",
     geospatial_lat_min = station_lat,
@@ -317,12 +333,12 @@ build_navigator_meta <- function(date_start, date_end, date_update = Sys.time())
     data_assembly_center = "Bedford Institute of Oceanography",
     pi_name = "Clark Richards",
     distribution_statement = paste(
-      "These data are public and free of charge. User assumes all risk for use of ",
-      "data. User must display citation in any publication or product using data. ",
+      "These data are public and free of charge. User assumes all risk for use of",
+      "data. User must display citation in any publication or product using data.",
       "User must contact PI prior to any commercial use of data."
     ),
     citation = paste(
-      "These data were collected and made freely available by Fisheries and ",
+      "These data were collected and made freely available by Fisheries and",
       "Oceans Canada and its partner organizations."
     ),
     update_interval = "daily",

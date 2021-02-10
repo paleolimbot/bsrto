@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-#' bs_flag(c("not assessed", "probably good data", "not a flag"))
+#' bs_flag(c("not assessed", "probably good data"))
 #' bs_flag_label(1:5)
 #' bs_flag_scheme()
 #'
