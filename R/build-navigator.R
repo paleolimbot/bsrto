@@ -257,7 +257,8 @@ navigator_attrs_qc <- function() {
       c("no_qc_performed", "good_data", "probably_good_data",
         "bad_data_that_are_potentially_correctable",
         "bad_data", "value_changed", "not_used", "nominal_value",
-        "interpolated_value",  "missing_value"),
+        "interpolated_value",  "missing_value"
+      ),
       collapse = " "
     )
   )

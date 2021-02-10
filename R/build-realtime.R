@@ -644,23 +644,87 @@ write_realtime_lgh <- function(lgh, out_dir = ".") {
 write_realtime_mc <- function(built, out_dir = ".") {
   cli::cat_rule("write_realtime_mc()")
 
+  mca <- built$mca
+  mch <- built$mch
+  mci <- built$mci
+
   # TODO: recalculate salinity, calculate sound speed?
   # https://github.com/richardsc/bsrto/blob/master/mc.R#L55-L72
 
 
+
   # add label information for each mcX
   # https://github.com/richardsc/bsrto/blob/master/server.R#L54-L65
-  built$mca$depth_label <- 60
-  built$mch$depth_label <- 160
-  built$mci$depth_label <- 40
+  mca$depth_label <- 60
+  mch$depth_label <- 160
+  mci$depth_label <- 40
 
-  # TODO: add QC flags here
+  # Add flag columns for "missing" here, because after we rbind there will
+  # be implicit missings for parameters that were not measured by one of
+  # the instruments. There are few if any missing values but may be some
+  # resulting from reading mangled files from which only a few values
+  # are available.
+  mc_list <- list(mca, mch, mci)
+  mc_list <- lapply(mc_list, function(mcx) {
+    cols <- setdiff(names(mcx), c("file", "date_time", "depth_label"))
+    flag_cols <- paste0(cols, "_flag")
+    mcx[flag_cols] <- lapply(
+      mcx[cols], function(x)
+        ifelse(is.na(x), bs_flag("missing"), bs_flag("not assessed"))
+    )
+    mcx
+  })
+
+  # combine all the CTD measurements
+  mc <- vctrs::vec_rbind(!!! mc_list) %>%
+    dplyr::arrange(.data$depth_label, .data$date_time)
+
+  # calculate salinity and sound speed (only reported by some instruments)
+  mc$salinity_calc <- salinity_from_cond_temp_pres(
+    mc$conductivity,
+    mc$temperature,
+    mc$pressure
+  )
+  mc$salinity_calc_flag <- bs_flag("not assessed")
+  # RMSE: ~0.01
+  # mean((mc$salinity - mc$salinity_calc) ^ 2, na.rm = TRUE)
+
+  mc$sound_speed_calc <- sound_speed_from_psal_temp_pres(
+    mc$salinity_calc,
+    mc$temperature,
+    mc$pressure
+  )
+  mc$sound_speed_calc_flag <- bs_flag("not assessed")
+  # RMSE: ~1e-7
+  # mean((mc$sound_speed - mc$sound_speed_calc) ^ 2, na.rm = TRUE)
+
+  # flag out-of-range values for some parameters
+  temp_out_of_range <- (mc$temperature < -2) | (mc$temperature > 20)
+  psal_out_of_range <- (mc$salinity < 1) | (mc$salinity > 40)
+  psal_calc_out_of_range <- (mc$salinity_calc < 1) | (mc$salinity_calc > 40)
+
+  mc$temperature_flag <- replace(
+    mc$temperature_flag,
+    temp_out_of_range,
+    bs_flag("probably bad data")
+  )
+
+  mc$salinity_flag <- replace(
+    mc$salinity_flag,
+    psal_out_of_range,
+    bs_flag("probably bad data")
+  )
+
+  mc$salinity_calc_flag <- replace(
+    mc$salinity_calc_flag,
+    psal_calc_out_of_range,
+    bs_flag("probably bad data")
+  )
+
+  # update flags for all columns
 
   out_file <- file.path(out_dir, "ctd.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
-
-  mc <- vctrs::vec_rbind(built$mca, built$mch, built$mci) %>%
-    dplyr::arrange(.data$depth_label, .data$date_time)
 
   readr::write_csv(mc, out_file)
 }
