@@ -87,3 +87,15 @@ test_that("mean and sd of headings works", {
   expect_identical(heading_sd(c(1, 1, NA), na.rm = FALSE), NA_real_)
   expect_identical(heading_sd(c(1, 1, NA), na.rm = TRUE), 0)
 })
+
+test_that("salinity calculator gives reasonable results", {
+  expect_identical(
+    round(salinity_from_cond_temp_pres(2.57867, -1.0966, 45.181), 3),
+    round(31.8174, 3)
+  )
+
+  expect_identical(
+    round(sound_speed_from_psal_temp_pres(31.8174, -1.0966, 45.181), 3),
+    round(1440.467, 3)
+  )
+})

@@ -19,17 +19,3 @@ test_that("read_pcm() works for mangled files", {
   file <- bs_example("pcm/20022402.pcm")
   expect_true(all(!is.na(read_pcm(file)$last_date_time)))
 })
-
-test_that("read_pcm() works for all files in the cache", {
-  skip_if_not(bs_has_full_cache())
-
-  # >27,000 files
-  files <- bs_ftp_snapshot_latest$file[grepl("\\.pcm", bs_ftp_snapshot_latest$file)]
-  cached <- bs_cache_dir(head(files, 5000))
-  cached <- cached[file.exists(cached)]
-
-  all <- read_pcm_vector(cached[1:500])
-  expect_true(all(!is.na(all$last_date_time)))
-  expect_true(all(all$true_heading >= 0 & all$true_heading <= 360))
-  expect_true(all(all$checksum_valid))
-})

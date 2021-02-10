@@ -17,16 +17,3 @@ test_that("read_hpb() works", {
     read_hpb_vector(hpb_files)[-1]
   )
 })
-
-test_that("read_hpb() works for all files in the cache", {
-  skip_if_not(bs_has_full_cache())
-
-  # >17,000 files
-  files <- bs_ftp_snapshot_latest$file[grepl("\\.hpb$", bs_ftp_snapshot_latest$file)]
-  cached <- bs_cache_dir(files)
-  cached <- cached[file.exists(cached)]
-
-  all <- read_hpb_vector(cached[1:300])
-  expect_true(all(!is.na(all)))
-})
-

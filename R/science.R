@@ -143,3 +143,12 @@ heading_sd <- function(true_heading, na.rm = FALSE) {
   sqrt(sum(angle_chord ^ 2) / (length(true_heading) - 1))
 }
 
+# Units: S/m, Deg C, dbar -> psu
+salinity_from_cond_temp_pres <- function(cond, temp, pres) {
+  oce::swSCTp(cond, temp, pres, conductivityUnit = "S/m")
+}
+
+# Units: psu, Deg C, dbar -> m/s
+sound_speed_from_psal_temp_pres <- function(psal, temp, pres) {
+  oce::swSoundSpeed(psal, temp, pres)
+}

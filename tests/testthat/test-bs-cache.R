@@ -22,3 +22,15 @@ test_that("bs_build_cache_dir() works", {
     "foo"
   )
 })
+
+test_that("bs_build_cache_dir() works", {
+  expect_identical(
+    withr::with_options(list(bsrto.ftp_server = "foo"), bs_ftp_server()),
+    "foo"
+  )
+
+  expect_identical(
+    withr::with_envvar(list(R_BSRTO_FTP_SERVER = "foo"), bs_ftp_server()),
+    "foo"
+  )
+})

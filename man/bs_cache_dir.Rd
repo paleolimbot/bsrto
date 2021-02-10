@@ -3,14 +3,14 @@
 \name{bs_cache_dir}
 \alias{bs_cache_dir}
 \alias{bs_build_cache_dir}
-\alias{bs_has_full_cache}
+\alias{bs_ftp_server}
 \title{Cache locations}
 \usage{
 bs_cache_dir(...)
 
 bs_build_cache_dir(...)
 
-bs_has_full_cache()
+bs_ftp_server(...)
 }
 \arguments{
 \item{...}{Passed to \code{\link[=file.path]{file.path()}}}
@@ -29,6 +29,5 @@ default a temporary directory is set that is cleaned up on package unload.
 \examples{
 bs_cache_dir()
 bs_build_cache_dir()
-bs_has_full_cache()
 
 }

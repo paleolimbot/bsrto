@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 [![R build status](https://github.com/paleolimbot/bsrto/workflows/R-CMD-check/badge.svg)](https://github.com/paleolimbot/bsrto/actions)
 <!-- badges: end -->
 
-The goal of bsrto is to provide a well-tested basis for generating data products for the [Barrow Strait Real Time Observatory](https://noise.phys.ocean.dal.ca/barrow/).
+The goal of bsrto is to generate data products for the [Barrow Strait Real Time Observatory](https://noise.phys.ocean.dal.ca/barrow/).
 
 ## Installation
 
@@ -37,9 +37,12 @@ remotes::install_github("paleolimbot/bsrto")
 library(bsrto)
 ```
 
-The main event of the bsrto package are the `bs_build_()` functions, which generate data products from data available on the ftp server. A number of helper functions support them which can be useful when debugging problems with the intermediary outputs. You will probably want to set a persistent cache directory in your .Rprofile:
+The main event of the bsrto package are the `bs_build_()` functions, which generate data products from data available on the ftp server. A number of helper functions support them which can be useful when debugging problems with the intermediary outputs. You will need to set up the location of the ftp server and you will probably want to set a persistent cache directory in your .Rprofile (e.g., `usethis::edit_r_profile()`).
 
 ``` r
+# address of the ftp server
+options(bsrto.ftp = "...")
+
 # local path to copy of the ftp server
 options(bsrto.cache = "...")
 
@@ -48,43 +51,14 @@ options(bsrto.cache = "...")
 options(bsrto.build_cache = "...")
 ```
 
-Then you can build the real-time data! It will take ~60 minutes the first time (because it needs to download a few thousand files) and ~30 seconds each time thereafter.
+Then you can build the real-time data! It will take ~60 minutes the first time (because it needs to download a few thousand files) and ~1 minute each time thereafter.
 
 ``` r
 bs_build_realtime()
 ```
 
-## List files from the BSRTO server
+You can build other products as well, including the [Navigator](https://navigator.oceansdata.ca/) data:
 
-...and plot them.
-
-```{r plot-latest}
-library(tidyverse)
-
-latest <- bs_ftp_list("BSRTO/2019-2020/mcI") %>% 
-  filter(size > 0) %>% 
-  arrange(desc(file)) %>% 
-  head(200) %>% 
-  bs_cached(async = TRUE)
-
-read_mc_vector(latest) %>% 
-  pivot_longer(-c(file, date_time)) %>% 
-  ggplot(aes(date_time, value)) +
-  geom_line() +
-  facet_wrap(vars(name), scales = "free", ncol = 2)
-```
-
-## Read functions for BSRTO files
-
-```{r example}
-read_hpb_vector(list.files(bs_example("hpb"), "\\.hpb$", full.names = TRUE))
-read_icl(bs_example("icl/SAF2564_20191010_19.txt"))
-read_imm(bs_example("imm/18082902.imm"))
-read_ips_bn(bs_example("ips/191010AA.bn1"))
-read_lgh(bs_example("lgh/20191010.lgH"))
-read_mc(bs_example("mcA/19101018.mcA"))
-read_mc(bs_example("mcI/19101023.mcI"))
-read_odf(bs_example("odf/CTD_98911_10P_11_DN.ODF"))
-read_pcm(bs_example("pcm/19101018.pcm"))
-read_rdi(bs_example("rdi/19101018.rdi"))
+``` r
+bs_build_navigator()
 ```
