@@ -33,6 +33,9 @@
 #' }
 #'
 bs_build_realtime <- function(out_dir = ".") {
+  # make sure out_dir exists
+  if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
+
   steps <- c(
     "met", "hpb", "icl", "ips", "lgh",
     "mca", "mch", "mci", "pcm", "rdi"
