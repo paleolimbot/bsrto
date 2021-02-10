@@ -25,18 +25,6 @@ test_that("read_rdi() works on gzipped files", {
   )
 })
 
-test_that("read_rdi() works for all files in the cache", {
-  skip_if_not(bs_has_full_cache())
-
-  # >7,000 files
-  files <- bs_ftp_snapshot_latest$file[grepl("BSRTO.*?\\.rdi$", bs_ftp_snapshot_latest$file)]
-  cached <- bs_cache_dir(head(files, 5000))
-  cached <- cached[file.exists(cached)]
-
-  all <- read_rdi_vector(cached[1:500])
-  expect_true(all(!is.na(all$real_time_clock)))
-})
-
 test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   file <- bs_example("rdi/19101018.rdi")
   # debug(oce:::decodeHeaderRDI)

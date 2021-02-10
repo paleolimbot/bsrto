@@ -17,7 +17,6 @@
 #' @examples
 #' bs_cache_dir()
 #' bs_build_cache_dir()
-#' bs_has_full_cache()
 #'
 bs_cache_dir <- function(...) {
   cache <- Sys.getenv("R_BSRTO_CACHE", "")
@@ -67,10 +66,6 @@ bs_ftp_server <- function(...) {
   )
 }
 
-
-#' @rdname bs_cache_dir
-#' @export
-bs_has_full_cache <- function() {
-  # need to sort this out!
-  FALSE
+bs_has_ftp <- function() {
+  tryCatch({bs_ftp_server(); TRUE}, error = function(e) FALSE)
 }

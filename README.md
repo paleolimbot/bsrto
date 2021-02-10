@@ -31,7 +31,8 @@ which generate data products from data available on the ftp server. A
 number of helper functions support them which can be useful when
 debugging problems with the intermediary outputs. You will need to set
 up the location of the ftp server and you will probably want to set a
-persistent cache directory in your .Rprofile:
+persistent cache directory in your .Rprofile (e.g.,
+`usethis::edit_r_profile()`).
 
 ``` r
 # address of the ftp server

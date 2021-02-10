@@ -1,7 +1,6 @@
 
 test_that("bs_ftp_list works", {
-  skip_if_offline()
-  skip_if_not(interactive())
+  skip_if_not(bs_has_ftp())
 
   expect_is(bs_ftp_list("barrow", quiet = TRUE), "tbl_df")
   expect_message(bs_ftp_list("barrow", quiet = FALSE), "Listing directory")
@@ -36,8 +35,7 @@ test_that("bs_cached() errors for an invalid data frame", {
 })
 
 test_that("bs_cached() works", {
-  skip_if_offline()
-  skip_if_not(interactive())
+  skip_if_not(bs_has_ftp())
 
   expect_identical(bs_cached(character()), character())
 
@@ -53,8 +51,7 @@ test_that("bs_cached() works", {
 
 
 test_that("bs_cached() works with async = TRUE", {
-  skip_if_offline()
-  skip_if_not(interactive())
+  skip_if_not(bs_has_ftp())
 
   expect_identical(bs_cached(character(), async = TRUE), character())
 
