@@ -51,6 +51,25 @@ bs_build_cache_dir <- function(...) {
 
 #' @rdname bs_cache_dir
 #' @export
+bs_ftp_server <- function(...) {
+  ftp <- Sys.getenv("R_BSRTO_FTP_SERVER", "")
+  if (!identical(ftp, "")) {
+    return(file.path(ftp, ..., fsep = "/"))
+  }
+
+  ftp <- getOption("bsrto.ftp_server", NULL)
+  if (!is.null(ftp)) {
+    return(file.path(ftp, ..., fsep = "/"))
+  }
+
+  abort(
+    "Must set options(bsrto.ftp_server = '...') or R_BSRTO_FTP_SERVER environment variable."
+  )
+}
+
+
+#' @rdname bs_cache_dir
+#' @export
 bs_has_full_cache <- function() {
   # need to sort this out!
   FALSE

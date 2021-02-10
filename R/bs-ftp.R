@@ -27,7 +27,7 @@
 #' bs_ftp_list("barrow")
 #' }
 bs_cached <- function(x,
-                      ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
+                      ftp = bs_ftp_server(),
                       cache = bs_cache_dir(), async = FALSE,
                       retries = 4, quiet = FALSE) {
   if (is.data.frame(x) && ("file" %in% colnames(x))) {
@@ -71,8 +71,7 @@ bs_cached <- function(x,
 #' @rdname bs_cached
 #' @export
 bs_ftp_list <- function(x, pattern = NULL, recursive = FALSE,
-                        ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
-                        print = FALSE, quiet = FALSE) {
+                        ftp = bs_ftp_server(), print = FALSE, quiet = FALSE) {
   if (length(x) == 0) {
     return(tibble::tibble(file = character(), size = numeric()))
   } else if (length(x) != 1) {

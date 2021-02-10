@@ -7,7 +7,7 @@
 \usage{
 bs_cached(
   x,
-  ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
+  ftp = bs_ftp_server(),
   cache = bs_cache_dir(),
   async = FALSE,
   retries = 4,
@@ -18,7 +18,7 @@ bs_ftp_list(
   x,
   pattern = NULL,
   recursive = FALSE,
-  ftp = getOption("bsrto.ftp", "ftp://dfoftp.ocean.dal.ca/pub/dfo"),
+  ftp = bs_ftp_server(),
   print = FALSE,
   quiet = FALSE
 )
