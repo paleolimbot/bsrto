@@ -1158,8 +1158,7 @@ build_realtime_list_and_cache <- function(dir, retries = 4) {
 
   zero_size <- file.size(cached) == 0
   if (sum(zero_size) > 0) {
-    zero_size_files <- paste0("'", basename(cached[zero_size]), "'", collapse = "\n")
-    cli::cat_line(glue("Skipping { sum(zero_size) } files(s) with zero size:\n{ zero_size_files }"))
+    cli::cat_line(glue("Skipping { sum(zero_size) } files(s) with zero size"))
   }
 
   cached[!zero_size]
