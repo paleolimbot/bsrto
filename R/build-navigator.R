@@ -224,9 +224,9 @@ build_navigator_vars <- function(dims) {
 navigator_var_qc <- function(var) {
   ncdf4::ncvar_def(
     paste0(var$name, "_QC"),
-    units = "flag",
+    units = "",
     dim = var$dim,
-    longname = "quality_flag",
+    longname = paste(var$longname, "quality flag"),
     prec = "byte"
   )
 }
@@ -264,19 +264,26 @@ navigator_var_meta <- function(var) {
 }
 
 navigator_attrs_qc <- function() {
+  # Example attributes:
+  # list(
+  #   conventions = "OceanSITES reference table 2",
+  #   valid_min = 0L,
+  #   valid_max = 9L,
+  #   flag_values = paste(0:9, collapse = " "),
+  #   flag_meanings = paste(
+  #     c("no_qc_performed", "good_data", "probably_good_data",
+  #       "bad_data_that_are_potentially_correctable",
+  #       "bad_data", "value_changed", "not_used", "nominal_value",
+  #       "interpolated_value",  "missing_value"
+  #     ),
+  #     collapse = " "
+  #   )
+  # )
+  flags <- bs_flag_scheme()
   list(
-    conventions = "OceanSITES reference table 2",
-    valid_min = 0L,
-    valid_max = 9L,
-    flag_values = paste(0:9, collapse = " "),
-    flag_meanings = paste(
-      c("no_qc_performed", "good_data", "probably_good_data",
-        "bad_data_that_are_potentially_correctable",
-        "bad_data", "value_changed", "not_used", "nominal_value",
-        "interpolated_value",  "missing_value"
-      ),
-      collapse = " "
-    )
+    conventions = "BSRTO Internal Flag Scheme",
+    flag_values = paste(flags$flag, collapse = " "),
+    flag_meanings = paste(flags$flag_label, collapse = " | ")
   )
 }
 
