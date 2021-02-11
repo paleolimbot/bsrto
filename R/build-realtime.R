@@ -44,8 +44,8 @@ bs_build_realtime <- function(out_dir = ".") {
   built <- lapply(steps, read_realtime_cached)
 
   # these processed values are used as corrections in later outputs
-  baro <- write_realtime_baro(built$hpb, out_dir)
   met <- write_realtime_met(built$met, out_dir)
+  baro <- write_realtime_baro(built$hpb, met, out_dir)
   pc <- write_realtime_pcm(built$pcm, out_dir)
 
   write_realtime_adp(built$rdi, pc, out_dir)
@@ -57,27 +57,11 @@ bs_build_realtime <- function(out_dir = ".") {
   invisible(out_dir)
 }
 
-write_realtime_baro <- function(hpb, out_dir = ".") {
-  cli::cat_rule("write_realtime_baro()")
-
-  # same naming convention and units as environment canada values
-  baro <- tibble::tibble(
-    file = hpb$file,
-    date_time = hpb$date_time,
-    shore_press = hpb$atm_pres_mbar / 10, # mbar -> kPa
-    shore_press_flag = NA_character_,
-    shore_temp = hpb$temp_c,
-    shore_temp_flag = NA_character_
-  )
-
-  out_file <- file.path(out_dir, "baro.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-
-  readr::write_csv(baro, out_file)
-}
-
 write_realtime_met <- function(met, out_dir = ".") {
   cli::cat_rule("write_realtime_met()")
+
+  # Use dbar for pressure everywhere
+  met$stn_press <- met$stn_press / 10 # kPa -> dbar
 
   # Resolute station altitude is 68 m above sea level
   met$sea_level_press <-
@@ -87,13 +71,65 @@ write_realtime_met <- function(met, out_dir = ".") {
   # check correction
   # plot(built$met$stn_press, built$met$sea_level_press)
 
-  # give every variable a _flag column
-  met$weather_flag <- NA_character_
+  # remove columns where nothing has ever been measured
+  no_data_cols <- c("precip_amount", "visibility", "hmdx", "weather")
+  no_data_flag_cols <- paste0(setdiff(no_data_cols, "weather"), "_flag")
+  met <- met[setdiff(names(met), c(no_data_cols, no_data_flag_cols))]
+
+  # Re-flag data with the bs_flag() scheme. The only flags so far in the
+  # weather data are NA and "M" (missing). Be conservative and call any other
+  # flagged data "probably bad data".
+  flag_cols <- grepl("_flag$", names(met))
+  met[flag_cols] <- lapply(met[flag_cols], function(x) {
+    result <- ifelse(x == "M", bs_flag("missing"), bs_flag("probably bad data"))
+    result[is.na(result)] <- bs_flag("probably good data")
+    result
+  })
 
   out_file <- file.path(out_dir, "met.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
 
   readr::write_csv(met, out_file)
+}
+
+write_realtime_baro <- function(hpb, met, out_dir = ".") {
+  cli::cat_rule("write_realtime_baro()")
+
+  # same naming convention as environment canada values,
+  # use dbar for pressure everywhere
+  baro <- tibble::tibble(
+    file = hpb$file,
+    date_time = hpb$date_time,
+    shore_press = hpb$atm_pres_mbar / 100, # mbar -> dbar
+    shore_temp = hpb$temp_c,
+  )
+
+  # QC pressure and temperature using Env. Canada observations
+  # Shore station pressures are within 0.10 to 0.22 of estimated
+  # sea-level pressure from stn_press at Resolute.
+  met_nearest_press <- resample_nearest(
+    met$date_time,
+    met$sea_level_press,
+    baro$date_time,
+    # only observations within 30 mins
+    max_distance = 60 * 30
+  )
+  met_press_diff <- baro$shore_press - met_nearest_press
+
+  baro$shore_press_flag <- ifelse(
+    met_press_diff > 0.23 | met_press_diff < 0.1,
+    bs_flag("probably bad data"),
+    bs_flag("probably good data")
+  )
+
+  # temperature is difficult to QC in this way...no obvious outliers
+  # but up to 20 degrees difference
+  baro$shore_temp_flag <- bs_flag("not assessed")
+
+  out_file <- file.path(out_dir, "baro.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(baro, out_file)
 }
 
 write_realtime_pcm <- function(pcm, out_dir = ".") {
@@ -108,8 +144,7 @@ write_realtime_pcm <- function(pcm, out_dir = ".") {
   # Zero readings are suspected to be bad readings and often are
   # there are so many measurements that removing them doesn't impact
   # data quality
-  zero_heading <- pcm$pc_heading == 0
-  pcm$pc_heading_flag <- ifelse(zero_heading, "likely bad", NA_character_)
+  pcm$zero_heading <- pcm$pc_heading == 0
 
   # Summarise to once per file (roughly once every two hours)
   # there are ~14-20 measurements per file, but they seem to be clumped
@@ -120,13 +155,16 @@ write_realtime_pcm <- function(pcm, out_dir = ".") {
     group_by(.data$file) %>%
     summarise(
       date_time = .data$last_date_time[1],
-      pc_heading_sd = heading_sd(.data$pc_heading[is.na(.data$pc_heading_flag)]),
-      pc_heading = heading_mean(.data$pc_heading[is.na(.data$pc_heading_flag)]),
+      pc_heading_sd = heading_sd(.data$pc_heading[!.data$zero_heading]),
+      pc_heading = heading_mean(.data$pc_heading[!.data$zero_heading]),
       pc_true_heading = heading_normalize(
         .data$pc_heading + barrow_strait_declination(.data$date_time)
       ),
-      pc_heading_n = sum(is.na(.data$pc_heading_flag)),
+      pc_heading_n = sum(!.data$zero_heading),
       .groups = "drop"
+    ) %>%
+    mutate(
+      pc_heading_flag = bs_flag("probably good data")
     )
 
   out_file <- file.path(out_dir, "pcm_summary.csv")
