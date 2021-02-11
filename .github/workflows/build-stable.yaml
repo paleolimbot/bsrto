@@ -1,0 +1,52 @@
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+name: Production Build
+
+jobs:
+  build-production:
+    runs-on: ubuntu-20.04
+    container: paleolimbot/bsrto-builder
+    env:
+      R_BSRTO_FTP_SERVER: ${{ secrets.BSRTO_FTP_SERVER_ADDRESS }}
+    steps:
+      - name: Cache BSRTO downloads
+        uses: actions/cache@v2
+        with:
+          path: /bsrto/cache
+          restore-keys: bsrto-cache-dir-1
+          key: bsrto-cache-dir-2
+
+      - name: Cache built raw data
+        uses: actions/cache@v2
+        with:
+          path: /bsrto/build-cache
+          key: bsrto-build-cache-dir-2
+
+      - name: Build updated data
+        run: |
+          bsrto::bs_build_realtime("/bsrto/built")
+          navigator_file <- bsrto::bs_build_navigator("/bsrto/built")
+          bsrto::bs_check_navigator(navigator_file)
+        shell: Rscript {0}
+
+      - name: Upload build cache
+        if: always()
+        uses: actions/upload-artifact@main
+        with:
+          name: bsrto-build-cache
+          path: /bsrto/build-cache
+
+      - name: Upload built data
+        if: always()
+        uses: actions/upload-artifact@main
+        with:
+          name: bsrto-built
+          path: /bsrto/built
