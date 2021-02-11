@@ -1,19 +1,19 @@
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
+    paths: [ inst/docker, .github/workflows/build-stable.yaml ]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
+    paths: [ inst/docker, .github/workflows/build-stable.yaml ]
+  schedule:
+    cron: "0 0,12 * * *"
 
 name: Production Build
 
 jobs:
   build-production:
     runs-on: ubuntu-20.04
-    container: paleolimbot/bsrto-builder
+    container: paleolimbot/bsrto-builder:latest
     env:
       R_BSRTO_FTP_SERVER: ${{ secrets.BSRTO_FTP_SERVER_ADDRESS }}
     steps:
@@ -36,6 +36,11 @@ jobs:
           navigator_file <- bsrto::bs_build_navigator("/bsrto/built")
           bsrto::bs_check_navigator(navigator_file)
         shell: Rscript {0}
+
+      - name: Deploy Navigator
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "This is where the navigator file would be deployed to some server"
 
       - name: Upload build cache
         if: always()
