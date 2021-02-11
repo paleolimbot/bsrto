@@ -82,6 +82,9 @@ bs_build_interactive <- function(out_dir = ".", .env = parent.frame()) {
   .env$baro <- write_realtime_baro(built$hpb, .env$met_clean, out_dir)
   .env$pc <- write_realtime_pcm(built$pcm, out_dir)
   .env$mc <- write_realtime_mc(built[c("mca", "mch", "mci")], out_dir)
+
+  # useful for stepping through read_* functions()
+  .env$previous <- NULL
 }
 
 write_realtime_met <- function(met, out_dir = ".") {
@@ -542,19 +545,8 @@ write_realtime_icl <- function(icl, out_dir = ".") {
   # climate data
 
   # Need to make sure each row represents a unique date/time or the
-  # netCDF magic below won't work. These are all (as far as I can tell)
-  # a result of mangled files. While there's no guarantee that the first
-  # non-duplicated date-time is the valid one, it's the most likely. This
-  # only represents ~40 rows.
-  duplicated_date_times <- duplicated(icl$Time)
-
-  # flag wildly out-of-range values (mangled data, not bad measurements)
-  temp_out_of_range <- (icl$`Temperature [C]` > 10) | (icl$`Temperature [C]` < -10)
-  hum_out_of_range <- (icl$`Humidity [%]` > 100) | (icl$`Humidity [%]` < 0)
-
-  # not logging because this should be moved to the read_icl_realtime function
-  rows_invalid <- duplicated_date_times | temp_out_of_range | hum_out_of_range
-  icl <- icl[!rows_invalid, ]
+  # netCDF magic below won't work.
+  stopifnot(all(!duplicated(icl$Time)))
 
   # separate meta information for now
   icl_meta <- tibble::tibble(
@@ -941,11 +933,24 @@ read_realtime_icl <- function(previous = NULL) {
     time_valid <- !is.na(all$Time)
     comment_valid <- all$Comment %in% c("", "Time Adjusted")
     data_points_valid <- is.finite(all$`Data Points`) & all$`Data Points` == 410
-    rows_valid <- time_valid & comment_valid & data_points_valid
+
+    # remove wildly out-of-range values (mangled data, not bad measurements)
+    temp_out_of_range <- (all$`Temperature [C]` > 10) | (all$`Temperature [C]` < -10)
+    hum_out_of_range <- (all$`Humidity [%]` > 100) | (all$`Humidity [%]` < 0)
+
+    rows_valid <- time_valid & comment_valid & data_points_valid &
+      !temp_out_of_range & !hum_out_of_range
 
     build_realtime_log_qc(all, rows_valid)
+    all <- all[rows_valid, ]
 
-    all <- rbind(previous, all[rows_valid, ])
+    # Some duplicated date times from mangled data (~13 rows)
+    # Hard to do this before filtering the other mangled data out
+    datetime_dup <- duplicated(all$Time)
+    build_realtime_log_qc(all, !datetime_dup)
+    all <- all[!datetime_dup, ]
+
+    all <- rbind(previous, all)
   } else {
     cli::cat_line("Using `previous` (no new files since last build)")
     all <- previous
