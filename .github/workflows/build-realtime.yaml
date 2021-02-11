@@ -60,7 +60,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ runner.temp }}/bsrto-build-cache-dir
-          key: bsrto-build-cache-dir-2
+          key: bsrto-build-cache-dir-3
 
       - name: Build updated data
         env:
