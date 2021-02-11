@@ -690,7 +690,7 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   )
 
   # redundant vars that don't get used later
-  ips$measurement_id <- NULL
+  ips$secs_since_1970 <- NULL
   ips$station_id <- NULL
 
   # use first 130 bins for each bin (pad shorter lengths with NA)
