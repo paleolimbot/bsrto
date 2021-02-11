@@ -44,8 +44,8 @@ bs_build_realtime <- function(out_dir = ".") {
   built <- lapply(steps, read_realtime_cached)
 
   # these processed values are used as corrections in later outputs
-  met <- write_realtime_met(built$met, out_dir)
-  baro <- write_realtime_baro(built$hpb, met, out_dir)
+  met_clean <- write_realtime_met(built$met, out_dir)
+  baro <- write_realtime_baro(built$hpb, met_clean, out_dir)
   pc <- write_realtime_pcm(built$pcm, out_dir)
 
   write_realtime_adp(built$rdi, pc, out_dir)
@@ -55,6 +55,32 @@ bs_build_realtime <- function(out_dir = ".") {
   write_realtime_mc(built[c("mca", "mch", "mci")], out_dir)
 
   invisible(out_dir)
+}
+
+# need to be careful to sync this with above...allows a workflow like
+# devtools::load_all(".")
+# bs_build_interactive()
+# ... (step through any code in this file)
+bs_build_interactive <- function(out_dir = ".", .env = parent.frame()) {
+  .env$out_dir <- out_dir
+
+  # make sure out_dir exists
+  if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
+
+  steps <- c(
+    "met", "hpb", "icl", "ips", "lgh",
+    "mca", "mch", "mci", "pcm", "rdi"
+  )
+  names(steps) <- steps
+  .env$built <- lapply(steps, read_realtime_cached)
+  for (step in steps) {
+    .env[[step]] <- .env$built[[step]]
+  }
+
+  # these processed values are used as corrections in later outputs
+  .env$met_clean <- write_realtime_met(built$met, out_dir)
+  .env$baro <- write_realtime_baro(built$hpb, .env$met_clean, out_dir)
+  .env$pc <- write_realtime_pcm(built$pcm, out_dir)
 }
 
 write_realtime_met <- function(met, out_dir = ".") {
@@ -92,7 +118,7 @@ write_realtime_met <- function(met, out_dir = ".") {
   readr::write_csv(met, out_file)
 }
 
-write_realtime_baro <- function(hpb, met, out_dir = ".") {
+write_realtime_baro <- function(hpb, met_clean, out_dir = ".") {
   cli::cat_rule("write_realtime_baro()")
 
   # same naming convention as environment canada values,
@@ -108,8 +134,8 @@ write_realtime_baro <- function(hpb, met, out_dir = ".") {
   # Shore station pressures are within 0.10 to 0.22 of estimated
   # sea-level pressure from stn_press at Resolute.
   met_nearest_press <- resample_nearest(
-    met$date_time,
-    met$sea_level_press,
+    met_clean$date_time,
+    met_clean$sea_level_press,
     baro$date_time,
     # only observations within 30 mins
     max_distance = 60 * 30
