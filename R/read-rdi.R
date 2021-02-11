@@ -126,6 +126,8 @@ read_rdi_internal <- function(file, offset = 0L) {
   rdi[is_fixed_leader] <- lapply(rdi[is_fixed_leader], read_rdi_fix_fixed_leader)
   is_variable_leader <- names(rdi) == "variable_leader"
   rdi[is_variable_leader] <- lapply(rdi[is_variable_leader], read_rdi_fix_variable_leader)
+  is_bottom_track <- names(rdi) == "bottom_track"
+  rdi[is_bottom_track] <- lapply(rdi[is_bottom_track],read_rdi_fix_bottom_track)
 
   lapply(rdi, tibble::new_tibble, nrow = 1)
 }
@@ -171,5 +173,10 @@ read_rdi_fix_variable_leader <- function(item) {
     "integer", n = 1, size = 4, endian = "little", signed = TRUE
   ) / 1000.0
 
+  item
+}
+
+read_rdi_fix_bottom_track <- function(item) {
+  item$bottom_track_velocity <- lapply(item$bottom_track_velocity, "/", 1000)
   item
 }

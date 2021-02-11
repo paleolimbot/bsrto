@@ -325,7 +325,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   )
 
   # These columns are list(c(n_beams))
-  cols_n_beams <- c("range_lsb", "range_msb", "bv", "bc", "ba", "bg")
+  cols_n_beams <- c("range_lsb", "range_msb", "bottom_track_velocity", "bc", "ba", "bg")
 
   # All other columns have one value per profile
   cols_prof_meta <- setdiff(
@@ -396,7 +396,6 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
 
   # need to fix in read_rdi()...should also fix col name to be more informative
   # about 2% of measurements
-  rdi_n_beams$bottom_track_velocity <- rdi_n_beams$bv / 1000
   improbable_bottom_velocities <-
     (rdi_n_beams$bottom_track_velocity > 2) |
     (rdi_n_beams$bottom_track_velocity < -2)

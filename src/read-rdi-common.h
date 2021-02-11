@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-// these structs are used as the source of "truth" for the other 
+// these structs are used as the source of "truth" for the other
 // data structures (e.g., data-frame creation code is auto-generated from
 // the struct definition)
 
@@ -36,7 +36,7 @@ enum rdi_item_type {
     // see rdi_fixed_leader_data_t
     RDI_TYPE_FIXED_LEADER = 0x0000,
     // rdi_variable_leader_data_t
-    RDI_TYPE_VARIABLE_LEADER = 0x0080, 
+    RDI_TYPE_VARIABLE_LEADER = 0x0080,
     // int16_t[n_beams * n_cells]
     // -32768 as NA, divide by 1000 to get velocity in m/s
     RDI_TYPE_VELOCITY = 0x0100,
@@ -136,10 +136,10 @@ typedef struct {
 
 // this struct may depend on the number of beams? (4 here)
 typedef struct {
-    uint16_t magic_number; 
-    uint8_t unknown[14]; 
+    uint16_t magic_number;
+    uint8_t unknown[14];
     uint16_t range_lsb[4]; // 16-23
-    int16_t bv[4]; // 24: scaled by 1000
+    int16_t bottom_track_velocity[4]; // 24: scaled by 1000
     uint8_t bc[4];
     uint8_t ba[4];
     uint8_t bg[4]; // 40-43
