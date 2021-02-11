@@ -64,6 +64,9 @@ bs_build_realtime <- function(out_dir = ".") {
 bs_build_interactive <- function(out_dir = ".", .env = parent.frame()) {
   .env$out_dir <- out_dir
 
+  # useful for stepping through read_* functions()
+  .env$previous <- NULL
+
   # make sure out_dir exists
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
 
@@ -78,13 +81,10 @@ bs_build_interactive <- function(out_dir = ".", .env = parent.frame()) {
   }
 
   # these processed values are used as corrections in later outputs
-  .env$met_clean <- write_realtime_met(built$met, out_dir)
-  .env$baro <- write_realtime_baro(built$hpb, .env$met_clean, out_dir)
-  .env$pc <- write_realtime_pcm(built$pcm, out_dir)
-  .env$mc <- write_realtime_mc(built[c("mca", "mch", "mci")], out_dir)
-
-  # useful for stepping through read_* functions()
-  .env$previous <- NULL
+  .env$met_clean <- write_realtime_met(.env$built$met, out_dir)
+  .env$baro <- write_realtime_baro(.env$built$hpb, .env$met_clean, out_dir)
+  .env$pc <- write_realtime_pcm(.env$built$pcm, out_dir)
+  .env$mc <- write_realtime_mc(.env$built[c("mca", "mch", "mci")], out_dir)
 }
 
 write_realtime_met <- function(met, out_dir = ".") {
