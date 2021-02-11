@@ -65,21 +65,12 @@ bs_build_navigator <- function(built_dir = ".", out_dir = built_dir) {
 #' @rdname bs_build_navigator
 #' @export
 bs_check_navigator <- function(out_file) {
-  testthat::expect_true(file.exists(out_file))
-
   out_nc <- ncdf4::nc_open(out_file)
   on.exit(ncdf4::nc_close(out_nc))
-  testthat::expect_setequal(names(out_nc$dim), c("DEPTH", "TIME"))
-  testthat::expect_setequal(out_nc$dim$DEPTH$vals, c(40, 60, 160))
-  testthat::expect_true(
-    all(round(diff(out_nc$dim$TIME$vals), 5) == round(2 / 24, 5))
-  )
 
   # check that the CTDs were assigned the right depth
   ctd_vars <- c("PRES", "TEMP", "DOXY", "PSAL")
   qc_vars <- paste0(ctd_vars, "_QC")
-
-  testthat::expect_setequal(names(out_nc$var), c(ctd_vars, qc_vars))
 
   df <- expand.grid(
     DEPTH = out_nc$dim$DEPTH$vals,
@@ -97,28 +88,42 @@ bs_check_navigator <- function(out_file) {
     function(var) as.integer(ncdf4::ncvar_get(out_nc, var))
   )
 
-  # check for DEPTH dimension values that are obviously wrong
-  pres_depth_diff <- df$PRES - df$DEPTH
-  testthat::expect_true(all(abs(pres_depth_diff) < 20, na.rm = TRUE))
+  if (requireNamespace("testthat", quietly = TRUE)) {
+    testthat::expect_setequal(names(out_nc$dim), c("DEPTH", "TIME"))
+    testthat::expect_setequal(out_nc$dim$DEPTH$vals, c(40, 60, 160))
+    testthat::expect_true(
+      all(round(diff(out_nc$dim$TIME$vals), 5) == round(2 / 24, 5))
+    )
+    testthat::expect_setequal(names(out_nc$var), c(ctd_vars, qc_vars))
 
-  # check that stated time range matches the date/time of the file
-  testthat::expect_identical(
-    ncdf4::ncatt_get(out_nc, 0, "last_date_observation")$value,
-    navigator_datetime(max(df$date_time))
-  )
-  testthat::expect_identical(
-    ncdf4::ncatt_get(out_nc, 0, "time_coverage_start")$value,
-    navigator_datetime(min(df$date_time))
-  )
-  testthat::expect_identical(
-    ncdf4::ncatt_get(out_nc, 0, "time_coverage_end")$value,
-    navigator_datetime(max(df$date_time))
-  )
+    # check for DEPTH dimension values that are obviously wrong
+    pres_depth_diff <- df$PRES - df$DEPTH
+    testthat::expect_true(all(abs(pres_depth_diff) < 20, na.rm = TRUE))
 
-  # check that file doesn't claim to be generated in the future
-  creation <- ncdf4::ncatt_get(out_nc, 0, "history")$value
-  creation_date <- stringr::str_match(creation, "^(.*?)\\s*:\\s*Creation")
-  testthat::expect_true(readr::parse_datetime(creation_date[, 2]) < Sys.time())
+    # check that stated time range matches the date/time of the file
+    testthat::expect_identical(
+      ncdf4::ncatt_get(out_nc, 0, "last_date_observation")$value,
+      navigator_datetime(max(df$date_time))
+    )
+    testthat::expect_identical(
+      ncdf4::ncatt_get(out_nc, 0, "time_coverage_start")$value,
+      navigator_datetime(min(df$date_time))
+    )
+    testthat::expect_identical(
+      ncdf4::ncatt_get(out_nc, 0, "time_coverage_end")$value,
+      navigator_datetime(max(df$date_time))
+    )
+
+    # check that file doesn't claim to be generated in the future
+    creation <- ncdf4::ncatt_get(out_nc, 0, "history")$value
+    creation_date <- stringr::str_match(creation, "^(.*?)\\s*:\\s*Creation")
+    testthat::expect_true(readr::parse_datetime(creation_date[, 2]) < Sys.time())
+  } else {
+    warning(
+      "Can't run explicit tests on Navigator output without 'testthat' installed.",
+      call. = FALSE, immediate. = TRUE
+    )
+  }
 
   tibble::as_tibble(df)
 }

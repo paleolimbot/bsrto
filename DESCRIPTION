@@ -28,7 +28,8 @@ Imports:
     ncdf4,
     dplyr,
     abind,
-    sessioninfo
+    sessioninfo,
+    gsw
 Suggests: 
     testthat,
     withr,

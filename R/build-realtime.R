@@ -702,7 +702,7 @@ write_realtime_mc <- function(built, out_dir = ".") {
     mean(
       (mc$sound_speed - mc$sound_speed_calc) ^ 2,
       na.rm = TRUE
-    ) < 1e-3
+    ) < 1
   )
   mc$sound_speed_calc_flag <- bs_flag("not assessed")
 

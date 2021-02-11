@@ -145,10 +145,14 @@ heading_sd <- function(true_heading, na.rm = FALSE) {
 
 # Units: S/m, Deg C, dbar -> psu
 salinity_from_cond_temp_pres <- function(cond, temp, pres) {
-  oce::swSCTp(cond, temp, pres, conductivityUnit = "S/m")
+  # gsw expects mS/cm, ITS-90 deg C, dbar
+  gsw::gsw_SP_from_C(cond * 10, temp, pres)
 }
 
 # Units: psu, Deg C, dbar -> m/s
-sound_speed_from_psal_temp_pres <- function(psal, temp, pres) {
-  oce::swSoundSpeed(psal, temp, pres)
+sound_speed_from_psal_temp_pres <- function(psal, temp, pres,
+                                            longitude = -91.251, latitude = 74.605) {
+  absolute_sal <- gsw::gsw_SA_from_SP(psal, pres, longitude = longitude, latitude = latitude)
+  conservative_temp <- gsw::gsw_CT_from_t(absolute_sal, temp, pres)
+  gsw::gsw_sound_speed(absolute_sal, conservative_temp, pres)
 }
