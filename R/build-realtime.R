@@ -357,8 +357,8 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   pc_true_heading_interp <- resample_nearest(
     pc$date_time,
     pc$pc_true_heading,
-    rdi_meta$date_time
-    # TODO: use max_distance to constrain this to within X hours
+    rdi_meta$date_time,
+    max_distance = 60 * 10 # only use values within 10 minutes
   )
 
   # correct for beam alignment to the pole compass
