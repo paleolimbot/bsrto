@@ -26,6 +26,6 @@ WORKDIR /bsrto
 
 ## Start install
 RUN R -e 'install.packages(c("remotes", "rlang", "glue", "readr", "tibble", "vctrs", "stringr", "curl", "hms", "progress", "cli", "ncdf4", "dplyr", "abind", "sessioninfo", "gsw", "testthat", "withr", "tidyr"), repos = Sys.getenv("CRAN"))'
-RUN R -e 'remotes::install_github("paleolimbot/bsrto@6f44847", repos = Sys.getenv("CRAN"))'
+RUN R -e 'remotes::install_github("paleolimbot/bsrto@fa5013c", repos = Sys.getenv("CRAN"))'
 ## End install
 
