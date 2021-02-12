@@ -72,7 +72,7 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   # bottom track
 
   expect_identical(
-    rdi$bottom_track$bv[[1]] / 1000,
+    rdi$bottom_track$bottom_track_velocity[[1]],
     c(-0.357, -0.279, 0.006, -0.001)
   )
 

@@ -208,7 +208,7 @@ SEXP rdi_variable_leader_data_list(rdi_variable_leader_data_t* variable) {
 }
 
 SEXP rdi_bottom_track_list(rdi_bottom_track_t* bottom_track) {
-    const char* bottom_track_df_names[] = { "magic_number", "range_lsb", "bv", "bc", "ba", "bg", "range_msb"  , ""};
+    const char* bottom_track_df_names[] = { "magic_number", "range_lsb", "bottom_track_velocity", "bc", "ba", "bg", "range_msb"  , ""};
     SEXP bottom_track_df = PROTECT(Rf_mkNamed(VECSXP, bottom_track_df_names));
     SET_VECTOR_ELT(bottom_track_df, 0, Rf_allocVector(INTSXP, 1));
     SET_VECTOR_ELT(bottom_track_df, 1, Rf_allocVector(VECSXP, 1));
@@ -225,11 +225,11 @@ SEXP rdi_bottom_track_list(rdi_bottom_track_t* bottom_track) {
     }
     SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 1),  0, r_range_lsb);
     UNPROTECT(1);
-    SEXP r_bv = PROTECT(Rf_allocVector(INTSXP, 4));
+    SEXP r_bottom_track_velocity = PROTECT(Rf_allocVector(INTSXP, 4));
     for (int j = 0; j < 4; j++) {
-        INTEGER(r_bv)[j] = bottom_track->bv[j];
+        INTEGER(r_bottom_track_velocity)[j] = bottom_track->bottom_track_velocity[j];
     }
-    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 2),  0, r_bv);
+    SET_VECTOR_ELT(VECTOR_ELT(bottom_track_df, 2),  0, r_bottom_track_velocity);
     UNPROTECT(1);
     SEXP r_bc = PROTECT(Rf_allocVector(INTSXP, 4));
     for (int j = 0; j < 4; j++) {

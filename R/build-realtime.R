@@ -43,41 +43,55 @@ bs_build_realtime <- function(out_dir = ".") {
   names(steps) <- steps
   built <- lapply(steps, read_realtime_cached)
 
-  # these processed values are used as corrections in later outputs
-  baro <- write_realtime_baro(built$hpb, out_dir)
-  met <- write_realtime_met(built$met, out_dir)
+  # these processed values are used as corrections/qc in later outputs
+  met_clean <- write_realtime_met(built$met, out_dir)
+  baro <- write_realtime_baro(built$hpb, met_clean, out_dir)
   pc <- write_realtime_pcm(built$pcm, out_dir)
+  mc <- write_realtime_mc(built[c("mca", "mch", "mci")], out_dir)
 
   write_realtime_adp(built$rdi, pc, out_dir)
   write_realtime_icl(built$icl, out_dir)
   write_realtime_ips(built$ips, baro, out_dir)
   write_realtime_lgh(built$lgh, out_dir)
-  write_realtime_mc(built[c("mca", "mch", "mci")], out_dir)
 
   invisible(out_dir)
 }
 
-write_realtime_baro <- function(hpb, out_dir = ".") {
-  cli::cat_rule("write_realtime_baro()")
+# need to be careful to sync this with above...allows a workflow like
+# devtools::load_all(".")
+# bs_build_interactive()
+# ... (step through any code in this file)
+bs_build_interactive <- function(out_dir = ".", .env = parent.frame()) {
+  .env$out_dir <- out_dir
 
-  # same naming convention and units as environment canada values
-  baro <- tibble::tibble(
-    file = hpb$file,
-    date_time = hpb$date_time,
-    shore_press = hpb$atm_pres_mbar / 10, # mbar -> kPa
-    shore_press_flag = NA_character_,
-    shore_temp = hpb$temp_c,
-    shore_temp_flag = NA_character_
+  # useful for stepping through read_* functions()
+  .env$previous <- NULL
+
+  # make sure out_dir exists
+  if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
+
+  steps <- c(
+    "met", "hpb", "icl", "ips", "lgh",
+    "mca", "mch", "mci", "pcm", "rdi"
   )
+  names(steps) <- steps
+  .env$built <- lapply(steps, read_realtime_cached)
+  for (step in steps) {
+    .env[[step]] <- .env$built[[step]]
+  }
 
-  out_file <- file.path(out_dir, "baro.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-
-  readr::write_csv(baro, out_file)
+  # these processed values are used as corrections in later outputs
+  .env$met_clean <- write_realtime_met(.env$built$met, out_dir)
+  .env$baro <- write_realtime_baro(.env$built$hpb, .env$met_clean, out_dir)
+  .env$pc <- write_realtime_pcm(.env$built$pcm, out_dir)
+  .env$mc <- write_realtime_mc(.env$built[c("mca", "mch", "mci")], out_dir)
 }
 
 write_realtime_met <- function(met, out_dir = ".") {
   cli::cat_rule("write_realtime_met()")
+
+  # Use dbar for pressure everywhere
+  met$stn_press <- met$stn_press / 10 # kPa -> dbar
 
   # Resolute station altitude is 68 m above sea level
   met$sea_level_press <-
@@ -87,13 +101,65 @@ write_realtime_met <- function(met, out_dir = ".") {
   # check correction
   # plot(built$met$stn_press, built$met$sea_level_press)
 
-  # give every variable a _flag column
-  met$weather_flag <- NA_character_
+  # remove columns where nothing has ever been measured
+  no_data_cols <- c("precip_amount", "visibility", "hmdx", "weather")
+  no_data_flag_cols <- paste0(setdiff(no_data_cols, "weather"), "_flag")
+  met <- met[setdiff(names(met), c(no_data_cols, no_data_flag_cols))]
+
+  # Re-flag data with the bs_flag() scheme. The only flags so far in the
+  # weather data are NA and "M" (missing). Be conservative and call any other
+  # flagged data "probably bad data".
+  flag_cols <- grepl("_flag$", names(met))
+  met[flag_cols] <- lapply(met[flag_cols], function(x) {
+    result <- ifelse(x == "M", bs_flag("missing"), bs_flag("probably bad data"))
+    result[is.na(result)] <- bs_flag("probably good data")
+    result
+  })
 
   out_file <- file.path(out_dir, "met.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
 
   readr::write_csv(met, out_file)
+}
+
+write_realtime_baro <- function(hpb, met_clean, out_dir = ".") {
+  cli::cat_rule("write_realtime_baro()")
+
+  # same naming convention as environment canada values,
+  # use dbar for pressure everywhere
+  baro <- tibble::tibble(
+    file = hpb$file,
+    date_time = hpb$date_time,
+    shore_press = hpb$atm_pres_mbar / 100, # mbar -> dbar
+    shore_temp = hpb$temp_c,
+  )
+
+  # QC pressure and temperature using Env. Canada observations
+  # Shore station pressures are within 0.10 to 0.22 of estimated
+  # sea-level pressure from stn_press at Resolute.
+  met_nearest_press <- resample_nearest(
+    met_clean$date_time,
+    met_clean$sea_level_press,
+    baro$date_time,
+    # only observations within 30 mins
+    max_distance = 60 * 30
+  )
+  met_press_diff <- baro$shore_press - met_nearest_press
+
+  baro$shore_press_flag <- ifelse(
+    met_press_diff > 0.23 | met_press_diff < 0.1,
+    bs_flag("probably bad data"),
+    bs_flag("probably good data")
+  )
+
+  # temperature is difficult to QC in this way...no obvious outliers
+  # but up to 20 degrees difference
+  baro$shore_temp_flag <- bs_flag("not assessed")
+
+  out_file <- file.path(out_dir, "baro.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(baro, out_file)
 }
 
 write_realtime_pcm <- function(pcm, out_dir = ".") {
@@ -108,8 +174,7 @@ write_realtime_pcm <- function(pcm, out_dir = ".") {
   # Zero readings are suspected to be bad readings and often are
   # there are so many measurements that removing them doesn't impact
   # data quality
-  zero_heading <- pcm$pc_heading == 0
-  pcm$pc_heading_flag <- ifelse(zero_heading, "likely bad", NA_character_)
+  pcm$zero_heading <- pcm$pc_heading == 0
 
   # Summarise to once per file (roughly once every two hours)
   # there are ~14-20 measurements per file, but they seem to be clumped
@@ -120,19 +185,114 @@ write_realtime_pcm <- function(pcm, out_dir = ".") {
     group_by(.data$file) %>%
     summarise(
       date_time = .data$last_date_time[1],
-      pc_heading_sd = heading_sd(.data$pc_heading[is.na(.data$pc_heading_flag)]),
-      pc_heading = heading_mean(.data$pc_heading[is.na(.data$pc_heading_flag)]),
+      pc_heading_sd = heading_sd(.data$pc_heading[!.data$zero_heading]),
+      pc_heading = heading_mean(.data$pc_heading[!.data$zero_heading]),
       pc_true_heading = heading_normalize(
         .data$pc_heading + barrow_strait_declination(.data$date_time)
       ),
-      pc_heading_n = sum(is.na(.data$pc_heading_flag)),
+      pc_heading_n = sum(!.data$zero_heading),
       .groups = "drop"
+    ) %>%
+    mutate(
+      pc_heading_flag = bs_flag("probably good data")
     )
 
   out_file <- file.path(out_dir, "pcm_summary.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
 
   readr::write_csv(pc, out_file)
+}
+
+
+write_realtime_mc <- function(built, out_dir = ".") {
+  cli::cat_rule("write_realtime_mc()")
+
+  mca <- built$mca
+  mch <- built$mch
+  mci <- built$mci
+
+  # add label information for each mcX
+  # https://github.com/richardsc/bsrto/blob/master/server.R#L54-L65
+  mca$depth_label <- 60
+  mch$depth_label <- 160
+  mci$depth_label <- 40
+
+  # Add flag columns for "missing" here, because after we rbind there will
+  # be implicit missings for parameters that were not measured by one of
+  # the instruments. There are few if any missing values but may be some
+  # resulting from reading mangled files from which only a few values
+  # are available.
+  mc_list <- list(mca, mch, mci)
+  mc_list <- lapply(mc_list, function(mcx) {
+    cols <- setdiff(names(mcx), c("file", "date_time", "depth_label"))
+    flag_cols <- paste0(cols, "_flag")
+    mcx[flag_cols] <- lapply(
+      mcx[cols], function(x)
+        ifelse(is.na(x), bs_flag("missing"), bs_flag("not assessed"))
+    )
+    mcx
+  })
+
+  # combine all the CTD measurements
+  mc <- vctrs::vec_rbind(!!! mc_list) %>%
+    dplyr::arrange(.data$depth_label, .data$date_time)
+
+  # calculate salinity and sound speed (only reported by some instruments)
+  mc$salinity_calc <- salinity_from_cond_temp_pres(
+    mc$conductivity,
+    mc$temperature,
+    mc$pressure
+  )
+  mc$salinity_calc_flag <- bs_flag("not assessed")
+  # RMSE: ~0.01
+  stopifnot(
+    mean(
+      (mc$salinity - mc$salinity_calc) ^ 2,
+      na.rm = TRUE
+    ) < 0.02
+  )
+
+  mc$sound_speed_calc <- sound_speed_from_psal_temp_pres(
+    mc$salinity_calc,
+    mc$temperature,
+    mc$pressure
+  )
+  # Check ballpark values (mostly as a guard against unit problems)
+  stopifnot(
+    mean(
+      (mc$sound_speed - mc$sound_speed_calc) ^ 2,
+      na.rm = TRUE
+    ) < 1
+  )
+  mc$sound_speed_calc_flag <- bs_flag("not assessed")
+
+  # flag out-of-range values for some parameters
+  temp_out_of_range <- (mc$temperature < -2) | (mc$temperature > 20)
+  psal_out_of_range <- (mc$salinity < 1) | (mc$salinity > 40)
+  psal_calc_out_of_range <- (mc$salinity_calc < 1) | (mc$salinity_calc > 40)
+
+  mc$temperature_flag <- replace(
+    mc$temperature_flag,
+    temp_out_of_range,
+    bs_flag("probably bad data")
+  )
+
+  mc$salinity_flag <- replace(
+    mc$salinity_flag,
+    psal_out_of_range,
+    bs_flag("probably bad data")
+  )
+
+  mc$salinity_calc_flag <- replace(
+    mc$salinity_calc_flag,
+    psal_calc_out_of_range,
+    bs_flag("probably bad data")
+  )
+
+  out_file <- file.path(out_dir, "ctd.csv")
+  cli::cat_line(glue("Writing '{ out_file }'"))
+
+  readr::write_csv(mc, out_file)
 }
 
 write_realtime_adp <- function(rdi, pc, out_dir = ".") {
@@ -165,7 +325,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   )
 
   # These columns are list(c(n_beams))
-  cols_n_beams <- c("range_lsb", "range_msb", "bv", "bc", "ba", "bg")
+  cols_n_beams <- c("range_lsb", "range_msb", "bottom_track_velocity", "bc", "ba", "bg")
 
   # All other columns have one value per profile
   cols_prof_meta <- setdiff(
@@ -200,8 +360,8 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   pc_true_heading_interp <- resample_nearest(
     pc$date_time,
     pc$pc_true_heading,
-    rdi_meta$date_time
-    # TODO: use max_distance to constrain this to within X hours
+    rdi_meta$date_time,
+    max_distance = 60 * 10 # only use values within 10 minutes
   )
 
   # correct for beam alignment to the pole compass
@@ -236,7 +396,6 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
 
   # need to fix in read_rdi()...should also fix col name to be more informative
   # about 2% of measurements
-  rdi_n_beams$bottom_track_velocity <- rdi_n_beams$bv / 1000
   improbable_bottom_velocities <-
     (rdi_n_beams$bottom_track_velocity > 2) |
     (rdi_n_beams$bottom_track_velocity < -2)
@@ -385,19 +544,8 @@ write_realtime_icl <- function(icl, out_dir = ".") {
   # climate data
 
   # Need to make sure each row represents a unique date/time or the
-  # netCDF magic below won't work. These are all (as far as I can tell)
-  # a result of mangled files. While there's no guarantee that the first
-  # non-duplicated date-time is the valid one, it's the most likely. This
-  # only represents ~40 rows.
-  duplicated_date_times <- duplicated(icl$Time)
-
-  # flag wildly out-of-range values (mangled data, not bad measurements)
-  temp_out_of_range <- (icl$`Temperature [C]` > 10) | (icl$`Temperature [C]` < -10)
-  hum_out_of_range <- (icl$`Humidity [%]` > 100) | (icl$`Humidity [%]` < 0)
-
-  # not logging because this should be moved to the read_icl_realtime function
-  rows_invalid <- duplicated_date_times | temp_out_of_range | hum_out_of_range
-  icl <- icl[!rows_invalid, ]
+  # netCDF magic below won't work.
+  stopifnot(all(!duplicated(icl$Time)))
 
   # separate meta information for now
   icl_meta <- tibble::tibble(
@@ -533,16 +681,15 @@ write_realtime_icl <- function(icl, out_dir = ".") {
 write_realtime_ips <- function(ips, baro, out_dir = ".") {
   cli::cat_rule("write_realtime_ips()")
 
-  # TODO: correct depth fields for atmospheric pressure
   resampled_pressure <- resample_nearest(
     baro$date_time,
     baro$shore_press,
-    ips$date_time
-    # TODO: constrain using max_distance
+    ips$date_time,
+    max_distance = 60 * 120 # constrain to ~2 hours
   )
 
   # redundant vars that don't get used later
-  ips$measurement_id <- NULL
+  ips$secs_since_1970 <- NULL
   ips$station_id <- NULL
 
   # use first 130 bins for each bin (pad shorter lengths with NA)
@@ -642,97 +789,6 @@ write_realtime_lgh <- function(lgh, out_dir = ".") {
   cli::cat_line(glue("Writing '{ out_file }'"))
 
   readr::write_csv(lgh, out_file)
-}
-
-write_realtime_mc <- function(built, out_dir = ".") {
-  cli::cat_rule("write_realtime_mc()")
-
-  mca <- built$mca
-  mch <- built$mch
-  mci <- built$mci
-
-  # add label information for each mcX
-  # https://github.com/richardsc/bsrto/blob/master/server.R#L54-L65
-  mca$depth_label <- 60
-  mch$depth_label <- 160
-  mci$depth_label <- 40
-
-  # Add flag columns for "missing" here, because after we rbind there will
-  # be implicit missings for parameters that were not measured by one of
-  # the instruments. There are few if any missing values but may be some
-  # resulting from reading mangled files from which only a few values
-  # are available.
-  mc_list <- list(mca, mch, mci)
-  mc_list <- lapply(mc_list, function(mcx) {
-    cols <- setdiff(names(mcx), c("file", "date_time", "depth_label"))
-    flag_cols <- paste0(cols, "_flag")
-    mcx[flag_cols] <- lapply(
-      mcx[cols], function(x)
-        ifelse(is.na(x), bs_flag("missing"), bs_flag("not assessed"))
-    )
-    mcx
-  })
-
-  # combine all the CTD measurements
-  mc <- vctrs::vec_rbind(!!! mc_list) %>%
-    dplyr::arrange(.data$depth_label, .data$date_time)
-
-  # calculate salinity and sound speed (only reported by some instruments)
-  mc$salinity_calc <- salinity_from_cond_temp_pres(
-    mc$conductivity,
-    mc$temperature,
-    mc$pressure
-  )
-  mc$salinity_calc_flag <- bs_flag("not assessed")
-  # RMSE: ~0.01
-  stopifnot(
-    mean(
-      (mc$salinity - mc$salinity_calc) ^ 2,
-      na.rm = TRUE
-    ) < 0.02
-  )
-
-  mc$sound_speed_calc <- sound_speed_from_psal_temp_pres(
-    mc$salinity_calc,
-    mc$temperature,
-    mc$pressure
-  )
-  # Check ballpark values (mostly as a guard against unit problems)
-  stopifnot(
-    mean(
-      (mc$sound_speed - mc$sound_speed_calc) ^ 2,
-      na.rm = TRUE
-    ) < 1
-  )
-  mc$sound_speed_calc_flag <- bs_flag("not assessed")
-
-  # flag out-of-range values for some parameters
-  temp_out_of_range <- (mc$temperature < -2) | (mc$temperature > 20)
-  psal_out_of_range <- (mc$salinity < 1) | (mc$salinity > 40)
-  psal_calc_out_of_range <- (mc$salinity_calc < 1) | (mc$salinity_calc > 40)
-
-  mc$temperature_flag <- replace(
-    mc$temperature_flag,
-    temp_out_of_range,
-    bs_flag("probably bad data")
-  )
-
-  mc$salinity_flag <- replace(
-    mc$salinity_flag,
-    psal_out_of_range,
-    bs_flag("probably bad data")
-  )
-
-  mc$salinity_calc_flag <- replace(
-    mc$salinity_calc_flag,
-    psal_calc_out_of_range,
-    bs_flag("probably bad data")
-  )
-
-  out_file <- file.path(out_dir, "ctd.csv")
-  cli::cat_line(glue("Writing '{ out_file }'"))
-
-  readr::write_csv(mc, out_file)
 }
 
 read_realtime_cached <- function(file_type, build_cache = bs_build_cache_dir("realtime"),
@@ -876,11 +932,24 @@ read_realtime_icl <- function(previous = NULL) {
     time_valid <- !is.na(all$Time)
     comment_valid <- all$Comment %in% c("", "Time Adjusted")
     data_points_valid <- is.finite(all$`Data Points`) & all$`Data Points` == 410
-    rows_valid <- time_valid & comment_valid & data_points_valid
+
+    # remove wildly out-of-range values (mangled data, not bad measurements)
+    temp_out_of_range <- (all$`Temperature [C]` > 10) | (all$`Temperature [C]` < -10)
+    hum_out_of_range <- (all$`Humidity [%]` > 100) | (all$`Humidity [%]` < 0)
+
+    rows_valid <- time_valid & comment_valid & data_points_valid &
+      !temp_out_of_range & !hum_out_of_range
 
     build_realtime_log_qc(all, rows_valid)
+    all <- all[rows_valid, ]
 
-    all <- rbind(previous, all[rows_valid, ])
+    # Some duplicated date times from mangled data (~13 rows)
+    # Hard to do this before filtering the other mangled data out
+    datetime_dup <- duplicated(all$Time)
+    build_realtime_log_qc(all, !datetime_dup)
+    all <- all[!datetime_dup, ]
+
+    all <- rbind(previous, all)
   } else {
     cli::cat_line("Using `previous` (no new files since last build)")
     all <- previous
