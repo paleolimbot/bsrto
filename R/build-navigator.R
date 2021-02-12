@@ -269,21 +269,6 @@ navigator_var_meta <- function(var) {
 }
 
 navigator_attrs_qc <- function() {
-  # Example attributes:
-  # list(
-  #   conventions = "OceanSITES reference table 2",
-  #   valid_min = 0L,
-  #   valid_max = 9L,
-  #   flag_values = paste(0:9, collapse = " "),
-  #   flag_meanings = paste(
-  #     c("no_qc_performed", "good_data", "probably_good_data",
-  #       "bad_data_that_are_potentially_correctable",
-  #       "bad_data", "value_changed", "not_used", "nominal_value",
-  #       "interpolated_value",  "missing_value"
-  #     ),
-  #     collapse = " "
-  #   )
-  # )
   flags <- bs_flag_scheme()
   list(
     conventions = "BSRTO Internal Flag Scheme",
@@ -300,37 +285,16 @@ build_navigator_meta <- function(date_start, date_end, date_update = Sys.time())
   max_depth <- "160"
 
   list(
-    title = "Global Ocean - In Situ Observation Copernicus",
-    summary = " ",
-    naming_authority = "OceanSITES",
-    # TODO: this is totally made up
-    id = "BSRTO_03483",
+    title = "Barrow Strait Real Time Observatory - In-situ moored observations",
+    id = "BSRTO_12345",
     data_type = "Moored instrument",
-    format_version = "0.1",
-    platform_code = "68997",
     date_update = date_update,
     institution = "Bedford Institute of Oceanography (BIO)",
     institution_edmo_code = "1811",
-    site_code = " ",
-    wmo_platform_code = "WMO CODE",
-    platform_name = "BSRTO",
-    wmo_inst_type = "830",
-    source = "moored instruments",
-    source_platform_category_code = "PLATFORM_CATEGORY",
     history = glue("{ date_update } : Creation"),
-    data_mode = "R",
-    quality_control_indicator = "6",
-    quality_index = "A",
     references = "https://doi.org/10.1145/3148675.3152195",
     comment = bs_version_info(),
-    Conventions = paste(
-      "CF-1.6 OceanSITES-Manual-1.2",
-      "Copernicus-InSituTAC-SRD-1.4",
-      "Copernicus-InSituTAC-ParametersList-3.1.0"
-    ),
     netcdf_version = ncdf4::nc_version(),
-    cdm_data_type = "vertical profile",
-    area = "Global Ocean",
     geospatial_lat_min = station_lat,
     geospatial_lat_max = station_lat,
     geospatial_lon_min = station_lon,
@@ -339,7 +303,6 @@ build_navigator_meta <- function(date_start, date_end, date_update = Sys.time())
     geospatial_vertical_max = max_depth,
     time_coverage_start = navigator_datetime(date_start),
     time_coverage_end = navigator_datetime(date_end),
-    institution_references = " ",
     contact = "Clark.Richards@dfo-mpo.gc.ca",
     author = "Fisheries and Oceans Canada",
     data_assembly_center = "Bedford Institute of Oceanography",
@@ -354,7 +317,6 @@ build_navigator_meta <- function(date_start, date_end, date_update = Sys.time())
       "Oceans Canada and its partner organizations."
     ),
     update_interval = "daily",
-    qc_manual = "OceanSITES User's Manual v1.2",
     last_date_observation = navigator_datetime(date_end),
     last_latitude_observation = station_lat,
     last_longitude_observation = station_lon
