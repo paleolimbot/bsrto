@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /bsrto/build-cache
-          key: bsrto-build-cache-dir-3
+          key: bsrto-build-cache-dir-4
 
       - name: Build updated data
         run: |
