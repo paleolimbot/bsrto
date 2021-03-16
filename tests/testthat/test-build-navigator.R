@@ -14,21 +14,19 @@ test_that("bs_build_navigator() works for the example built data", {
 
   df <- bs_check_navigator(out_file)
 
-  if (interactive()) {
-    oce_ctd <- df %>%
-      dplyr::group_by(DEPTH) %>%
-      dplyr::summarise(
-        ctd = list(oce::as.ctd(PSAL, TEMP, PRES, time = date_time))
-      )
-
-    oce::plotTS(oce_ctd$ctd)
-
-    withr::with_par(list(mfrow = c(3, 1)), {
-      for (i in 1:3)
-        for (j in 1:3)
-          oce::plotScan(oce_ctd$ctd[[i]], which = j)
-    })
-  }
+  # oce_ctd <- df %>%
+  #   dplyr::group_by(DEPTH) %>%
+  #   dplyr::summarise(
+  #     ctd = list(oce::as.ctd(PSAL, TEMP, PRES, time = date_time))
+  #   )
+  #
+  # oce::plotTS(oce_ctd$ctd)
+  #
+  # withr::with_par(list(mfrow = c(3, 1)), {
+  #   for (i in 1:3)
+  #     for (j in 1:3)
+  #       oce::plotScan(oce_ctd$ctd[[i]], which = j)
+  # })
 
   unlink(out_dir)
 })

@@ -27,7 +27,6 @@ test_that("read_rdi() works on gzipped files", {
 
 test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   file <- bs_example("rdi/19101018.rdi")
-  # debug(oce:::decodeHeaderRDI)
   # oce_rdi <- oce::read.adp.rdi(file)
 
   rdi <- read_rdi_internal(file, offset = 0)

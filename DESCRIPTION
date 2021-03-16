@@ -36,8 +36,7 @@ Imports:
 Suggests: 
     testthat,
     withr,
-    tidyr,
-    oce
+    tidyr
 URL: https://github.com/paleolimbot/bsrto
 BugReports: https://github.com/paleolimbot/bsrto/issues
 Depends: 

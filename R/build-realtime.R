@@ -359,7 +359,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   )
 
   # correct for beam alignment to the pole compass
-  rdi_meta$beam_heading_corrected <- hdg_norm(pc_true_heading_interp + 45)
+  rdi_meta$beam_heading_corrected <- headings::hdg_norm(pc_true_heading_interp + 45)
 
   # compare to heading from rdi file...you can theoretically predict the error
   # based on the original heading (bumped slightly for continuity)

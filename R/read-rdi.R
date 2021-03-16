@@ -73,14 +73,6 @@ guess_rdi_types <- function(file) {
   setdiff(names(read_rdi_internal(file)), "header")
 }
 
-# Currently the C code just reads one ensemble at a time and reads
-# everything. All the BSRTO files are a single ensemble when uploaded
-# so it works well here. Realistically there should be an 'rdi' or
-# 'adcp' package that reads these files. This was written using the
-# explicit and implicit documentation provided by oce::read.adp.rdi()
-# by Daniel Kelley.
-# https://github.com/dankelley/oce/blob/develop/R/adp.rdi.R
-# https://github.com/dankelley/oce/blob/develop/src/ldc_rdi_in_file.cpp
 read_rdi_internal <- function(file, offset = 0L) {
 
   # not using readr for the base read, but for consistency, support

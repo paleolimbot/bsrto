@@ -28,17 +28,21 @@ test_that("barrow_strait_declination() is a reasonable approximation", {
   date_time <- seq(
     as.POSIXct("2019-01-01 00:00:00", tz = "UTC"),
     as.POSIXct("2024-12-31 11:59:00", tz = "UTC"),
-    by = "day"
+    by = "year"
   )
-  dec_model <- oce::magneticField(
-    rep(lon, length(date_time)),
-    rep(lat, length(date_time)),
-    date_time
+  # dec_model <- oce::magneticField(
+  #   rep(lon, length(date_time)),
+  #   rep(lat, length(date_time)),
+  #   date_time
+  # )$declination
+  dec_model <- c(
+    -26.5661318453884, -25.5111607524511, -24.4518662848595,
+    -23.4294772283977, -22.4427159686452, -21.4903077363711
   )
   dec_approx <- barrow_strait_declination(date_time)
 
   expect_true(
-    max(abs(dec_model$declination - dec_approx)) < 0.001
+    max(abs(dec_model - dec_approx)) < 0.001
   )
 })
 
