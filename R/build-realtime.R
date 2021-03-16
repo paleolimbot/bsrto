@@ -165,16 +165,10 @@ write_realtime_baro <- function(hpb, met_clean, out_dir = ".") {
 write_realtime_pcm <- function(pcm, out_dir = ".") {
   cli::cat_rule("write_realtime_pcm()")
 
-  # Given that the existing ADP code corrects these for magnetic declination,
-  # they are magnetic and not true measurements. (Name of column should be
-  # fixed upstream).
-  pcm$pc_heading <- pcm$true_heading
-  pcm$true_heading <- NULL
-
   # Zero readings are suspected to be bad readings and often are
   # there are so many measurements that removing them doesn't impact
   # data quality
-  pcm$zero_heading <- pcm$pc_heading == 0
+  pcm$zero_heading <- pcm$heading_magnetic == 0
 
   # Summarise to once per file (roughly once every two hours)
   # there are ~14-20 measurements per file, but they seem to be clumped
@@ -185,8 +179,8 @@ write_realtime_pcm <- function(pcm, out_dir = ".") {
     group_by(.data$file) %>%
     summarise(
       date_time = .data$last_date_time[1],
-      pc_heading_sd = heading_sd(.data$pc_heading[!.data$zero_heading]),
-      pc_heading = heading_mean(.data$pc_heading[!.data$zero_heading]),
+      pc_heading_sd = heading_sd(.data$heading_magnetic[!.data$zero_heading]),
+      pc_heading = heading_mean(.data$heading_magnetic[!.data$zero_heading]),
       pc_true_heading = heading_normalize(
         .data$pc_heading + barrow_strait_declination(.data$date_time)
       ),
