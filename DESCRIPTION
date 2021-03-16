@@ -30,7 +30,8 @@ Imports:
     abind,
     sessioninfo,
     gsw,
-    nmea
+    nmea,
+    headings
 Suggests: 
     testthat,
     withr,

@@ -179,9 +179,9 @@ write_realtime_pcm <- function(pcm, out_dir = ".") {
     group_by(.data$file) %>%
     summarise(
       date_time = .data$last_date_time[1],
-      pc_heading_sd = heading_sd(.data$heading_magnetic[!.data$zero_heading]),
-      pc_heading = heading_mean(.data$heading_magnetic[!.data$zero_heading]),
-      pc_true_heading = heading_normalize(
+      pc_heading_sd = headings::hdg_sd(.data$heading_magnetic[!.data$zero_heading]),
+      pc_heading = headings::hdg_mean(.data$heading_magnetic[!.data$zero_heading]),
+      pc_true_heading = headings::hdg_norm(
         .data$pc_heading + barrow_strait_declination(.data$date_time)
       ),
       pc_heading_n = sum(!.data$zero_heading),
