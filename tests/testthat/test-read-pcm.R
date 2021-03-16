@@ -10,12 +10,15 @@ test_that("read_pcm() works", {
   expect_true(all(pcm$last_date_time == ref_datetime))
   expect_identical(read_pcm_vector(file)[-1], read_pcm(file))
   expect_true(
-    all(c("last_date_time", "true_heading") %in%
+    all(c("last_date_time", "heading_magnetic") %in%
           colnames(read_pcm_vector(character())))
   )
 })
 
 test_that("read_pcm() works for mangled files", {
   file <- bs_example("pcm/20022402.pcm")
-  expect_true(all(!is.na(read_pcm(file)$last_date_time)))
+  expect_warning(
+    expect_true(all(!is.na(read_pcm(file)$last_date_time))),
+    "2 parsing failures"
+  )
 })

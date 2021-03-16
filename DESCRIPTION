@@ -29,7 +29,8 @@ Imports:
     dplyr,
     abind,
     sessioninfo,
-    gsw
+    gsw,
+    nmea
 Suggests: 
     testthat,
     withr,
