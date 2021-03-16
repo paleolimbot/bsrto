@@ -3,7 +3,6 @@
 \name{read_rdi}
 \alias{read_rdi}
 \alias{read_rdi_vector}
-\alias{read_rdi_vector_oce}
 \alias{guess_rdi_types}
 \title{Read RDI files}
 \usage{
@@ -14,8 +13,6 @@ read_rdi_vector(
   types = guess_rdi_types(file_vector[1]),
   tz = "UTC"
 )
-
-read_rdi_vector_oce(file_vector, ...)
 
 guess_rdi_types(file)
 }
@@ -31,8 +28,6 @@ Defaults to all variable types found in the first file.}
 \item{tz}{Timezone for which date times are representative.}
 
 \item{file_vector}{A vector of files or URLs}
-
-\item{...}{Passed to \code{\link[oce:read.adp.rdi]{oce::read.adp.rdi()}}.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}}
@@ -44,6 +39,5 @@ Read RDI files
 rdi_file <- bs_example("rdi/19101018.rdi")
 read_rdi(rdi_file)
 read_rdi_vector(rdi_file)
-read_rdi_vector_oce(rdi_file)
 
 }

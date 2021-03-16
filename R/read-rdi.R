@@ -4,7 +4,6 @@
 #' @inheritParams read_hpb
 #' @param types The variable types to extract from the file.
 #'   Defaults to all variable types found in the first file.
-#' @param ... Passed to [oce::read.adp.rdi()].
 #'
 #' @return A [tibble::tibble()]
 #'
@@ -14,7 +13,6 @@
 #' rdi_file <- bs_example("rdi/19101018.rdi")
 #' read_rdi(rdi_file)
 #' read_rdi_vector(rdi_file)
-#' read_rdi_vector_oce(rdi_file)
 #'
 read_rdi <- function(file, types = guess_rdi_types(file), tz = "UTC") {
   stopifnot(length(file) == 1)
@@ -48,23 +46,6 @@ read_rdi_vector <- function(file_vector, types = guess_rdi_types(file_vector[1])
   results_all[is_raw] <- lapply(results_all[is_raw], as.integer)
 
   results_all
-}
-
-#' @rdname read_rdi
-#' @export
-read_rdi_vector_oce <- function(file_vector, ...) {
-  # oce needs all files smushed into one (bash cat)
-  out_file <- tempfile()
-  out_con <- file(out_file, open = "wb")
-  close_con <- TRUE
-  on.exit({if (close_con) close(out_con); unlink(out_file)})
-  for (file in file_vector) {
-    writeBin(readr::read_file_raw(file), out_con)
-  }
-  close(out_con)
-  close_con <- FALSE
-
-  oce::read.adp.rdi(out_file, ...)
 }
 
 read_rdi_single <- function(file, types = NULL, pb = NULL) {
@@ -115,21 +96,23 @@ read_rdi_internal <- function(file, offset = 0L) {
     close(out_con)
     close_con <- FALSE
     file <- out_file
-  } else {
-    file <- path.expand(file)
   }
 
-  rdi <- .Call(bsrto_c_read_rdi, file, as.integer(offset)[1])
-
-  # Should really be done in C if this starts to limit speed
-  is_fixed_leader <- names(rdi) == "fixed_leader"
-  rdi[is_fixed_leader] <- lapply(rdi[is_fixed_leader], read_rdi_fix_fixed_leader)
-  is_variable_leader <- names(rdi) == "variable_leader"
-  rdi[is_variable_leader] <- lapply(rdi[is_variable_leader], read_rdi_fix_variable_leader)
-  is_bottom_track <- names(rdi) == "bottom_track"
-  rdi[is_bottom_track] <- lapply(rdi[is_bottom_track],read_rdi_fix_bottom_track)
-
-  lapply(rdi, tibble::new_tibble, nrow = 1)
+  readrdi::read_rdi(
+    file,
+    index = data.frame(offset = 0),
+    # readrdi::rdi_detect_data_types(rdi_file) %>% dput()
+    types = c(
+      header = 32639L,
+      fixed_leader = 0L,
+      variable_leader = 128L,
+      velocity = 256L,
+      correlation = 512L,
+      echo_intensity = 768L,
+      pct_good = 1024L,
+      bottom_track = 1536L
+    )
+  )
 }
 
 read_rdi_fix_fixed_leader <- function(item) {

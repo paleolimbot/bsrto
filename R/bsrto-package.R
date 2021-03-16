@@ -7,6 +7,5 @@
 #' @importFrom rlang abort %||% .data
 #' @importFrom glue glue
 #' @importFrom dplyr group_by summarise mutate %>%
-#' @useDynLib bsrto, .registration = TRUE
 ## usethis namespace: end
 NULL

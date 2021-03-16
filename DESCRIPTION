@@ -31,7 +31,8 @@ Imports:
     sessioninfo,
     gsw,
     nmea,
-    headings
+    headings,
+    readrdi
 Suggests: 
     testthat,
     withr,

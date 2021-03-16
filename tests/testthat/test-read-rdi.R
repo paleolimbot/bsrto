@@ -124,11 +124,3 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
     as.raw(c(18L, 0L, 81L, 0L))
   )
 })
-
-test_that("read_rdi_internal() errors when passed an invalid offset", {
-  file <- bs_example("rdi/19101018.rdi")
-  expect_error(
-    read_rdi_internal(file, offset = 1),
-    "Expected 0x7f7f"
-  )
-})
