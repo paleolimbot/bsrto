@@ -324,7 +324,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   # All other columns have one value per profile
   cols_prof_meta <- setdiff(
     names(rdi),
-    c(cols_config, cols_n_beams_n_cells, cols_n_beams)
+    c(cols_config, cols_n_beams_n_cells, cols_n_beams, "data_offset", "data_type")
   )
 
   # Make objects ----
@@ -527,7 +527,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
     ncdf4::ncvar_put(nc, col, rdi_n_beams_n_cells[[col]])
   }
 
-  # on.exit() takes care of nc_close(nc)
+  # on.exit() takes care of ncdf4::nc_close(nc)
 }
 
 write_realtime_icl <- function(icl, out_dir = ".") {
