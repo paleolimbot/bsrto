@@ -29,7 +29,7 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   file <- bs_example("rdi/19101018.rdi")
   # oce_rdi <- oce::read.adp.rdi(file)
 
-  rdi <- read_rdi_internal(file, offset = 0)
+  rdi <- read_rdi_internal(file)
 
   # pick values towards the end of the structs
   # that are likely to be misaligned if any error occurred

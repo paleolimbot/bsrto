@@ -3,27 +3,17 @@
 \name{read_rdi}
 \alias{read_rdi}
 \alias{read_rdi_vector}
-\alias{guess_rdi_types}
 \title{Read RDI files}
 \usage{
-read_rdi(file, types = guess_rdi_types(file), tz = "UTC")
+read_rdi(file, tz = "UTC")
 
-read_rdi_vector(
-  file_vector,
-  types = guess_rdi_types(file_vector[1]),
-  tz = "UTC"
-)
-
-guess_rdi_types(file)
+read_rdi_vector(file_vector, tz = "UTC")
 }
 \arguments{
 \item{file}{A file, URL, or connection. Files ending in .gz, .bz2, .xz, or
 .zip will be automatically uncompressed; URLs will be automatically
 downloaded. See \code{\link[readr:read_lines]{readr::read_lines()}} for a full description of how
 this parameter is interpreted.}
-
-\item{types}{The variable types to extract from the file.
-Defaults to all variable types found in the first file.}
 
 \item{tz}{Timezone for which date times are representative.}
 
