@@ -21,8 +21,6 @@ test_that("pressure correction works", {
 })
 
 test_that("barrow_strait_declination() is a reasonable approximation", {
-  skip_if_not_installed("oce")
-
   lon <- -91.25105
   lat <- 74.60635
   date_time <- seq(
