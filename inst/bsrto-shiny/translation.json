@@ -1,0 +1,54 @@
+{
+  "languages": ["key", "en", "fr"],
+  "translation": [
+    {
+      "key": "other_lang",
+      "en": "Français",
+      "fr": "English"
+    },
+    {
+      "key": "window_title",
+      "en": "Barrow Strait Real-Time Observatory",
+      "fr": "L'Observatoire le détroit de Barrow en temps réel"
+    },
+    {
+      "key": "bsrto_full",
+      "en": "Barrow Strait Real-Time Observatory",
+      "fr": "L'Observatoire le détroit de Barrow en temps réel"
+    },
+    {
+      "key": "Water Properties",
+      "en": "Water Properties"
+    },
+    {
+      "key": "Currents",
+      "en": "Currents"
+    },
+    {
+      "key": "Shore-Station Barometer",
+      "en": "Shore-Station Barometer"
+    },
+    {
+      "key": "Sound",
+      "en": "Sound"
+    },
+    {
+      "key": "Ice Thickness",
+      "en": "Ice Thickness",
+      "fr": "Tirant d’eau glaciel"
+    },
+    {
+      "key": "Resolute Weather",
+      "en": "Resolute Weather"
+    },
+    {
+      "key": "Logs",
+      "en": "Logs"
+    },
+    {
+      "key": "About",
+      "en": "About"
+    }
+  ]
+}
+
