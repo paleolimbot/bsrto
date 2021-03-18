@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ runner.temp }}/bsrto-cache-dir
-          restore-keys: bsrto-cache-dir-3
+          restore-keys: bsrto-cache-dir-2
           key: bsrto-cache-dir-3
 
       # This cache saves ~20 minutes of build time but needs to be invalidated
