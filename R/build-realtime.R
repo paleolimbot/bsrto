@@ -165,16 +165,10 @@ write_realtime_baro <- function(hpb, met_clean, out_dir = ".") {
 write_realtime_pcm <- function(pcm, out_dir = ".") {
   cli::cat_rule("write_realtime_pcm()")
 
-  # Given that the existing ADP code corrects these for magnetic declination,
-  # they are magnetic and not true measurements. (Name of column should be
-  # fixed upstream).
-  pcm$pc_heading <- pcm$true_heading
-  pcm$true_heading <- NULL
-
   # Zero readings are suspected to be bad readings and often are
   # there are so many measurements that removing them doesn't impact
   # data quality
-  pcm$zero_heading <- pcm$pc_heading == 0
+  pcm$zero_heading <- pcm$heading_magnetic == 0
 
   # Summarise to once per file (roughly once every two hours)
   # there are ~14-20 measurements per file, but they seem to be clumped
@@ -185,9 +179,9 @@ write_realtime_pcm <- function(pcm, out_dir = ".") {
     group_by(.data$file) %>%
     summarise(
       date_time = .data$last_date_time[1],
-      pc_heading_sd = heading_sd(.data$pc_heading[!.data$zero_heading]),
-      pc_heading = heading_mean(.data$pc_heading[!.data$zero_heading]),
-      pc_true_heading = heading_normalize(
+      pc_heading_sd = headings::hdg_sd(.data$heading_magnetic[!.data$zero_heading]),
+      pc_heading = headings::hdg_mean(.data$heading_magnetic[!.data$zero_heading]),
+      pc_true_heading = headings::hdg_norm(
         .data$pc_heading + barrow_strait_declination(.data$date_time)
       ),
       pc_heading_n = sum(!.data$zero_heading),
@@ -330,7 +324,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   # All other columns have one value per profile
   cols_prof_meta <- setdiff(
     names(rdi),
-    c(cols_config, cols_n_beams_n_cells, cols_n_beams)
+    c(cols_config, cols_n_beams_n_cells, cols_n_beams, "data_offset", "data_type")
   )
 
   # Make objects ----
@@ -365,7 +359,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   )
 
   # correct for beam alignment to the pole compass
-  rdi_meta$beam_heading_corrected <- heading_normalize(pc_true_heading_interp + 45)
+  rdi_meta$beam_heading_corrected <- headings::hdg_norm(pc_true_heading_interp + 45)
 
   # compare to heading from rdi file...you can theoretically predict the error
   # based on the original heading (bumped slightly for continuity)
@@ -533,7 +527,7 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
     ncdf4::ncvar_put(nc, col, rdi_n_beams_n_cells[[col]])
   }
 
-  # on.exit() takes care of nc_close(nc)
+  # on.exit() takes care of ncdf4::nc_close(nc)
 }
 
 write_realtime_icl <- function(icl, out_dir = ".") {

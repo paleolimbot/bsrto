@@ -29,12 +29,18 @@ Imports:
     dplyr,
     abind,
     sessioninfo,
-    gsw
+    gsw,
+    nmea,
+    headings,
+    readrdi
 Suggests: 
     testthat,
     withr,
-    tidyr,
-    oce
+    tidyr
+Remotes:
+    paleolimbot/nmea,
+    paleolimbot/headings,
+    paleolimbot/readrdi
 URL: https://github.com/paleolimbot/bsrto
 BugReports: https://github.com/paleolimbot/bsrto/issues
 Depends: 

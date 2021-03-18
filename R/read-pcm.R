@@ -15,27 +15,14 @@
 read_pcm <- function(file, tz = "UTC", pb = NULL) {
   bs_tick(pb, file)
 
-  content <- readr::read_file(file)
-
-  sentences <- stringr::str_match_all(
-    content,
-    "\\$IIHDT,([^,]+),T\\*([0-9A-Fa-f]{2})"
-  )[[1]]
-
-
-  # NMEA checksum is the bitwise xor of all characters
-  # between $ and *, exclusive
-  # this operation only takes ~5 ms
-  checksum <- as.raw(paste0("0x", sentences[, 3]))
-  data_checksum <- vapply(paste0("IIHDT,", sentences[, 2], ",T"), function(x) {
-    bytes <- charToRaw(x)
-    bits <- matrix(as.integer(rawToBits(bytes)), nrow = 8)
-    packBits(as.integer(rowSums(bits) %% 2), "raw")
-  }, raw(1), USE.NAMES = FALSE)
-  checksum_valid <- checksum == data_checksum
+  sentences <- nmea::read_nmea(file, sentence_end = "\r\n")
+  parsed <- nmea::nmea_extract(
+    sentences,
+    spec = nmea::nmea_spec(heading = nmea::nmea_col_double())
+  )
 
   # date is at start of file
-  date_line <- stringr::str_extract(content, "^[^\r\n]+")
+  date_line <- readr::read_lines(file, n_max = 1L)
 
   tibble::tibble(
     last_date_time = readr::parse_datetime(
@@ -43,8 +30,8 @@ read_pcm <- function(file, tz = "UTC", pb = NULL) {
       "%m/%d/%Y %H:%M:%S",
       locale = readr::locale(tz = tz)
     ),
-    true_heading = readr::parse_double(sentences[, 2]),
-    checksum_valid = checksum_valid
+    heading_magnetic = parsed$heading,
+    checksum_valid = parsed$checksum_valid
   )
 }
 
@@ -59,7 +46,7 @@ read_pcm_vector <- function(file_vector, tz = "UTC") {
   results_all <- vctrs::vec_rbind(
     tibble::tibble(
       last_date_time = as.POSIXct(character()),
-      true_heading = double(),
+      heading_magnetic = double(),
       checksum_valid = logical()
     ),
     !!! results

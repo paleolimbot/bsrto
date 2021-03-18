@@ -27,10 +27,9 @@ test_that("read_rdi() works on gzipped files", {
 
 test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   file <- bs_example("rdi/19101018.rdi")
-  # debug(oce:::decodeHeaderRDI)
   # oce_rdi <- oce::read.adp.rdi(file)
 
-  rdi <- read_rdi_internal(file, offset = 0)
+  rdi <- read_rdi_internal(file)
 
   # pick values towards the end of the structs
   # that are likely to be misaligned if any error occurred
@@ -122,13 +121,5 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   expect_identical(
     rdi$pct_good$pct_good[[1]][, 25],
     as.raw(c(18L, 0L, 81L, 0L))
-  )
-})
-
-test_that("read_rdi_internal() errors when passed an invalid offset", {
-  file <- bs_example("rdi/19101018.rdi")
-  expect_error(
-    read_rdi_internal(file, offset = 1),
-    "Expected 0x7f7f"
   )
 })
