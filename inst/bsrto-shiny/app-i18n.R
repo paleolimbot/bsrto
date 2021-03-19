@@ -49,7 +49,12 @@ i18nServer <- function() {
     shinyjs::runjs("
       jQuery(function() {
         var usr_lang_initial_auto =  window.navigator.userLanguage || window.navigator.language;
-        Shiny.setInputValue('i18n-lang_initial_auto', usr_lang_initial_auto);
+        if (usr_lang_initial_auto) {
+          Shiny.setInputValue('i18n-lang_browser', usr_lang_initial_auto.substring(0, 2));
+        } else {
+          // make sure something always gets called here
+          Shiny.setInputValue('i18n-lang_browser', 'en');
+        }
 
         jQuery('.i18n-btn-lang').on('click', function() {
           var elId = this.id;
@@ -71,50 +76,39 @@ i18nServer <- function() {
           jQuery('#i18n-btn-lang-' + x).addClass('i18n-btn-lang-current');
         }
       );
+
+      Shiny.addCustomMessageHandler(
+        'i18nUpdateLangInitial',
+        function(x) {
+          Shiny.setInputValue('i18n-lang', x)
+        }
+      );
     ")
 
-    # An empty output that is rendered initially and when 'lang_initial_auto'
-    # is changed (on page load)
+    # An empty output that is rendered once on page load
     output$lang_dummy <- renderText({
       query <- parseQueryString(session$clientData$url_search)
-      new_lang <- NULL
-      has_initial_lang <- exists("i18nlang_initial", session$userData)
+      has_lang_initial <- exists("i18nlang_initial", session$userData)
 
-      if (!has_initial_lang && !is.null(query$lang)) {
-        new_lang <- query$lang
+      if (!has_lang_initial && !is.null(query$lang)) {
+        session$sendCustomMessage("i18nUpdateLangInitial", query$lang)
         session$userData$i18nlang_initial <- query$lang
-
-      } else if (!has_initial_lang && !is.null(input$lang_initial_auto)) {
-        # input value will be something like en-CA
-        new_lang <- substr(input$lang_initial_auto, 1, 2)
-
-        # if the user's language isn't in the translation key, use the first
-        # non-key language
-        if (!(new_lang %in% i18n_languages)) {
-          new_lang <- i18n_default_language
-        }
-
-        session$userData$i18nlang_initial <- new_lang
-      } else if (!exists("i18nlang", session$userData)) {
-        new_lang <- i18n_default_language
+      } else if (!has_lang_initial && !is.null(input$lang_browser)) {
+        session$sendCustomMessage("i18nUpdateLangInitial", input$lang_browser)
+        session$userData$i18nlang_initial <- input$lang_browser
       }
 
-      if (!is.null(new_lang)) {
-        updateQueryString(paste0("?lang=", new_lang), mode = "replace")
-        session$userData$i18nlang <- new_lang
-
-        session$sendInputMessage("state", list(lang = new_lang))
-        session$sendCustomMessage("i18nUpdateLang", new_lang)
-        session$sendCustomMessage(
-          "i18nChangeTitle",
-          i18n$get_translations()["window_title", new_lang]
-        )
-      }
+      ""
     })
 
     # Observe language change from updated Shiny input
     observeEvent(input$lang, {
       new_lang <- input$lang
+
+      if (is.null(new_lang) || !(new_lang %in% i18n_languages)) {
+        new_lang <- i18n_default_language
+      }
+
       updateQueryString(paste0("?lang=", new_lang), mode = "replace")
       session$userData$i18nlang <- new_lang
 
