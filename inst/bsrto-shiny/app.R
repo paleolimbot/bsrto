@@ -1,10 +1,12 @@
 
 library(shiny)
+ggplot2::theme_set(ggplot2::theme_bw())
 
 # modules
 source("app-i18n.R")
 source("app-about.R")
 source("app-data.R")
+source("app-ctd.R", encoding = "UTF-8")
 
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-en.php
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-fr.php
@@ -25,7 +27,7 @@ ui <- tags$div(
     i18n$t("bsrto_full"),
     navbarMenu(
       i18n$t("Data"),
-      tabPanel(i18n$t("Water properties")),
+      tabPanel(i18n$t("Water properties"), ctdUI()),
       tabPanel(i18n$t("Currents")),
       tabPanel(i18n$t("Barometric pressure")),
       tabPanel(i18n$t("Sound")),
@@ -50,6 +52,7 @@ server <- function(input, output, session) {
   lang <- i18nServer()
   aboutServer(lang)
   data <- dataServer(lang)
+  ctdServer(lang, data)
 }
 
 shinyApp(ui, server)

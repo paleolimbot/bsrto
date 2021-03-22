@@ -11,42 +11,18 @@
       "en": "Barrow Strait Real-Time Observatory",
       "fr": "L'Observatoire le détroit de Barrow en temps réel"
     },
-    {
-      "key": "Data",
-      "fr": "Données"
-    },
-    {
-      "key": "Water properties",
-      "fr": "Propriétés d'eau"
-    },
-    {
-      "key": "Currents",
-      "fr": "Données de courantomètres"
-    },
-    {
-      "key": "Barometric pressure",
-      "fr": "Pression barométrique"
-    },
-    {
-      "key": "Sound",
-      "fr": "Données d'hydrophones"
-    },
-    {
-      "key": "Ice thickness",
-      "fr": "Tirant d’eau glaciel"
-    },
+    {"key": "Data", "fr": "Données"},
+    {"key": "Water properties", "fr": "Propriétés d'eau"},
+    {"key": "Currents", "fr": "Données de courantomètres"},
+    {"key": "Barometric pressure", "fr": "Pression barométrique"},
+    {"key": "Sound", "fr": "Données d'hydrophones"},
+    {"key": "Ice thickness", "fr": "Tirant d’eau glaciel"},
     {
       "key": "Current conditions at Resolute Airport",
       "fr": "Conditions actuelles à Aéroport de Resolute"
     },
-    {
-      "key": "Log files",
-      "fr": "Les fichier journals"
-    },
-    {
-      "key": "About",
-      "fr": "À notre propos"
-    },
+    {"key": "Log files", "fr": "Les fichier journals"},
+    {"key": "About", "fr": "À notre propos"},
     {
       "key": "about_text_1",
       "en": "Changing climate in Canada’s Arctic presents both challenges and opportunities. There is a need to monitor the environment to understand the changes, and mitigate their impacts. There is also the need for relevant, up-to-date data to support increased activity and responsible development in a more accessible Arctic.",
@@ -56,7 +32,13 @@
       "key": "about_text_2",
       "en": "An ocean observatory was installed at the eastern end of the Northwest Passage in 2009 to provide hourly ocean and ice conditions for use by mariners and climate modellers. Data from instrumented moorings are acoustically transmitted to a \"data hub\" at the offshore end of an underwater cable, sent through the cable, and then transmitted from the shore station by Iridium satellite for access on the web.",
       "fr": "Un observatoire océanique a été installé à l'extrémité est du passage Nord-Ouest en 2009 afin de fournir des renseignements horaires sur les conditions de l'océan et des glaces à être utilisés par les navigateurs et les modélisateurs du climat. Les données provenant des amarrages équipés sont transmises de manière acoustique à un « concentrateur de données » à l'extrémité d'un câble sous-marin située en haute mer, envoyées à travers un câble, puis transmises à partir de la station à terre par un système de satellites Iridium aux fins d'accès sur le Web."
-    }
+    },
+
+    {"key":"Temperature [°C]", "fr": "Température [°C]"},
+    {"key":"Conductivity [S/m]", "fr": "Conductivité [S/m]"},
+    {"key":"Pressure [dbar]", "fr": "Pression [dbar]"},
+    {"key":"Dissolved oxygen [mg/L]", "fr": "Oxygène dissous [mg/L]"},
+    {"key":"Salinity [psal]", "fr": "Salinité [peal]"},
+    {"key":"Sound speed [m/s]", "fr": "Vitesse du son [m/s]"}
   ]
 }
-

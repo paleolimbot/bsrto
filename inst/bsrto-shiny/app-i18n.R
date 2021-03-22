@@ -12,10 +12,33 @@ loadNamespace("shiny.i18n")
 # key language, but you could omit this an use "en" or "fr" as the key
 # language as well. I like the ability to abbreviate the key because there
 # are some longer bits (like the text of an "about" page) where using the
-# english version as a "key" is problematic.
-i18n <- shiny.i18n::Translator$new(translation_json_path = "translation.json")
+# english version as a "key" is problematic. This requires a bit of shuffling
+# with the translations.json file...really there needs to be a better system
+# for i18n in Shiny
+i18n_translations_json <- jsonlite::read_json("translation.json")
+i18n_translations_json$translation <- lapply(
+  i18n_translations_json$translation,
+  function(x) {
+    if (is.null(x$en)) {
+      x$en <- x$key
+    }
+    x
+  }
+)
+jsonlite::write_json(i18n_translations_json, "translation-compiled.json")
+
+
+i18n <- shiny.i18n::Translator$new(translation_json_path = "translation-compiled.json")
 i18n_languages <- setdiff(i18n$get_languages(), "key")
 i18n_default_language <- i18n_languages[1]
+
+# the i18n system doesn't play nicely with modules...use these in a server
+# to do a manual translation
+i18n_translations <- i18n$get_translations()
+i18n_translations[] <- lapply(i18n_translations, unlist)
+i18n_t <- function(x, lang) {
+  i18n_translations[x, lang, drop = TRUE]
+}
 
 # must be before any translated elements (so, start of body)
 i18nStartBody <- function() {

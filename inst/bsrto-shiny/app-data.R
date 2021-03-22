@@ -31,7 +31,7 @@ dataUI <- function(id = "data") {
         div(
           style = "display:inline-block; width: 49%; vertical-align: middle; text-align: right;",
           checkboxGroupInput(
-            "mooring_depths", NULL,
+            NS(id, "mooring_depths"), NULL,
             choices = c("40 m", "60 m", "160 m"),
             selected = c("40 m", "60 m", "160 m"),
             inline = TRUE
@@ -89,6 +89,8 @@ dataServer <- function(lang, id = "data") {
 
 
     reactiveValues(
+      global_date_range = global_date_range,
+      datetime_range = datetime_range,
       ctd = ctd
     )
   })
