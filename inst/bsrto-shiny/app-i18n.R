@@ -119,5 +119,9 @@ i18nServer <- function() {
         i18n$get_translations()["window_title", new_lang]
       )
     })
+
+
+    # Return a language reactive so that other modules can depend on it
+    reactive({ input$lang })
   })
 }

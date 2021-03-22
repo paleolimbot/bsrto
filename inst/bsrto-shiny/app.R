@@ -4,6 +4,7 @@ library(shiny)
 # modules
 source("app-i18n.R")
 source("app-about.R")
+source("app-data.R")
 
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-en.php
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-fr.php
@@ -33,19 +34,22 @@ ui <- tags$div(
       tabPanel(i18n$t("Log files"))
     ),
     tabPanel(i18n$t("About"), aboutUI()),
-    inputs = tags$div(style = "float: right;", i18nUI())
+    inputs = tags$div(style = "float: right;", i18nUI()),
+
+    header = div(
+      dataUI()
+    ),
+
+    # tabPanel content goes here
+
+    footer = div()
   )
 )
 
 server <- function(input, output, session) {
-  i18nServer()
-
-  # There might be a more clean way to code this, but lang() as
-  # a reactive value that modules can take as a dependency is probably the
-  # best way to go about this.
-  lang <- reactive({ input$`i18n-lang` })
-
+  lang <- i18nServer()
   aboutServer(lang)
+  data <- dataServer(lang)
 }
 
 shinyApp(ui, server)
