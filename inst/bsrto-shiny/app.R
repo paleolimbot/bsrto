@@ -3,14 +3,16 @@ library(shiny)
 ggplot2::theme_set(ggplot2::theme_bw())
 
 # modules
-source("app-i18n.R")
-source("app-about.R")
-source("app-data.R")
+source("app-i18n.R", encoding = "UTF-8")
+source("app-data.R", encoding = "UTF-8")
+
 source("app-ctd.R", encoding = "UTF-8")
 source("app-met.R", encoding = "UTF-8")
 source("app-baro.R", encoding = "UTF-8")
 source("app-lgh.R", encoding = "UTF-8")
 source("app-adp.R", encoding = "UTF-8")
+source("app-about.R", encoding = "UTF-8")
+
 
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-en.php
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-fr.php

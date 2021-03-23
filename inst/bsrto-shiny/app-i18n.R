@@ -37,7 +37,9 @@ i18n_default_language <- i18n_languages[1]
 i18n_translations <- i18n$get_translations()
 i18n_translations[] <- lapply(i18n_translations, unlist)
 i18n_t <- function(x, lang) {
-  i18n_translations[x, lang, drop = TRUE]
+  result <- i18n_translations[x, lang, drop = TRUE]
+  result[is.na(result)] <- x
+  result
 }
 
 # must be before any translated elements (so, start of body)

@@ -195,31 +195,46 @@ dataServer <- function(lang, id = "data") {
       dim_min <- min(dt_dim_values)
       dim_count <- length(dt_dim_values)
 
-      is_meta <- vapply(
-        data_adp_nc$var,
-        function(x) {
-          dim_names <- vapply(x$dim, function(d) d$name, character(1))
-          identical(dim_names, "date_time")
-        },
-        logical(1)
+      meta_vars <- c(
+        # available in file but not reporting here
+        # "n_data_types", "ensemble_number", "ensemble_number_msb", "bit_result",
+        # "sound_speed",  "heading_std", "pitch_std", "roll_std",
+        # "pressure_plus", "pressure_minus", "attitude_temp",
+        # "transmit_current", "transmit_voltage", "pressure_std",
+        "beam_heading_corrected",
+        "transducer_depth", "heading", "pitch", "roll",
+        "salinity", "temperature", "ambient_temperature",
+        "attitude",  "contamination_sensor", "pressure"
       )
 
-      vals <- lapply(
-        data_adp_nc$var[unname(is_meta)],
-        function(x) ncvar_get(
-          data_adp_nc, x,
-          start = dim_min,
-          count = dim_count
+      if (dim_count == 0) {
+        vals <- lapply(meta_vars, function(x) double(0))
+        names(vals) <- meta_vars
+        tibble::tibble(date_time = data_adp_nc_date_time[integer(0)], !!! vals)
+      } else {
+        vals <- lapply(
+          data_adp_nc$var[meta_vars],
+          function(x) ncvar_get(
+            data_adp_nc, x,
+            start = dim_min,
+            count = dim_count
+          )
         )
-      )
 
-      file <- ncvar_get(
-        data_adp_nc, "file",
-        start = c(1, dim_min),
-        count = c(12, dim_count)
-      )
+        file <- ncvar_get(
+          data_adp_nc, "file",
+          start = c(1, dim_min),
+          count = c(12, dim_count)
+        )
 
-      tibble::new_tibble(c(list(file = file), vals), nrow = dim_count)
+        tibble::new_tibble(
+          c(
+            list(file = file, date_time = data_adp_nc_date_time[dt_dim_values]),
+            vals
+          ),
+          nrow = dim_count
+        )
+      }
     })
 
     reactiveValues(
