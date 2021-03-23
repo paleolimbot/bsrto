@@ -10,7 +10,6 @@ adpUI <- function(id = "adp") {
     plotOutput(NS(id, "pressure"), height = 150),
     plotOutput(NS(id, "temperature"), height = 150),
     plotOutput(NS(id, "pc_heading"), height = 150),
-    plotOutput(NS(id, "pc_true_heading"), height = 150),
   )
 }
 
@@ -20,7 +19,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$transducer_depth <- renderPlot({
       data_plot_datetime(
         data$adp_meta(),
-        "transducer_depth", "Tranducer Depth [m]",
+        "transducer_depth", "Depth [m]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -29,7 +28,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$beam_heading_corrected <- renderPlot({
       data_plot_datetime(
         data$adp_meta(),
-        "beam_heading_corrected", "Heading (corrected) [°]",
+        "beam_heading_corrected", "Heading [°]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -75,15 +74,6 @@ adpServer <- function(lang, data, id = "adp") {
       data_plot_datetime(
         data$pcm(),
         "pc_heading", "Heading (pole compass) [°]",
-        datetime_range = data$datetime_range(),
-        lang = lang()
-      )
-    })
-
-    output$pc_true_heading <- renderPlot({
-      data_plot_datetime(
-        data$pcm(),
-        "pc_true_heading", "True Heading (pole compass) [°]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
