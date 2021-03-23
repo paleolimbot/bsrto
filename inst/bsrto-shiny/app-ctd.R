@@ -7,35 +7,19 @@ plot_ctd <- function(data, var, lab = var,
                      datetime_range = range(data$date_time, na.rm = TRUE),
                      reverse = FALSE,
                      lang = "en") {
-  # occurs on initial load
-  if (length(datetime_range) != 2) {
-    return()
-  }
-
-  # there is no easy way to translate date labels without
-  # explicit LC_TIME support for the other language
-  # (not necessarily the case for my interactive Window development)
-  print(suppressWarnings(
-    withr::with_locale(
-      c(LC_TIME = paste0(lang, "_CA")),
-      ggplot(data, aes(date_time, .data[[var]])) +
-        geom_point(
-          aes(col = factor(depth_label, levels = c("40", "60", "160"))),
-          na.rm = TRUE
-        ) +
-        scale_x_datetime(
-          limits = datetime_range
-        ) +
-        (if (reverse) scale_y_reverse()) +
-        scale_color_brewer(
-          type = "qual", palette = 1,
-          limits = factor(c(40, 60, 160)),
-          labels = paste(c(40, 60, 160), "m"),
-          guide = "none"
-        ) +
-        labs(x = NULL, y = i18n_t(lab, lang))
-    )
-  ))
+ data_plot_datetime(
+   data, var, lab, datetime_range, lang,
+   mapping = aes(col = factor(depth_label, levels = c("40", "60", "160"))),
+   extra = list(
+     (if (reverse) scale_y_reverse()),
+     scale_color_brewer(
+       type = "qual", palette = 1,
+       limits = factor(c(40, 60, 160)),
+       labels = paste(c(40, 60, 160), "m"),
+       guide = "none"
+     )
+   )
+ )
 }
 
 if (FALSE) {

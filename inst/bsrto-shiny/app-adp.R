@@ -3,7 +3,7 @@ library(shiny)
 
 adpUI <- function(id = "adp") {
   tagList(
-
+    plotOutput(NS(id, "transducer_depth"))
   )
 }
 

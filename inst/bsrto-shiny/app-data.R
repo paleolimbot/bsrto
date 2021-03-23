@@ -45,7 +45,42 @@ data_lgh <- readr::read_csv(
 )
 
 data_adp_nc <- nc_open(file.path(built_dir, "adp.nc"))
+data_adp_nc_date_time <- as.POSIXct(
+  ncvar_get(data_adp_nc, "date_time"),
+  origin = "1970-01-01 00:00:00",
+  tz = "UTC"
+)
 
+
+
+# eventually this should be non-ggplot, but this works as a wrapper
+# to get the data needed for the one-dimensional time-series plots
+data_plot_datetime <- function(data, var, lab = var,
+                               datetime_range = range(data$date_time, na.rm = TRUE),
+                               lang = "en",
+                               mapping = NULL,
+                               extra = list()) {
+  # occurs on initial load
+  if (length(datetime_range) != 2) {
+    return()
+  }
+
+  # there is no easy way to translate date labels without
+  # explicit LC_TIME support for the other language
+  # (not necessarily the case for my interactive Windows development)
+  print(suppressWarnings(
+    withr::with_locale(
+      c(LC_TIME = paste0(lang, "_CA")),
+      ggplot(data, aes(date_time, .data[[var]])) +
+        geom_point(mapping = mapping, na.rm = TRUE) +
+        scale_x_datetime(
+          limits = datetime_range
+        ) +
+        labs(x = NULL, y = i18n_t(lab, lang)) +
+        extra
+    )
+  ))
+}
 
 dataUI <- function(id = "data") {
   tagList(
@@ -149,13 +184,52 @@ dataServer <- function(lang, id = "data") {
         )
     })
 
+    adp_meta <- reactive({
+      dt_range <- datetime_range()
+
+      dt_dim_values <- which(
+        (data_adp_nc_date_time >= dt_range[1]) &
+          (data_adp_nc_date_time < dt_range[2])
+      )
+      stopifnot(all(diff(dt_dim_values) == 1L))
+      dim_min <- min(dt_dim_values)
+      dim_count <- length(dt_dim_values)
+
+      is_meta <- vapply(
+        data_adp_nc$var,
+        function(x) {
+          dim_names <- vapply(x$dim, function(d) d$name, character(1))
+          identical(dim_names, "date_time")
+        },
+        logical(1)
+      )
+
+      vals <- lapply(
+        data_adp_nc$var[unname(is_meta)],
+        function(x) ncvar_get(
+          data_adp_nc, x,
+          start = dim_min,
+          count = dim_count
+        )
+      )
+
+      file <- ncvar_get(
+        data_adp_nc, "file",
+        start = c(1, dim_min),
+        count = c(12, dim_count)
+      )
+
+      tibble::new_tibble(c(list(file = file), vals), nrow = dim_count)
+    })
+
     reactiveValues(
       global_date_range = global_date_range,
       datetime_range = datetime_range,
       ctd = ctd,
       met = met,
       baro = baro,
-      lgh = lgh
+      lgh = lgh,
+      adp_meta = adp_meta
     )
   })
 }
