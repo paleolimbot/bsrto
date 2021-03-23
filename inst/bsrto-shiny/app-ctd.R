@@ -24,8 +24,7 @@ plot_ctd <- function(data, var, lab = var,
           na.rm = TRUE
         ) +
         scale_x_datetime(
-          limits = datetime_range,
-
+          limits = datetime_range
         ) +
         (if (reverse) scale_y_reverse()) +
         scale_color_brewer(
@@ -34,8 +33,7 @@ plot_ctd <- function(data, var, lab = var,
           labels = paste(c(40, 60, 160), "m"),
           guide = "none"
         ) +
-        labs(x = NULL, y = i18n_t(lab, lang)) +
-        theme(legend.position = "top")
+        labs(x = NULL, y = i18n_t(lab, lang))
     )
   ))
 }

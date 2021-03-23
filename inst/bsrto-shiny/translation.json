@@ -23,6 +23,7 @@
     },
     {"key": "Log files", "fr": "Les fichier journals"},
     {"key": "About", "fr": "À notre propos"},
+    {"key": "date_range_sep", "en": "to", "fr": "à"},
     {
       "key": "about_text_1",
       "en": "Changing climate in Canada’s Arctic presents both challenges and opportunities. There is a need to monitor the environment to understand the changes, and mitigate their impacts. There is also the need for relevant, up-to-date data to support increased activity and responsible development in a more accessible Arctic.",

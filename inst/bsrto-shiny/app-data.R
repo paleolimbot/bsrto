@@ -16,6 +16,15 @@ data_ctd <- readr::read_csv(
   )
 )
 
+data_met <- readr::read_csv(
+  file.path(built_dir, "met.csv"),
+  col_types = readr::cols(
+    file = readr::col_character(),
+    date_time = readr::col_datetime(),
+    .default = readr::col_double()
+  )
+)
+
 dataUI <- function(id = "data") {
   tagList(
     div(
@@ -64,6 +73,7 @@ dataServer <- function(lang, id = "data") {
         end = date_range[2] + 1L,
         min = date_range[1],
         max = date_range[2] + 1L,
+        separator = i18n_t("date_range_sep", lang()),
         language = lang()
       )
     })
@@ -87,11 +97,22 @@ dataServer <- function(lang, id = "data") {
         )
     })
 
+    met <- reactive({
+      dt_range <- datetime_range()
+
+      data_met %>%
+        filter(
+          date_time >= !! dt_range[1],
+          date_time < !! dt_range[2]
+        )
+    })
+
 
     reactiveValues(
       global_date_range = global_date_range,
       datetime_range = datetime_range,
-      ctd = ctd
+      ctd = ctd,
+      met = met
     )
   })
 }
