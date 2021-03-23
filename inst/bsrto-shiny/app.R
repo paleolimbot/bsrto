@@ -9,6 +9,7 @@ source("app-data.R")
 source("app-ctd.R", encoding = "UTF-8")
 source("app-met.R", encoding = "UTF-8")
 source("app-baro.R", encoding = "UTF-8")
+source("app-lgh.R", encoding = "UTF-8")
 
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-en.php
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-fr.php
@@ -35,7 +36,7 @@ ui <- tags$div(
       tabPanel(i18n$t("Sound")),
       tabPanel(i18n$t("Ice thickness")),
       tabPanel(i18n$t("Current conditions at Resolute Airport"), metUI()),
-      tabPanel(i18n$t("Log files"))
+      tabPanel(i18n$t("Log files"), lghUI())
     ),
     tabPanel(i18n$t("About"), aboutUI()),
     inputs = tags$div(style = "float: right;", i18nUI()),
@@ -55,8 +56,9 @@ server <- function(input, output, session) {
   data <- dataServer(lang)
 
   ctdServer(lang, data)
-  metServer(lang, data)
   baroServer(lang, data)
+  metServer(lang, data)
+  lghServer(lang, data)
 
   aboutServer(lang)
 }

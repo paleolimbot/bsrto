@@ -34,6 +34,15 @@ data_baro <- readr::read_csv(
   )
 )
 
+data_lgh <- readr::read_csv(
+  file.path(built_dir, "lgh.csv"),
+  col_types = readr::cols(
+    file = readr::col_character(),
+    date_time = readr::col_datetime(),
+    .default = readr::col_character()
+  )
+)
+
 dataUI <- function(id = "data") {
   tagList(
     div(
@@ -126,12 +135,23 @@ dataServer <- function(lang, id = "data") {
         )
     })
 
+    lgh <- reactive({
+      dt_range <- datetime_range()
+
+      data_lgh %>%
+        filter(
+          date_time >= !! dt_range[1],
+          date_time < !! dt_range[2]
+        )
+    })
+
     reactiveValues(
       global_date_range = global_date_range,
       datetime_range = datetime_range,
       ctd = ctd,
       met = met,
-      baro = baro
+      baro = baro,
+      lgh = lgh
     )
   })
 }

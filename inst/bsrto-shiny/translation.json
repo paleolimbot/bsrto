@@ -46,6 +46,11 @@
     {"key": "Relative Humidity [%]", "fr": "Humidité [%]"},
     {"key": "Wind Direction [°]", "fr": "Direction du vent [°]"},
     {"key": "Wind Speed [km/h]", "fr": "La vitesse du vent [km/h]"},
-    {"key": "Wind Chill [°C]", "fr": "Facteur vent [°C]"}
+    {"key": "Wind Chill [°C]", "fr": "Facteur vent [°C]"},
+
+    {"key": "Date", "fr": "Date"},
+    {"key": "File name", "fr": "Le nom du ficher"},
+    {"key": "File content", "fr": "Contenu du ficher"},
+    {"key": "<No items selected>", "fr": "<Aucun éléments choisis>"}
   ]
 }
