@@ -25,6 +25,15 @@ data_met <- readr::read_csv(
   )
 )
 
+data_baro <- readr::read_csv(
+  file.path(built_dir, "baro.csv"),
+  col_types = readr::cols(
+    file = readr::col_character(),
+    date_time = readr::col_datetime(),
+    .default = readr::col_double()
+  )
+)
+
 dataUI <- function(id = "data") {
   tagList(
     div(
@@ -107,12 +116,22 @@ dataServer <- function(lang, id = "data") {
         )
     })
 
+    baro <- reactive({
+      dt_range <- datetime_range()
+
+      data_baro %>%
+        filter(
+          date_time >= !! dt_range[1],
+          date_time < !! dt_range[2]
+        )
+    })
 
     reactiveValues(
       global_date_range = global_date_range,
       datetime_range = datetime_range,
       ctd = ctd,
-      met = met
+      met = met,
+      baro = baro
     )
   })
 }

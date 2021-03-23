@@ -8,6 +8,7 @@ source("app-about.R")
 source("app-data.R")
 source("app-ctd.R", encoding = "UTF-8")
 source("app-met.R", encoding = "UTF-8")
+source("app-baro.R", encoding = "UTF-8")
 
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-en.php
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-fr.php
@@ -30,7 +31,7 @@ ui <- tags$div(
       i18n$t("Data"),
       tabPanel(i18n$t("Water properties"), ctdUI()),
       tabPanel(i18n$t("Currents")),
-      tabPanel(i18n$t("Barometric pressure")),
+      tabPanel(i18n$t("Barometric pressure"), baroUI()),
       tabPanel(i18n$t("Sound")),
       tabPanel(i18n$t("Ice thickness")),
       tabPanel(i18n$t("Current conditions at Resolute Airport"), metUI()),
@@ -51,10 +52,13 @@ ui <- tags$div(
 
 server <- function(input, output, session) {
   lang <- i18nServer()
-  aboutServer(lang)
   data <- dataServer(lang)
+
   ctdServer(lang, data)
   metServer(lang, data)
+  baroServer(lang, data)
+
+  aboutServer(lang)
 }
 
 shinyApp(ui, server)
