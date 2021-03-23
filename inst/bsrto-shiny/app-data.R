@@ -2,6 +2,7 @@
 library(shiny)
 library(readr)
 library(dplyr, warn.conflicts = FALSE)
+library(ncdf4)
 
 built_dir <- getOption("bsrto.built_dir", "build-cache")
 
@@ -42,6 +43,9 @@ data_lgh <- readr::read_csv(
     .default = readr::col_character()
   )
 )
+
+data_adp_nc <- nc_open(file.path(built_dir, "adp.nc"))
+
 
 dataUI <- function(id = "data") {
   tagList(

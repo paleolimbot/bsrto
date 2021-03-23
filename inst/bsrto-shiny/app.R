@@ -10,6 +10,7 @@ source("app-ctd.R", encoding = "UTF-8")
 source("app-met.R", encoding = "UTF-8")
 source("app-baro.R", encoding = "UTF-8")
 source("app-lgh.R", encoding = "UTF-8")
+source("app-adp.R", encoding = "UTF-8")
 
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-en.php
 # https://www.bio.gc.ca/science/newtech-technouvelles/observatory-observatoire-fr.php
@@ -31,7 +32,7 @@ ui <- tags$div(
     navbarMenu(
       i18n$t("Data"),
       tabPanel(i18n$t("Water properties"), ctdUI()),
-      tabPanel(i18n$t("Currents")),
+      tabPanel(i18n$t("Currents"), adpUI()),
       tabPanel(i18n$t("Barometric pressure"), baroUI()),
       tabPanel(i18n$t("Sound")),
       tabPanel(i18n$t("Ice thickness")),
@@ -56,6 +57,7 @@ server <- function(input, output, session) {
   data <- dataServer(lang)
 
   ctdServer(lang, data)
+  adpServer(lang, data)
   baroServer(lang, data)
   metServer(lang, data)
   lghServer(lang, data)
