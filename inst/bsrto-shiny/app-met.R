@@ -40,8 +40,7 @@ metUI <- function(id = "met") {
     plotOutput(NS(id, "wind_dir"), height = 150),
     plotOutput(NS(id, "wind_spd"), height = 150),
     plotOutput(NS(id, "stn_press"), height = 150),
-    plotOutput(NS(id, "wind_chill"), height = 150),
-    plotOutput(NS(id, "sea_level_press"), height = 150),
+    plotOutput(NS(id, "wind_chill"), height = 150)
   )
 }
 
@@ -60,7 +59,7 @@ metServer <- function(lang, data, id = "met") {
     output$dew_point_temp <- renderPlot({
       plot_met(
         data$met(),
-        "dew_point_temp", "Dew Point Temperature [°C]",
+        "dew_point_temp", "Dew Point [°C]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -106,15 +105,6 @@ metServer <- function(lang, data, id = "met") {
       plot_met(
         data$met(),
         "wind_chill", "Wind Chill [°C]",
-        datetime_range = data$datetime_range(),
-        lang = lang()
-      )
-    })
-
-    output$sea_level_press <- renderPlot({
-      plot_met(
-        data$met(),
-        "sea_level_press", "Sea Level Presure [dbar]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )

@@ -40,6 +40,12 @@
     {"key":"Pressure [dbar]", "fr": "Pression [dbar]"},
     {"key":"Dissolved oxygen [mg/L]", "fr": "Oxygène dissous [mg/L]"},
     {"key":"Salinity [psal]", "fr": "Salinité [peal]"},
-    {"key":"Sound speed [m/s]", "fr": "Vitesse du son [m/s]"}
+    {"key":"Sound speed [m/s]", "fr": "Vitesse du son [m/s]"},
+
+    {"key": "Dew Point [°C]", "fr": "Point de rosée [°C]"},
+    {"key": "Relative Humidity [%]", "fr": "Humidité [%]"},
+    {"key": "Wind Direction [°]", "fr": "Direction du vent [°]"},
+    {"key": "Wind Speed [km/h]", "fr": "La vitesse du vent [km/h]"},
+    {"key": "Wind Chill [°C]", "fr": "Facteur vent [°C]"}
   ]
 }
