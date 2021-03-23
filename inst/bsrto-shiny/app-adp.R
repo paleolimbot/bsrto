@@ -9,6 +9,8 @@ adpUI <- function(id = "adp") {
     plotOutput(NS(id, "roll"), height = 150),
     plotOutput(NS(id, "pressure"), height = 150),
     plotOutput(NS(id, "temperature"), height = 150),
+    plotOutput(NS(id, "pc_heading"), height = 150),
+    plotOutput(NS(id, "pc_true_heading"), height = 150),
   )
 }
 
@@ -27,7 +29,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$beam_heading_corrected <- renderPlot({
       data_plot_datetime(
         data$adp_meta(),
-        "beam_heading_corrected", "Beam Heading (corrected) [°]",
+        "beam_heading_corrected", "Heading (corrected) [°]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -51,15 +53,6 @@ adpServer <- function(lang, data, id = "adp") {
       )
     })
 
-    output$salinity <- renderPlot({
-      data_plot_datetime(
-        data$adp_meta(),
-        "salinity", "Salinity [psal]",
-        datetime_range = data$datetime_range(),
-        lang = lang()
-      )
-    })
-
     output$pressure <- renderPlot({
       data_plot_datetime(
         data$adp_meta(),
@@ -78,19 +71,19 @@ adpServer <- function(lang, data, id = "adp") {
       )
     })
 
-    output$attitude <- renderPlot({
+    output$pc_heading <- renderPlot({
       data_plot_datetime(
-        data$adp_meta(),
-        "attitude", "Attitude [??]",
+        data$pcm(),
+        "pc_heading", "Heading (pole compass) [°]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$contamination_sensor <- renderPlot({
+    output$pc_true_heading <- renderPlot({
       data_plot_datetime(
-        data$adp_meta(),
-        "contamination_sensor", "Contamination Sensor",
+        data$pcm(),
+        "pc_true_heading", "True Heading (pole compass) [°]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )

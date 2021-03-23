@@ -44,6 +44,15 @@ data_lgh <- readr::read_csv(
   )
 )
 
+data_pcm <- readr::read_csv(
+  file.path(built_dir, "pcm_summary.csv"),
+  col_types = readr::cols(
+    file = readr::col_character(),
+    date_time = readr::col_datetime(),
+    .default = readr::col_double()
+  )
+)
+
 data_adp_nc <- nc_open(file.path(built_dir, "adp.nc"))
 data_adp_nc_date_time <- as.POSIXct(
   ncvar_get(data_adp_nc, "date_time"),
@@ -184,6 +193,16 @@ dataServer <- function(lang, id = "data") {
         )
     })
 
+    pcm <- reactive({
+      dt_range <- datetime_range()
+
+      data_pcm %>%
+        filter(
+          date_time >= !! dt_range[1],
+          date_time < !! dt_range[2]
+        )
+    })
+
     adp_meta <- reactive({
       dt_range <- datetime_range()
 
@@ -244,6 +263,7 @@ dataServer <- function(lang, id = "data") {
       met = met,
       baro = baro,
       lgh = lgh,
+      pcm = pcm,
       adp_meta = adp_meta
     )
   })
