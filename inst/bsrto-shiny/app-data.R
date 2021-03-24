@@ -67,6 +67,13 @@ data_ips_nc_date_time <- as.POSIXct(
   tz = "UTC"
 )
 
+data_icl_nc <- nc_open(file.path(built_dir, "icl.nc"))
+data_icl_nc_date_time <- as.POSIXct(
+  ncvar_get(data_icl_nc, "date_time"),
+  origin = "1970-01-01 00:00:00",
+  tz = "UTC"
+)
+
 data_nc_tibble <- function(nc, dt_range, vars, index = as.POSIXct(
                              ncvar_get(nc, "date_time"),
                              origin = "1970-01-01 00:00:00",
@@ -97,7 +104,7 @@ data_nc_tibble <- function(nc, dt_range, vars, index = as.POSIXct(
     file <- ncvar_get(
       nc, "file",
       start = c(1, dim_min),
-      count = c(12, dim_count)
+      count = c(-1, dim_count)
     )
 
     tibble::new_tibble(
@@ -292,6 +299,52 @@ dataServer <- function(lang, id = "data") {
       )
     })
 
+    icl_meta <- reactive({
+      dt_range <- datetime_range()
+
+      meta_vars <- c("icl_temp", "icl_rel_hum")
+
+      data_nc_tibble(
+        data_icl_nc,
+        dt_range = dt_range,
+        vars = meta_vars,
+        index = data_icl_nc_date_time
+      )
+    })
+
+    icl_intensity <- reactive({
+      dt_range <- datetime_range()
+      index <- data_icl_nc_date_time
+      frequency <- data_icl_nc$dim$frequency$vals
+
+      dt_dim_values <- which(
+        (index >= dt_range[1]) &
+          (index < dt_range[2])
+      )
+      stopifnot(all(diff(dt_dim_values) == 1L))
+      dim_min <- suppressWarnings(min(dt_dim_values))
+      dim_count <- length(dt_dim_values)
+
+      if (dim_count == 0) {
+        list(
+          frequency = frequency,
+          date_time = data_icl_nc_date_time[integer(0)],
+          intensity = array(data = numeric(), dim = c(0, length(frequency)))
+        )
+      } else {
+        list(
+          frequency = frequency,
+          date_time = data_icl_nc_date_time[dt_dim_values],
+          intensity = ncvar_get(
+            data_icl_nc,
+            "icl_intensity",
+            start = c(dim_min, 1),
+            count = c(dim_count, -1)
+          )
+        )
+      }
+    })
+
     reactiveValues(
       global_date_range = global_date_range,
       datetime_range = datetime_range,
@@ -301,7 +354,9 @@ dataServer <- function(lang, id = "data") {
       lgh = lgh,
       pcm = pcm,
       adp_meta = adp_meta,
-      ips_meta = ips_meta
+      ips_meta = ips_meta,
+      icl_meta = icl_meta,
+      icl_intensity = icl_intensity
     )
   })
 }

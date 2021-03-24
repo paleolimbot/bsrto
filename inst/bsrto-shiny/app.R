@@ -13,6 +13,7 @@ source("app-lgh.R", encoding = "UTF-8")
 source("app-adp.R", encoding = "UTF-8")
 source("app-about.R", encoding = "UTF-8")
 source("app-ips.R", encoding = "UTF-8")
+source("app-icl.R", encoding = "UTF-8")
 
 # A hack to include some right-aligned elements in the navbar page
 navbarPageWithInputs <- function(..., inputs) {
@@ -33,7 +34,7 @@ ui <- tags$div(
       tabPanel(i18n$t("Water properties"), ctdUI()),
       tabPanel(i18n$t("Currents"), adpUI()),
       tabPanel(i18n$t("Barometric pressure"), baroUI()),
-      tabPanel(i18n$t("Sound")),
+      tabPanel(i18n$t("Sound"), iclUI()),
       tabPanel(i18n$t("Ice thickness"), ipsUI()),
       tabPanel(i18n$t("Current conditions at Resolute Airport"), metUI()),
       tabPanel(i18n$t("Log files"), lghUI())
@@ -58,6 +59,7 @@ server <- function(input, output, session) {
   ctdServer(lang, data)
   adpServer(lang, data)
   baroServer(lang, data)
+  iclServer(lang, data)
   ipsServer(lang, data)
   metServer(lang, data)
   lghServer(lang, data)

@@ -61,6 +61,8 @@
 
     {"key": "Ice draft [m]", "fr": "Tirant de l'eau glaciel [m]"},
 
+    {"key": "Frequency [Hz]", "fr": "Fréquence [Hz]"},
+
     {"key": "[]", "fr": "[]"}
   ]
 }
