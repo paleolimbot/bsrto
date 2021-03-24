@@ -59,6 +59,8 @@
     {"key": "Roll [°]", "fr": "Roulis [°]"},
     {"key": "Heading (pole compass) [°]", "fr": "Cap à la boussole [°]"},
 
+    {"key": "Ice draft [m]", "fr": "Tirant de l'eau glaciel [m]"},
+
     {"key": "[]", "fr": "[]"}
   ]
 }

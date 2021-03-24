@@ -60,7 +60,55 @@ data_adp_nc_date_time <- as.POSIXct(
   tz = "UTC"
 )
 
+data_ips_nc <- nc_open(file.path(built_dir, "ips.nc"))
+data_ips_nc_date_time <- as.POSIXct(
+  ncvar_get(data_ips_nc, "date_time"),
+  origin = "1970-01-01 00:00:00",
+  tz = "UTC"
+)
 
+data_nc_tibble <- function(nc, dt_range, vars, index = as.POSIXct(
+                             ncvar_get(nc, "date_time"),
+                             origin = "1970-01-01 00:00:00",
+                             tz = "UTC"
+                           )) {
+  dt_dim_values <- which(
+    (index >= dt_range[1]) &
+      (index < dt_range[2])
+  )
+  stopifnot(all(diff(dt_dim_values) == 1L))
+  dim_min <- suppressWarnings(min(dt_dim_values))
+  dim_count <- length(dt_dim_values)
+
+  if (dim_count == 0) {
+    vals <- lapply(vars, function(x) double(0))
+    names(vals) <- vars
+    tibble::tibble(date_time = index[integer(0)], !!! vals)
+  } else {
+    vals <- lapply(
+      nc$var[vars],
+      function(x) ncvar_get(
+        nc, x,
+        start = dim_min,
+        count = dim_count
+      )
+    )
+
+    file <- ncvar_get(
+      nc, "file",
+      start = c(1, dim_min),
+      count = c(12, dim_count)
+    )
+
+    tibble::new_tibble(
+      c(
+        list(file = file, date_time = index[dt_dim_values]),
+        vals
+      ),
+      nrow = dim_count
+    )
+  }
+}
 
 # eventually this should be non-ggplot, but this works as a wrapper
 # to get the data needed for the one-dimensional time-series plots
@@ -206,14 +254,6 @@ dataServer <- function(lang, id = "data") {
     adp_meta <- reactive({
       dt_range <- datetime_range()
 
-      dt_dim_values <- which(
-        (data_adp_nc_date_time >= dt_range[1]) &
-          (data_adp_nc_date_time < dt_range[2])
-      )
-      stopifnot(all(diff(dt_dim_values) == 1L))
-      dim_min <- min(dt_dim_values)
-      dim_count <- length(dt_dim_values)
-
       meta_vars <- c(
         # available in file but not reporting here
         # "n_data_types", "ensemble_number", "ensemble_number_msb", "bit_result",
@@ -226,34 +266,30 @@ dataServer <- function(lang, id = "data") {
         "attitude",  "contamination_sensor", "pressure"
       )
 
-      if (dim_count == 0) {
-        vals <- lapply(meta_vars, function(x) double(0))
-        names(vals) <- meta_vars
-        tibble::tibble(date_time = data_adp_nc_date_time[integer(0)], !!! vals)
-      } else {
-        vals <- lapply(
-          data_adp_nc$var[meta_vars],
-          function(x) ncvar_get(
-            data_adp_nc, x,
-            start = dim_min,
-            count = dim_count
-          )
-        )
+      data_nc_tibble(
+        data_adp_nc,
+        dt_range = dt_range,
+        vars = meta_vars,
+        index = data_adp_nc_date_time
+      )
+    })
 
-        file <- ncvar_get(
-          data_adp_nc, "file",
-          start = c(1, dim_min),
-          count = c(12, dim_count)
-        )
+    ips_meta <- reactive({
+      dt_range <- datetime_range()
 
-        tibble::new_tibble(
-          c(
-            list(file = file, date_time = data_adp_nc_date_time[dt_dim_values]),
-            vals
-          ),
-          nrow = dim_count
-        )
-      }
+      meta_vars <- c(
+        "draft_max", "draft_min", "draft_mean", "draft_sd",
+        "n_ranges", "n_partial_ranges", "sound_speed", "density", "gravity",
+        "pressure_max", "pressure_min", "temp_max", "temp_min", "max_pitch",
+        "max_roll_pitch", "max_roll", "max_pitch_roll", "max_inclination"
+      )
+
+      data_nc_tibble(
+        data_ips_nc,
+        dt_range = dt_range,
+        vars = meta_vars,
+        index = data_ips_nc_date_time
+      )
     })
 
     reactiveValues(
@@ -264,7 +300,8 @@ dataServer <- function(lang, id = "data") {
       baro = baro,
       lgh = lgh,
       pcm = pcm,
-      adp_meta = adp_meta
+      adp_meta = adp_meta,
+      ips_meta = ips_meta
     )
   })
 }
