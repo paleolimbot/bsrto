@@ -7,8 +7,7 @@
       "fr": "L'Observatoire le détroit de Barrow en temps réel"
     },
     {
-      "key": "bsrto_full",
-      "en": "Barrow Strait Real-Time Observatory",
+      "key": "Barrow Strait Real-Time Observatory",
       "fr": "L'Observatoire le détroit de Barrow en temps réel"
     },
     {"key": "Data", "fr": "Données"},
@@ -53,6 +52,7 @@
     {"key": "File content", "fr": "Contenu du ficher"},
     {"key": "<No items selected>", "fr": "<Aucun éléments choisis>"},
 
+    {"key": "Beam", "fr": "Le faisceau"},
     {"key": "Depth [m]", "fr": "Profondeur [m]"},
     {"key": "Heading [°]", "fr": "Cap [°]"},
     {"key": "Pitch [°]", "fr": "Tangage [°]"},

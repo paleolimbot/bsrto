@@ -3,6 +3,7 @@ library(shiny)
 
 adpUI <- function(id = "adp") {
   tagList(
+    uiOutput(NS(id, "beam_input")),
     plotOutput(NS(id, "transducer_depth"), height = 150),
     plotOutput(NS(id, "beam_heading_corrected"), height = 150),
     plotOutput(NS(id, "pitch"), height = 150),
@@ -15,6 +16,15 @@ adpUI <- function(id = "adp") {
 
 adpServer <- function(lang, data, id = "adp") {
   moduleServer(id, function(input, output, session) {
+
+    output$beam_input <- renderUI({
+      checkboxGroupInput(
+        NS(id, "beams"), NULL,
+        choices = sprintf("%s %d", i18n_t("Beam", lang()), 1:4),
+        selected = sprintf("%s %d", i18n_t("Beam", lang()), 1:4),
+        inline = TRUE
+      )
+    })
 
     output$transducer_depth <- renderPlot({
       data_plot_datetime(

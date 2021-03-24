@@ -4,75 +4,107 @@ library(readr)
 library(dplyr, warn.conflicts = FALSE)
 library(ncdf4)
 
-built_dir <- getOption("bsrto.built_dir", "build-cache")
+# This is wrapped in a function so that it can be updated while the process
+# is active. None of these loads take very long but could be made faster
+# by a cache step that packs this data into an SQLite database. Set
+# options(bsrto.data_refresh_interval = 15 * 60 * 1000) (e.g.) to
+# have this refresh every 15 minutes. By itself this won't trigger a
+# refresh of the data displayed by the app (use reactiveTimer() for this).
+data_last_refresh <- as.POSIXct("1900-01-01 00:00:00")
 
-# eventually these should be SQLite tables or something else
-# that can be lazily queried
-data_ctd <- readr::read_csv(
-  file.path(built_dir, "ctd.csv"),
-  col_types = readr::cols(
-    file = readr::col_character(),
-    date_time = readr::col_datetime(),
-    .default = readr::col_double()
+data_refresh <- function() {
+  since_last_refresh <- as.numeric(Sys.time() - data_last_refresh, units = "secs")
+  refresh_interval_ms <- getOption("bsrto.data_refresh_interval", NULL)
+
+  if (is.null(refresh_interval_ms) || ((since_last_refresh * 1000) < refresh_interval_ms)) {
+    return()
+  }
+
+  data_last_refresh <<- Sys.time()
+
+
+  built_dir <- getOption("bsrto.built_dir", "build-cache")
+  cat(sprintf("Loading data from '%s'\n", fs::path_abs(built_dir)))
+
+  data_ctd <<- readr::read_csv(
+    file.path(built_dir, "ctd.csv"),
+    col_types = readr::cols(
+      file = readr::col_character(),
+      date_time = readr::col_datetime(),
+      .default = readr::col_double()
+    )
   )
-)
 
-data_met <- readr::read_csv(
-  file.path(built_dir, "met.csv"),
-  col_types = readr::cols(
-    file = readr::col_character(),
-    date_time = readr::col_datetime(),
-    .default = readr::col_double()
+  data_met <<- readr::read_csv(
+    file.path(built_dir, "met.csv"),
+    col_types = readr::cols(
+      file = readr::col_character(),
+      date_time = readr::col_datetime(),
+      .default = readr::col_double()
+    )
   )
-)
 
-data_baro <- readr::read_csv(
-  file.path(built_dir, "baro.csv"),
-  col_types = readr::cols(
-    file = readr::col_character(),
-    date_time = readr::col_datetime(),
-    .default = readr::col_double()
+  data_baro <<- readr::read_csv(
+    file.path(built_dir, "baro.csv"),
+    col_types = readr::cols(
+      file = readr::col_character(),
+      date_time = readr::col_datetime(),
+      .default = readr::col_double()
+    )
   )
-)
 
-data_lgh <- readr::read_csv(
-  file.path(built_dir, "lgh.csv"),
-  col_types = readr::cols(
-    file = readr::col_character(),
-    date_time = readr::col_datetime(),
-    .default = readr::col_character()
+  data_lgh <<- readr::read_csv(
+    file.path(built_dir, "lgh.csv"),
+    col_types = readr::cols(
+      file = readr::col_character(),
+      date_time = readr::col_datetime(),
+      .default = readr::col_character()
+    )
   )
-)
 
-data_pcm <- readr::read_csv(
-  file.path(built_dir, "pcm_summary.csv"),
-  col_types = readr::cols(
-    file = readr::col_character(),
-    date_time = readr::col_datetime(),
-    .default = readr::col_double()
+  data_pcm <<- readr::read_csv(
+    file.path(built_dir, "pcm_summary.csv"),
+    col_types = readr::cols(
+      file = readr::col_character(),
+      date_time = readr::col_datetime(),
+      .default = readr::col_double()
+    )
   )
-)
 
-data_adp_nc <- nc_open(file.path(built_dir, "adp.nc"))
-data_adp_nc_date_time <- as.POSIXct(
-  ncvar_get(data_adp_nc, "date_time"),
-  origin = "1970-01-01 00:00:00",
-  tz = "UTC"
-)
+  # ncdf4 handles should be closed if they exist already
+  if (exists("data_adp_nc", envir = .GlobalEnv)) {
+    nc_close(data_adp_nc)
+  }
+  data_adp_nc <<- nc_open(file.path(built_dir, "adp.nc"))
+  data_adp_nc_date_time <<- as.POSIXct(
+    ncvar_get(data_adp_nc, "date_time"),
+    origin = "1970-01-01 00:00:00",
+    tz = "UTC"
+  )
 
-data_ips_nc <- nc_open(file.path(built_dir, "ips.nc"))
-data_ips_nc_date_time <- as.POSIXct(
-  ncvar_get(data_ips_nc, "date_time"),
-  origin = "1970-01-01 00:00:00",
-  tz = "UTC"
-)
+  if (exists("data_ips_nc", envir = .GlobalEnv)) {
+    nc_close(data_ips_nc)
+  }
+  data_ips_nc <<- nc_open(file.path(built_dir, "ips.nc"))
+  data_ips_nc_date_time <<- as.POSIXct(
+    ncvar_get(data_ips_nc, "date_time"),
+    origin = "1970-01-01 00:00:00",
+    tz = "UTC"
+  )
 
-data_icl_nc <- nc_open(file.path(built_dir, "icl.nc"))
-data_icl_nc_date_time <- as.POSIXct(
-  ncvar_get(data_icl_nc, "date_time"),
-  origin = "1970-01-01 00:00:00",
-  tz = "UTC"
-)
+  if (exists("data_icl_nc", envir = .GlobalEnv)) {
+    nc_close(data_icl_nc)
+  }
+  data_icl_nc <<- nc_open(file.path(built_dir, "icl.nc"))
+  data_icl_nc_date_time <<- as.POSIXct(
+    ncvar_get(data_icl_nc, "date_time"),
+    origin = "1970-01-01 00:00:00",
+    tz = "UTC"
+  )
+}
+
+# call this at least once!
+data_refresh()
 
 data_nc_tibble <- function(nc, dt_range, vars, index = as.POSIXct(
                              ncvar_get(nc, "date_time"),
@@ -152,25 +184,9 @@ dataUI <- function(id = "data") {
       # Global data filter options
       div(
         style = "padding-left: 10px; padding-right: 10px;",
-
-        div(
-          style = "display:inline-block; width: 49%; vertical-align: middle; text-align: left;",
-          uiOutput(NS(id, "date_range"))
-        ),
-
-        div(
-          style = "display:inline-block; width: 49%; vertical-align: middle; text-align: right;",
-          checkboxGroupInput(
-            NS(id, "mooring_depths"), NULL,
-            choices = c("40 m", "60 m", "160 m"),
-            selected = c("40 m", "60 m", "160 m"),
-            inline = TRUE
-          )
-        )
-      ),
-
-      # this div is a home for the JSON version of the (filtered) output
-      div(id = NS(id, "json-data-container"))
+        uiOutput(NS(id, "date_range"))
+        # possible future filter for data flags?
+      )
     )
   )
 }
@@ -178,7 +194,22 @@ dataUI <- function(id = "data") {
 dataServer <- function(lang, id = "data") {
   moduleServer(id, function(input, output, session) {
 
+    # this is a user-specific timer, so the worst-case refresh lag
+    # would be the refresh interval * 2 if the user loads the app
+    # just before a data refresh and lets it sit open for a while
+    data_refresh_timer <- reactiveTimer(
+      getOption(
+        "bsrto.data_refresh_interval",
+        # just pick some really big number if there is no data refresh
+        # (probably because it's in development mode)
+        1e9
+      )
+    )
+
     global_date_range <- reactive({
+      data_refresh_timer()
+      data_refresh()
+
       as.Date(range(data_ctd$date_time))
     })
 
@@ -200,6 +231,7 @@ dataServer <- function(lang, id = "data") {
     })
 
     datetime_range <- reactive({
+      data_refresh_timer()
       dt_range <- as.POSIXct(input$date_range)
       attr(dt_range, "tzone") <- "UTC"
       dt_range
@@ -208,13 +240,11 @@ dataServer <- function(lang, id = "data") {
     # reactive values that return data frames based on user filter
     ctd <- reactive({
       dt_range <- datetime_range()
-      mooring_depths <- as.numeric(gsub("\\s*m$", "", input$mooring_depths))
 
       data_ctd %>%
         filter(
           date_time >= !! dt_range[1],
-          date_time < !! dt_range[2],
-          depth_label %in% mooring_depths
+          date_time < !! dt_range[2]
         )
     })
 

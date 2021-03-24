@@ -1,6 +1,12 @@
 
+# packages <- c("shiny", "dplyr", "ggplot2", "shiny.i18n", "lubridate", "DT", "ncdf4", "fs")
+# install.packages(packages)
+
 library(shiny)
 ggplot2::theme_set(ggplot2::theme_bw())
+
+# important: data refresh! (milliseconds)
+options(bsrto.data_refresh_interval = 10 * 1000)
 
 # modules
 source("app-i18n.R", encoding = "UTF-8")
@@ -28,7 +34,7 @@ ui <- tags$div(
   i18nStartBody(),
 
   navbarPageWithInputs(
-    i18n$t("bsrto_full"),
+    i18n$t("Barrow Strait Real-Time Observatory"),
     navbarMenu(
       i18n$t("Data"),
       tabPanel(i18n$t("Water properties"), ctdUI()),
