@@ -49,7 +49,8 @@ ui <- tags$div(
     inputs = tags$div(style = "float: right;", i18nUI()),
 
     header = div(
-      dataUI()
+      # hide the data filters when on the "About" panel
+      conditionalPanel("!(jQuery('#about-map').is(':visible'))", dataUI())
     ),
 
     # tabPanel content goes here
