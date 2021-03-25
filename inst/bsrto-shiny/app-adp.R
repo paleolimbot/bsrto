@@ -69,23 +69,48 @@ adpServer <- function(lang, data, id = "adp") {
     })
 
     output$range_msb <- renderPlot({
-
+      plot_adp_beam(
+        adp_beams(),
+        "range_msb", "range_msb",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
     })
 
     output$bottom_track_velocity <- renderPlot({
-
+      plot_adp_beam(
+        adp_beams(),
+        "bottom_track_velocity", "bottom_track_velocity",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
     })
 
     output$bc <- renderPlot({
-
+      plot_adp_beam(
+        adp_beams(),
+        "bc", "bc",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
     })
 
     output$ba <- renderPlot({
-
+      plot_adp_beam(
+        adp_beams(),
+        "ba", "ba",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
     })
 
     output$bg <- renderPlot({
-
+      plot_adp_beam(
+        adp_beams(),
+        "bg", "bg",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
     })
 
     output$transducer_depth <- renderPlot({
