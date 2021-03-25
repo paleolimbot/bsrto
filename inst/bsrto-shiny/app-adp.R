@@ -24,6 +24,11 @@ adpUI <- function(id = "adp") {
   tagList(
     uiOutput(NS(id, "beam_input")),
 
+    plotOutput(NS(id, "velocity"), height = 150 * 4),
+    plotOutput(NS(id, "correlation"), height = 150 * 4),
+    plotOutput(NS(id, "echo_intensity"), height = 150 * 4),
+    plotOutput(NS(id, "pct_good"), height = 150 * 4),
+
     plotOutput(NS(id, "range_lsb"), height = 150),
     plotOutput(NS(id, "range_msb"), height = 150),
     plotOutput(NS(id, "bottom_track_velocity"), height = 150),
@@ -57,6 +62,41 @@ adpServer <- function(lang, data, id = "adp") {
       beam_vals <- as.numeric(gsub("[^0-9]", "", input$beams))
       data$adp_beam_meta() %>%
         filter(n_beam %in% !! beam_vals)
+    })
+
+    adp_cells <- reactive({
+      beam_vals <- as.numeric(gsub("[^0-9]", "", input$beams))
+      data$adp_cells() %>%
+        filter(n_beam %in% !! beam_vals)
+    })
+
+    output$velocity <- renderPlot({
+      dt_range <- data$datetime_range()
+      cells <- adp_cells()
+
+      facet <- if (nrow(cells) > 0) {
+        facet_grid(
+          vars(n_beam),
+          labeller = labeller(
+            n_beam = function(x) sprintf("%s %s", i18n_t("Beam", lang()), x)
+          )
+        )
+      }
+
+      p <- ggplot(cells, aes(date_time, distance)) +
+        geom_raster(aes(fill = velocity)) +
+        scale_fill_viridis_c(oob = scales::squish, guide = "none") +
+        scale_x_datetime(limits = dt_range) +
+        scale_y_continuous(expand = expansion(0, 0)) +
+        facet +
+        labs(x = NULL, y = i18n_t("Distance [m]", lang()))
+
+      suppressWarnings(
+        withr::with_locale(
+          c(LC_TIME = paste0(lang(), "_CA")),
+          print(p)
+        )
+      )
     })
 
     output$range_lsb <- renderPlot({

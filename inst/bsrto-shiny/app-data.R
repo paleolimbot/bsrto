@@ -395,6 +395,75 @@ dataServer <- function(lang, id = "data") {
       }
     })
 
+    adp_cells <- reactive({
+      dt_range <- datetime_range()
+
+      cell_vars <- c(
+        "velocity", "correlation", "echo_intensity",
+        "pct_good", "cell_flag"
+      )
+
+      index <- data_adp_nc_date_time
+      n_beam <- data_adp_nc$dim$n_beam$vals
+      distance <- data_adp_nc$dim$distance$vals
+
+      dt_dim_values <- which(
+        (index >= dt_range[1]) &
+          (index < dt_range[2])
+      )
+      stopifnot(all(diff(dt_dim_values) == 1L))
+      dim_min <- suppressWarnings(min(dt_dim_values))
+      dim_count <- length(dt_dim_values)
+
+      if (dim_count == 0) {
+        vars0 <- lapply(cell_vars, function(x) double(0))
+        names(vars0) <- cell_vars
+
+        tibble::tibble(
+          date_time = data_adp_nc_date_time[integer(0)],
+          n_beam = integer(0),
+          distance = double(0),
+          !!! vars0
+        )
+      } else {
+        date_agr <- data_agr_time(dt_range)
+
+        dims <- expand.grid(
+          date_time = data_adp_nc_date_time[dt_dim_values],
+          n_beam = n_beam,
+          distance = distance
+        )
+
+        dims[cell_vars] <- lapply(
+          cell_vars,
+          function(x) {
+            as.numeric(
+              ncvar_get(
+                data_adp_nc, x,
+                start = c(dim_min, 1, 1),
+                count = c(dim_count, length(n_beam), length(distance))
+              )
+            )
+          }
+        )
+
+        agr <- dims %>%
+          mutate(
+            date_time = lubridate::floor_date(date_time, date_agr$date_agr)
+          ) %>%
+          group_by(date_time, n_beam, distance) %>%
+          summarise(across(everything(), median, na.rm = TRUE), .groups = "drop")
+
+        expand.grid(
+          date_time = date_agr$date_time_grid,
+          n_beam = n_beam,
+          distance = distance
+        ) %>%
+          left_join(agr, by = c("date_time", "n_beam", "distance")) %>%
+          tibble::as_tibble()
+      }
+    })
+
     ips_meta <- reactive({
       dt_range <- datetime_range()
 
@@ -478,6 +547,8 @@ dataServer <- function(lang, id = "data") {
       }
     })
 
+    # return a set of "exported" reactive values on which other modules
+    # can depend
     reactiveValues(
       global_date_range = global_date_range,
       datetime_range = datetime_range,
@@ -488,6 +559,7 @@ dataServer <- function(lang, id = "data") {
       pcm = pcm,
       adp_meta = adp_meta,
       adp_beam_meta = adp_beam_meta,
+      adp_cells = adp_cells,
       ips_meta = ips_meta,
       icl_meta = icl_meta,
       icl_intensity = icl_intensity
