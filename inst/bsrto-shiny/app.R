@@ -6,7 +6,7 @@ library(shiny)
 ggplot2::theme_set(ggplot2::theme_bw())
 
 # important: data refresh! (milliseconds)
-options(bsrto.data_refresh_interval = 10 * 1000)
+options(bsrto.data_refresh_interval = 15 * 60 * 1000)
 
 # modules
 source("app-i18n.R", encoding = "UTF-8")

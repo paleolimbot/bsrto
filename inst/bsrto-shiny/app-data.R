@@ -8,8 +8,8 @@ library(ncdf4)
 # is active. None of these loads take very long but could be made faster
 # by a cache step that packs this data into an SQLite database. Set
 # options(bsrto.data_refresh_interval = 15 * 60 * 1000) (e.g.) to
-# have this refresh every 15 minutes. By itself this won't trigger a
-# refresh of the data displayed by the app (use reactiveTimer() for this).
+# have this refresh every 15 minutes (implemented in the app via
+# reactiveTimer()).
 data_last_refresh <- as.POSIXct("1900-01-01 00:00:00")
 
 data_refresh <- function() {
@@ -311,6 +311,58 @@ dataServer <- function(lang, id = "data") {
       )
     })
 
+    adp_beam_meta <- reactive({
+      dt_range <- datetime_range()
+
+      beam_vars <- c(
+        "range_lsb", "range_msb",
+        "bottom_track_velocity", "bc", "ba", "bg",
+        "beam_flag"
+      )
+
+      index <- data_adp_nc_date_time
+      n_beam <- data_adp_nc$dim$n_beam$vals
+
+      dt_dim_values <- which(
+        (index >= dt_range[1]) &
+          (index < dt_range[2])
+      )
+      stopifnot(all(diff(dt_dim_values) == 1L))
+      dim_min <- suppressWarnings(min(dt_dim_values))
+      dim_count <- length(dt_dim_values)
+
+      if (dim_count == 0) {
+        vars0 <- lapply(beam_vars, function(x) double(0))
+        names(vars0) <- beam_vars
+
+        tibble::tibble(
+          date_time = data_adp_nc_date_time[integer(0)],
+          n_beam = integer(0),
+          !!! vars0
+        )
+      } else {
+        dims <- expand.grid(
+          date_time = data_adp_nc_date_time[dt_dim_values],
+          n_beam = n_beam
+        )
+
+        dims[beam_vars] <- lapply(
+          beam_vars,
+          function(x) {
+            as.numeric(
+              ncvar_get(
+                data_adp_nc, x,
+                start = c(dim_min, 1),
+                count = c(dim_count, length(n_beam))
+              )
+            )
+          }
+        )
+
+        tibble::as_tibble(dims)
+      }
+    })
+
     ips_meta <- reactive({
       dt_range <- datetime_range()
 
@@ -384,6 +436,7 @@ dataServer <- function(lang, id = "data") {
       lgh = lgh,
       pcm = pcm,
       adp_meta = adp_meta,
+      adp_beam_meta = adp_beam_meta,
       ips_meta = ips_meta,
       icl_meta = icl_meta,
       icl_intensity = icl_intensity
