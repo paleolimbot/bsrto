@@ -106,6 +106,7 @@ data_refresh <- function() {
 # call this at least once!
 data_refresh()
 
+# for pulling multiple 1-d variables along the date_time dimension
 data_nc_tibble <- function(nc, dt_range, vars, index = as.POSIXct(
                              ncvar_get(nc, "date_time"),
                              origin = "1970-01-01 00:00:00",
@@ -147,6 +148,37 @@ data_nc_tibble <- function(nc, dt_range, vars, index = as.POSIXct(
       nrow = dim_count
     )
   }
+}
+
+# pick an aggregate level for the data that is at too high a resolution
+data_agr_time <- function(dt_range) {
+  if (isTRUE(diff(dt_range) > as.difftime(120, units = "days"))) {
+    date_agr = "week"
+    date_time_grid <- seq(
+      lubridate::floor_date(dt_range[1], "week"),
+      dt_range[2],
+      by = "week"
+    )
+  } else if (isTRUE(diff(dt_range) > as.difftime(10, units = "days"))) {
+    date_agr <- "day"
+    date_time_grid <- seq(
+      lubridate::floor_date(dt_range[1], "day"),
+      dt_range[2],
+      by = "day"
+    )
+  } else {
+    date_agr <- "2 hour"
+    date_time_grid <- seq(
+      lubridate::floor_date(dt_range[1], "2 hour"),
+      dt_range[2],
+      by = "2 hour"
+    )
+  }
+
+  list(
+    date_agr = date_agr,
+    date_time_grid = date_time_grid
+  )
 }
 
 # eventually this should be non-ggplot, but this works as a wrapper
@@ -408,22 +440,41 @@ dataServer <- function(lang, id = "data") {
       dim_count <- length(dt_dim_values)
 
       if (dim_count == 0) {
-        list(
-          frequency = frequency,
+        tibble::tibble(
+          frequency = double(0),
           date_time = data_icl_nc_date_time[integer(0)],
-          intensity = array(data = numeric(), dim = c(0, length(frequency)))
+          intensity = integer(0)
         )
       } else {
-        list(
-          frequency = frequency,
+        date_agr <- data_agr_time(dt_range)
+
+        dims <- expand.grid(
           date_time = data_icl_nc_date_time[dt_dim_values],
-          intensity = ncvar_get(
+          frequency = frequency
+        )
+
+        dims$intensity <- as.integer(
+          ncvar_get(
             data_icl_nc,
             "icl_intensity",
             start = c(dim_min, 1),
             count = c(dim_count, -1)
           )
         )
+
+        intensity_agr <- dims %>%
+          mutate(
+            date_time = lubridate::floor_date(date_time, date_agr$date_agr)
+          ) %>%
+          group_by(date_time, frequency) %>%
+          summarise(intensity = median(intensity, na.rm = TRUE), .groups = "drop")
+
+        expand.grid(
+          date_time = date_agr$date_time_grid,
+          frequency = frequency
+        ) %>%
+          left_join(intensity_agr, by = c("date_time", "frequency")) %>%
+          tibble::as_tibble()
       }
     })
 

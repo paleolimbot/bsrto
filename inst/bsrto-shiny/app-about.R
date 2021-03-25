@@ -24,7 +24,7 @@ aboutServer <- function(lang, id = "about") {
         addProviderTiles(provider) %>%
         addScaleBar() %>%
         addMarkers(lng = -91.25105, lat = 74.60635) %>%
-        setView(lng = -91.25105, lat = 74.60635, zoom = 5)
+        setView(lng = -91.25105, lat = 74.60635, zoom = 6)
     })
 
   })
