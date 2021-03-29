@@ -245,18 +245,41 @@ dataServer <- function(lang, id = "data") {
       as.Date(range(data_ctd$date_time))
     })
 
-    # reactive on global_date_range() and lang() and shouldn't
-    # re-render when the user changes their desired date range
-    # (but will re-render when the language is updated)
+    # Reactive on global_date_range() and lang(). When
+    # re-rendering because of a language change or data update,
+    # we'll want to keep the date range previously selected.
+    # The exception is on data refresh when the user had the default
+    # end date selected (in which case we should just update the end
+    # date)
     output$date_range <- renderUI({
       date_range <- global_date_range()
+      global_min <- date_range[1]
+      global_max <- date_range[2] + 1L
+
+      # get the current value without establishing a reactive dependency
+      current_date_range <- isolate(input$date_range)
+
+      if (length(current_date_range) != 2) {
+        # occurs on first render
+        render_start <- date_range[2] - 7L
+        render_end <- date_range[2] + 1L
+      } else if ((global_max - current_date_range[2]) <= 1L) {
+        # if the last date is selected or has only increased by one,
+        # update the end date
+        render_start <- current_date_range[1]
+        render_end <- date_range[2] + 1L
+      } else {
+        # keep the start and end dates
+        render_start <- current_date_range[1]
+        render_end <- current_date_range[2]
+      }
 
       dateRangeInput(
         NS(id, "date_range"), NULL,
-        start = date_range[2] - 7L,
-        end = date_range[2] + 1L,
-        min = date_range[1],
-        max = date_range[2] + 1L,
+        start = render_start,
+        end = render_end,
+        min = global_min,
+        max = global_max,
         separator = i18n_t("date_range_sep", lang()),
         language = lang()
       )
