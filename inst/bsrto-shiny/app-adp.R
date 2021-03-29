@@ -20,6 +20,39 @@ plot_adp_beam <- function(data, var, lab = var,
   )
 }
 
+plot_adp_cell <- function(data, var, lab = var,
+                          datetime_range = range(data$date_time, na.rm = TRUE),
+                          lang = "en") {
+  facet <- if (nrow(data) > 0) {
+    facet_grid(
+      vars(n_beam),
+      labeller = labeller(
+        n_beam = function(x) sprintf("%s %s", i18n_t("Beam", lang), x)
+      )
+    )
+  }
+
+  p <- ggplot(data, aes(date_time, distance)) +
+    geom_raster(aes(fill = .data[[var]])) +
+    scale_fill_viridis_c(oob = scales::squish) +
+    scale_x_datetime(limits = datetime_range) +
+    scale_y_continuous(expand = expansion(0, 0)) +
+    facet +
+    labs(
+      x = NULL,
+      y = i18n_t("Distance [m]", lang),
+      fill = i18n_t(lab, lang)
+    ) +
+    theme(legend.position = "top")
+
+  suppressWarnings(
+    withr::with_locale(
+      c(LC_TIME = paste0(lang, "_CA")),
+      print(p)
+    )
+  )
+}
+
 adpUI <- function(id = "adp") {
   tagList(
     uiOutput(NS(id, "beam_input")),
@@ -71,31 +104,38 @@ adpServer <- function(lang, data, id = "adp") {
     })
 
     output$velocity <- renderPlot({
-      dt_range <- data$datetime_range()
-      cells <- adp_cells()
+      plot_adp_cell(
+        adp_cells(),
+        "velocity", "Velocity [m/s]",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
+    })
 
-      facet <- if (nrow(cells) > 0) {
-        facet_grid(
-          vars(n_beam),
-          labeller = labeller(
-            n_beam = function(x) sprintf("%s %s", i18n_t("Beam", lang()), x)
-          )
-        )
-      }
+    output$correlation <- renderPlot({
+      plot_adp_cell(
+        adp_cells(),
+        "correlation", "Correlation",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
+    })
 
-      p <- ggplot(cells, aes(date_time, distance)) +
-        geom_raster(aes(fill = velocity)) +
-        scale_fill_viridis_c(oob = scales::squish, guide = "none") +
-        scale_x_datetime(limits = dt_range) +
-        scale_y_continuous(expand = expansion(0, 0)) +
-        facet +
-        labs(x = NULL, y = i18n_t("Distance [m]", lang()))
+    output$echo_intensity <- renderPlot({
+      plot_adp_cell(
+        adp_cells(),
+        "echo_intensity", "Echo intensity [relative units]",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
+    })
 
-      suppressWarnings(
-        withr::with_locale(
-          c(LC_TIME = paste0(lang(), "_CA")),
-          print(p)
-        )
+    output$pct_good <- renderPlot({
+      plot_adp_cell(
+        adp_cells(),
+        "pct_good", "Percent made good [%]",
+        datetime_range = data$datetime_range(),
+        lang = lang()
       )
     })
 
