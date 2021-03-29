@@ -53,16 +53,18 @@ i18nStartBody <- function() {
 i18nUI <- function() {
   id <- "i18n"
 
-  lang_button <- function(lang) {
-    tags$button(
-      stringr::str_to_title(lang),
-      class = paste("btn btn-default", NS(id, "btn-lang")),
-      id = NS(id, paste0("btn-lang-", lang))
+  lang_link <- function(lang, label) {
+    tags$a(
+      href = "#",
+      label,
+      class = NS(id, "link-lang"),
+      id = NS(id, paste0("link-lang-", lang))
     )
   }
 
   tagList(
-    !!! lapply(i18n_languages, lang_button),
+    lang_link("en", "English"),
+    lang_link("fr", "Français"),
     verbatimTextOutput(NS(id, "lang_dummy"))
   )
 }
@@ -81,7 +83,7 @@ i18nServer <- function() {
           Shiny.setInputValue('i18n-lang_browser', 'en');
         }
 
-        jQuery('.i18n-btn-lang').on('click', function() {
+        jQuery('.i18n-link-lang').on('click', function() {
           var elId = this.id;
           var lang_id = elId.substring(elId.length - 2, elId.length);
           Shiny.setInputValue('i18n-lang', lang_id);
@@ -97,8 +99,12 @@ i18nServer <- function() {
       Shiny.addCustomMessageHandler(
         'i18nUpdateLang',
         function(x) {
-          jQuery('.i18n-btn-lang').removeClass('i18n-btn-lang-current');
-          jQuery('#i18n-btn-lang-' + x).addClass('i18n-btn-lang-current');
+          jQuery('.i18n-link-lang')
+            .removeClass('i18n-link-lang-current')
+            .show();
+          jQuery('#i18n-link-lang-' + x)
+            .addClass('i18n-link-lang-current')
+            .hide();
         }
       );
 

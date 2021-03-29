@@ -24,9 +24,14 @@ source("app-icl.R", encoding = "UTF-8")
 # A hack to include some right-aligned elements in the navbar page
 navbarPageWithInputs <- function(..., inputs) {
   navbar <- navbarPage(...)
-  form <- tags$form(class = "navbar-form", inputs)
+
+  form <- tags$div(
+    style = "text-align: right; padding: 15px 10px 0; position: absolute; top: 0; right: 0;",
+    inputs
+  )
   navbar[[3]][[1]]$children[[1]] <- htmltools::tagAppendChild(
     navbar[[3]][[1]]$children[[1]], form)
+
   navbar
 }
 
@@ -46,7 +51,10 @@ ui <- tags$div(
       tabPanel(i18n$t("Log files"), lghUI())
     ),
     tabPanel(i18n$t("About"), aboutUI()),
-    inputs = tags$div(style = "float: right;", i18nUI()),
+    inputs = tags$div(
+      style = "text-align: right; vertical-align: middle;",
+      i18nUI()
+    ),
 
     header = div(
       # hide the data filters when on the "About" panel
