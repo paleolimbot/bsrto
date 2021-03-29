@@ -10,6 +10,7 @@
       "key": "Barrow Strait Real-Time Observatory",
       "fr": "L'Observatoire le détroit de Barrow en temps réel"
     },
+    {"key": "Dashboard", "fr": "Tableau de bord"},
     {"key": "Data", "fr": "Données"},
     {"key": "Water properties", "fr": "Propriétés d'eau"},
     {"key": "Currents", "fr": "Données de courantomètres"},

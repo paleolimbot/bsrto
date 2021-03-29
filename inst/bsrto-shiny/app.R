@@ -8,9 +8,13 @@ ggplot2::theme_set(ggplot2::theme_bw())
 # important: data refresh! (milliseconds)
 options(bsrto.data_refresh_interval = 15 * 60 * 1000)
 
-# modules
+# modules (the encoding bit is for interactive
+# development on Windows, where not specifying this
+# results in mangled non-ASCII text)
 source("app-i18n.R", encoding = "UTF-8")
 source("app-data.R", encoding = "UTF-8")
+
+source("app-dash.R", encoding= "UTF-8")
 
 source("app-ctd.R", encoding = "UTF-8")
 source("app-met.R", encoding = "UTF-8")
@@ -40,6 +44,7 @@ ui <- tags$div(
 
   navbarPageWithInputs(
     i18n$t("Barrow Strait Real-Time Observatory"),
+    tabPanel(i18n$t("Dashboard"), dashUI()),
     navbarMenu(
       i18n$t("Data"),
       tabPanel(i18n$t("Water properties"), ctdUI()),
@@ -70,6 +75,8 @@ ui <- tags$div(
 server <- function(input, output, session) {
   lang <- i18nServer()
   data <- dataServer(lang)
+
+  dashServer(lang, data)
 
   ctdServer(lang, data)
   adpServer(lang, data)
