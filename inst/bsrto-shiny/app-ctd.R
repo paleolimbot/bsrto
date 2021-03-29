@@ -34,7 +34,7 @@ if (FALSE) {
 ctdUI <- function(id = "ctd") {
   tagList(
     checkboxGroupInput(
-      NS(id, "mooring_depths"), NULL,
+      NS(id, "mooring_depths"), i18n$t("Mooring Depth"),
       choices = c("40 m", "60 m", "160 m"),
       selected = c("40 m", "60 m", "160 m"),
       inline = TRUE

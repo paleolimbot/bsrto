@@ -11,6 +11,10 @@
       "fr": "L'Observatoire le détroit de Barrow en temps réel"
     },
     {"key": "Dashboard", "fr": "Tableau de bord"},
+
+    {"key": "Water temperature [°C]", "fr": "Température de l'eau [°C]"},
+    {"key": "Air temperature [°C]", "fr": "Température de l'air [°C]"},
+
     {"key": "Data", "fr": "Données"},
     {"key": "Water properties", "fr": "Propriétés d'eau"},
     {"key": "Currents", "fr": "Données de courantomètres"},
@@ -35,6 +39,7 @@
       "fr": "Un observatoire océanique a été installé à l'extrémité est du passage Nord-Ouest en 2009 afin de fournir des renseignements horaires sur les conditions de l'océan et des glaces à être utilisés par les navigateurs et les modélisateurs du climat. Les données provenant des amarrages équipés sont transmises de manière acoustique à un « concentrateur de données » à l'extrémité d'un câble sous-marin située en haute mer, envoyées à travers un câble, puis transmises à partir de la station à terre par un système de satellites Iridium aux fins d'accès sur le Web."
     },
 
+    {"key": "Mooring Depth", "fr": "Profondeur des dispositifs de mouillage"},
     {"key":"Temperature [°C]", "fr": "Température [°C]"},
     {"key":"Conductivity [S/m]", "fr": "Conductivité [S/m]"},
     {"key":"Pressure [dbar]", "fr": "Pression [dbar]"},
