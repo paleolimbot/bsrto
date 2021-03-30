@@ -32,7 +32,7 @@ Imports:
     gsw,
     nmea,
     headings,
-    readrdi
+    readrdi (>= 0.0.0.9002)
 Suggests: 
     testthat,
     withr,

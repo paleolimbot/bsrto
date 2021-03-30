@@ -71,33 +71,28 @@ test_that("read_rdi_internal() aligns with results from oce::read.adp.rdi()", {
   # bottom track
 
   expect_identical(
-    rdi$bottom_track$bottom_track_velocity[[1]],
+    rdi$bottom_track$bottom_velocity[[1]],
     c(-0.357, -0.279, 0.006, -0.001)
   )
 
   expect_identical(
-    rdi$bottom_track$bc[[1]],
+    rdi$bottom_track$bottom_correlation[[1]],
     c(254L, 254L, 255L, 254L)
   )
 
   expect_identical(
-    rdi$bottom_track$ba[[1]],
+    rdi$bottom_track$bottom_amplitude[[1]],
     c(78L, 79L, 82L, 76L)
   )
 
   expect_identical(
-    rdi$bottom_track$bg[[1]],
+    rdi$bottom_track$bottom_pct_good[[1]],
     c(0L, 0L, 0L, 100L)
   )
 
   expect_identical(
-    rdi$bottom_track$range_lsb[[1]],
-    c(6179L, 6082L, 6106L, 6130L)
-  )
-
-  expect_identical(
-    rdi$bottom_track$range_msb[[1]],
-    c(0L, 0L, 0L, 0L)
+    rdi$bottom_track$bottom_range[[1]],
+    c(61.79, 60.82, 61.06, 61.30)
   )
 
   # velocity

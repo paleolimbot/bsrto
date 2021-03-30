@@ -67,3 +67,40 @@ sound_speed_from_psal_temp_pres <- function(psal, temp, pres,
   conservative_temp <- gsw::gsw_CT_from_t(absolute_sal, temp, pres)
   gsw::gsw_sound_speed(absolute_sal, conservative_temp, pres)
 }
+
+# note that positive rotation here is rotation clockwise
+rotate_about_origin <- function(coords, rotation_deg) {
+  rotation <- rotation_deg * pi / 180
+  coords <- as.matrix(coords)
+  n_coord <- nrow(coords)
+  stopifnot(
+    is.numeric(coords),
+    ncol(coords) == 2
+  )
+
+  coords_3d <- cbind(coords, rep(1, n_coord))
+
+  if (length(rotation) == 1) {
+    affine <- rbind(
+      c(cos(rotation), -sin(rotation), 0),
+      c(sin(rotation), cos(rotation), 0),
+      c(0, 0, 1)
+    )
+
+    coords_3d <- coords_3d %*% affine
+  } else {
+    for (i in seq_along(rotation_deg)) {
+      affine <- rbind(
+        c(cos(rotation[i]), -sin(rotation[i]), 0),
+        c(sin(rotation[i]), cos(rotation[i]), 0),
+        c(0, 0, 1)
+      )
+
+      coords_3d[i, ] <- coords_3d[i, , drop = FALSE] %*% affine
+    }
+  }
+
+  coords_3d[, 1:2, drop = FALSE]
+}
+
+
