@@ -67,3 +67,18 @@ sound_speed_from_psal_temp_pres <- function(psal, temp, pres,
   conservative_temp <- gsw::gsw_CT_from_t(absolute_sal, temp, pres)
   gsw::gsw_sound_speed(absolute_sal, conservative_temp, pres)
 }
+
+
+rotate_about_origin <- function(coords, rotation_deg) {
+  rotation <- rotation_deg * pi / 180
+  affine <- rbind(
+    c(cos(rotation), -sin(rotation), 0),
+    c(sin(rotation), cos(rotation), 0),
+    c(0, 0, 1)
+  )
+
+  coords_3d <- cbind(coords, rep(1, nrow(coords)))
+  (coords_3d %*% affine)[, 1:2, drop = FALSE]
+}
+
+
