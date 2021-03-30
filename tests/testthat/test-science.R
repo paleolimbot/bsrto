@@ -88,3 +88,22 @@ test_that("2d rotator works", {
     )
   )
 })
+
+test_that("2d rotator is vectorized along rotation", {
+  coords <- rbind(
+    c(0, 0),
+    c(0, 1),
+    c(1, 0),
+    c(sqrt(2) / 2, sqrt(2) / 2)
+  )
+
+  expect_equal(
+    rotate_about_origin(coords, c(45, 90, 135, 180)),
+    rbind(
+      c(0, 0),
+      c(1, 0),
+      c(-sqrt(2) / 2, -sqrt(2) / 2),
+      c(-sqrt(2) / 2, -sqrt(2) / 2)
+    )
+  )
+})

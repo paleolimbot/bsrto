@@ -292,6 +292,18 @@ write_realtime_mc <- function(built, out_dir = ".") {
 write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   cli::cat_rule("write_realtime_adp()")
 
+  # Validate assumptions regarding coordinate transformation.
+  # The config for the 2019 deployment exports coordinates as
+  # starboard-forward-mast such that "mast" is directly upward
+  # (as indicated by tilt_used == TRUE). This simplifies the
+  # calculation significantly since it need only account for
+  # a 2d affine transformation in the horizontal dimensions.
+  rdi_coord <- readrdi::rdi_unpack_coord_transform(rdi$coord_transform)
+  stopifnot(
+    all(rdi_coord$coord_system == "sfm"),
+    all(rdi_coord$tilt_used)
+  )
+
   # Declare variables ----
 
   # These columns had a constant value between the start of the
@@ -313,18 +325,26 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   )
 
   # These columns are list(matrix(n_beams * n_cells))
-  cols_n_beams_n_cells <- c(
-    "velocity", "correlation",
-    "echo_intensity", "pct_good"
-  )
+  cols_n_beams_n_cells <- c("correlation", "echo_intensity", "pct_good")
 
   # These columns are list(c(n_beams))
-  cols_n_beams <- c("range_lsb", "range_msb", "bottom_track_velocity", "bc", "ba", "bg")
+  cols_n_beams <- c(
+    "bottom_range", "bottom_correlation",
+    "bottom_amplitude", "bottom_pct_good"
+  )
+
+  # Velocities need to be rotated and including them along the `n_beam`
+  # dimension is disingenuous, since the values are starboard, forward mast,
+  # error velocity, and will be east, north, up, error velocity.
+  cols_velocity <- c("velocity", "bottom_velocity")
 
   # All other columns have one value per profile
   cols_prof_meta <- setdiff(
     names(rdi),
-    c(cols_config, cols_n_beams_n_cells, cols_n_beams, "data_offset", "data_type")
+    c(
+      cols_config, cols_n_beams_n_cells, cols_n_beams,
+      "data_offset", "data_type", "velocity", "bottom_velocity"
+    )
   )
 
   # Make objects ----
@@ -372,32 +392,51 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   # lines(vals[order(vals$heading_orig), ], col = "red")
   # sqrt(mean(residuals(fit) ^ 2, na.rm = TRUE)) # ~12 degrees
 
+  # Rotate velocity vectors, whose dimensions are starboard, forward, mast,
+  # error velocity. Because "mast" has already been corrected to
+  # be "up" according to rdi$coord_transform, we only need to rotate the
+  # starboard and forward dimensions.
+  velocity <- abind::abind(rdi$velocity, along = 0)
+  for (i in seq_len(5)) {
+    velocity[i, 1:2, ] <- t(
+      rotate_about_origin(
+        t(velocity[i, 1:2, , drop = TRUE]),
+        # tested to align with the results of oce::toEnu()
+        rdi_meta$beam_heading_corrected[i]
+      )
+    )
+  }
 
-  # Flag bins (same dimensions as rdi_n_beams_n_cells) ----
+  # velocity is in its own dimension family (date_time x enu x distance)
+  rdi_east_north_up_n_cells <- list(velocity = velocity[, 1:3, , drop = FALSE])
 
-  # TODO: Can't tell from original code which bins are getting the ax
-  # based on distance to surface
+  # error velocity is in its own dimension family (date_time x distance)
+  rdi_n_cells <- list(list(error_velocity = velocity[, 4, , drop = TRUE]))
+
+  bottom_velocity <- abind::abind(rdi$bottom_velocity, along = 0)
+  bottom_velocity[, 1:2] <-
+    rotate_about_origin(
+      bottom_velocity[, 1:2, drop = FALSE],
+      # tested to align with the results of oce::toEnu()
+      rdi_meta$beam_heading_corrected
+    )
+
+  # bottom velocity is in its own dimension family
+  rdi_east_north_up <- list(bottom_velocity = bottom_velocity[, 1:3, drop = FALSE])
+
+  # bottom error velocity shares dimensions with rdi_meta (just date_time)
+  rdi_meta$bottom_error_velocity <- bottom_velocity[, 4, drop = TRUE]
+
+  # Flags ----
+
+  # TODO: Can't tell from original code which velocity bins are getting the ax
+  # based on distance to surface. There are also no velocity series that
+  # have >50% NA, which were flagged in the initial version of this code.
   # https://github.com/richardsc/bsrto/blob/master/adp.R#L61-L71
 
-  # Beam coverage: should have less than 50% NA per profile per beam
-  # I can't find any profiles that have this property
-  # date_time x n_beams
-  velocity_na_beam <- apply(
-    rdi_n_beams_n_cells$velocity,
-    c(1, 2),
-    function(x) mean(is.na(x))
-  )
-
-  # need to fix in read_rdi()...should also fix col name to be more informative
-  # about 2% of measurements
-  improbable_bottom_velocities <-
-    (rdi_n_beams$bottom_track_velocity > 2) |
-    (rdi_n_beams$bottom_track_velocity < -2)
-
-  # make flag variables from above
-  # cell flag is a todo...not sure how these are being flagged above
-  rdi_n_beams_n_cells$cell_flag <- array(0L, dim = dim(rdi_n_beams_n_cells$velocity))
-  rdi_n_beams$beam_flag <- as.integer(improbable_bottom_velocities)
+  # Could likely use error velocities and pct good as a flag
+  # (there's a good guide in the processing repo for adcp data on
+  # gccode)
 
   # Prepare NetCDF ----
 
@@ -419,6 +458,12 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
     "n_beams",
     units = "count",
     vals = seq_len(rdi_config$n_beams)
+  )
+
+  dim_enu <- ncdf4::ncdim_def(
+    "east_north_up",
+    units = "count",
+    vals = seq_len(3)
   )
 
   dim_distance <- ncdf4::ncdim_def(
@@ -494,6 +539,66 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
       )
     })
 
+  east_north_up_vars <- lapply(
+    names(rdi_east_north_up),
+    function(col) {
+      val <- rdi_east_north_up[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time, dim_enu),
+        missval = if (!is.raw(val)) val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "float",
+          raw = "integer",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
+
+  east_north_up_n_cells_vars <- lapply(
+    names(rdi_east_north_up_n_cells),
+    function(col) {
+      val <- rdi_east_north_up_n_cells[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time, dim_enu, dim_distance),
+        missval = if (!is.raw(val)) val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "float",
+          raw = "integer",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
+
+  n_cells_vars <- lapply(
+    names(rdi_n_cells),
+    function(col) {
+      val <- rdi_n_cells[[col]]
+      ncdf4::ncvar_def(
+        name = col,
+        units = "", # TODO: need units for all types of tables
+        dim = list(dim_date_time, dim_distance),
+        missval = if (!is.raw(val)) val[NA_integer_],
+        prec = switch(
+          typeof(val),
+          integer = "integer",
+          double = "float",
+          raw = "integer",
+          abort(glue("Can't guess NetCDF prec from class '{ typeof(val) }'"))
+        ),
+        compression = compression
+      )
+    })
+
   # Write NetCDF ----
 
   out_file <- file.path(out_dir, "adp.nc")
@@ -505,7 +610,10 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
       list(file_var),
       meta_vars,
       n_beams_vars,
-      n_beams_n_cells_vars
+      n_beams_n_cells_vars,
+      east_north_up_vars,
+      east_north_up_n_cells_vars,
+      n_cells_vars
     )
   )
   on.exit(ncdf4::nc_close(nc))
@@ -525,6 +633,18 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
 
   for (col in names(rdi_n_beams_n_cells)) {
     ncdf4::ncvar_put(nc, col, rdi_n_beams_n_cells[[col]])
+  }
+
+  for (col in names(rdi_east_north_up)) {
+    ncdf4::ncvar_put(nc, col, rdi_east_north_up[[col]])
+  }
+
+  for (col in names(rdi_east_north_up_n_cells)) {
+    ncdf4::ncvar_put(nc, col, rdi_east_north_up_n_cells[[col]])
+  }
+
+  for (col in names(rdi_n_cells)) {
+    ncdf4::ncvar_put(nc, col, rdi_n_cells[[col]])
   }
 
   # on.exit() takes care of ncdf4::nc_close(nc)
@@ -1154,8 +1274,8 @@ read_realtime_rdi <- function(previous = NULL) {
     # use 'date_time' instead of 'real_time_clock' like the others
     names(all)[names(all) == "real_time_clock"] <- "date_time"
 
-    # at least one row is missing values for the data sections
-    rows_valid <- !vapply(all$range_msb, is.null, logical(1))
+    # check for a "missing" in one field
+    rows_valid <- vapply(all$bottom_range, length, integer(1)) == 4
     build_realtime_log_qc(all, rows_valid)
     all <- rbind(previous, all[rows_valid, ])
   } else {
