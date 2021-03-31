@@ -325,18 +325,15 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   )
 
   # These columns are list(matrix(n_beams * n_cells))
+  # raw (starboard-forward-mast) velocity is added later
   cols_n_beams_n_cells <- c("correlation", "echo_intensity", "pct_good")
 
   # These columns are list(c(n_beams))
+  # raw (starboard-forward-mast) bottom_velocity is added later
   cols_n_beams <- c(
     "bottom_range", "bottom_correlation",
     "bottom_amplitude", "bottom_pct_good"
   )
-
-  # Velocities need to be rotated and including them along the `n_beam`
-  # dimension is disingenuous, since the values are starboard, forward mast,
-  # error velocity, and will be east, north, up, error velocity.
-  cols_velocity <- c("velocity", "bottom_velocity")
 
   # All other columns have one value per profile
   cols_prof_meta <- setdiff(
@@ -381,23 +378,17 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   # correct for beam alignment to the pole compass
   rdi_meta$beam_heading_corrected <- headings::hdg_norm(pc_true_heading_interp + 45)
 
-  # compare to heading from rdi file...you can theoretically predict the error
-  # based on the original heading (bumped slightly for continuity)
-
-  # heading_orig <- ifelse(rdi_meta$heading > 240, rdi_meta$heading - 360, rdi_meta$heading)
-  # beam_heading_diff <- heading_diff(rdi_meta$beam_heading_corrected, heading_orig)
-  # plot(heading_orig, beam_heading_diff)
-  # fit <- lm(beam_heading_diff ~ poly(heading_orig, 5), na.action = na.exclude)
-  # vals <- tibble::tibble(heading_orig, pred = predict(fit))
-  # lines(vals[order(vals$heading_orig), ], col = "red")
-  # sqrt(mean(residuals(fit) ^ 2, na.rm = TRUE)) # ~12 degrees
-
   # Rotate velocity vectors, whose dimensions are starboard, forward, mast,
   # error velocity. Because "mast" has already been corrected to
   # be "up" according to rdi$coord_transform, we only need to rotate the
   # starboard and forward dimensions.
   velocity <- abind::abind(rdi$velocity, along = 0)
-  for (i in seq_len(5)) {
+
+  # also include un-rotated velocity
+  rdi_n_beams_n_cells$velocity_raw <- velocity
+
+  # do rotation
+  for (i in seq_along(rdi_meta$beam_heading_corrected)) {
     velocity[i, 1:2, ] <- t(
       rotate_about_origin(
         t(velocity[i, 1:2, , drop = TRUE]),
@@ -414,6 +405,11 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   rdi_n_cells <- list(list(error_velocity = velocity[, 4, , drop = TRUE]))
 
   bottom_velocity <- abind::abind(rdi$bottom_velocity, along = 0)
+
+  # also include un-rotated bottom_velocity
+  rdi_n_beams$bottom_velocity_raw <- bottom_velocity
+
+  # do rotation
   bottom_velocity[, 1:2] <-
     rotate_about_origin(
       bottom_velocity[, 1:2, drop = FALSE],
