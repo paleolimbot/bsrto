@@ -370,9 +370,9 @@ dataServer <- function(lang, id = "data") {
       dt_range <- datetime_range()
 
       beam_vars <- c(
-        "range_lsb", "range_msb",
-        "bottom_track_velocity", "bc", "ba", "bg",
-        "beam_flag"
+        "bottom_range",
+        "bottom_velocity_raw", "bottom_correlation",
+        "bottom_amplitude", "bottom_pct_good"
       )
 
       index <- data_adp_nc_date_time
@@ -422,8 +422,8 @@ dataServer <- function(lang, id = "data") {
       dt_range <- datetime_range()
 
       cell_vars <- c(
-        "velocity", "correlation", "echo_intensity",
-        "pct_good", "cell_flag"
+        "velocity_raw", "correlation", "echo_intensity",
+        "pct_good"
       )
 
       index <- data_adp_nc_date_time

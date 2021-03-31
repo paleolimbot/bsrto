@@ -57,17 +57,16 @@ adpUI <- function(id = "adp") {
   tagList(
     uiOutput(NS(id, "beam_input")),
 
-    plotOutput(NS(id, "velocity"), height = 150 * 4),
+    plotOutput(NS(id, "velocity_raw"), height = 150 * 4),
     plotOutput(NS(id, "correlation"), height = 150 * 4),
     plotOutput(NS(id, "echo_intensity"), height = 150 * 4),
     plotOutput(NS(id, "pct_good"), height = 150 * 4),
 
-    plotOutput(NS(id, "range_lsb"), height = 150),
-    plotOutput(NS(id, "range_msb"), height = 150),
-    plotOutput(NS(id, "bottom_track_velocity"), height = 150),
-    plotOutput(NS(id, "bc"), height = 150),
-    plotOutput(NS(id, "ba"), height = 150),
-    plotOutput(NS(id, "bg"), height = 150),
+    plotOutput(NS(id, "bottom_range"), height = 150),
+    plotOutput(NS(id, "bottom_velocity_raw"), height = 150),
+    plotOutput(NS(id, "bottom_correlation"), height = 150),
+    plotOutput(NS(id, "bottom_amplitude"), height = 150),
+    plotOutput(NS(id, "bottom_pct_good"), height = 150),
 
     plotOutput(NS(id, "transducer_depth"), height = 150),
     plotOutput(NS(id, "beam_heading_corrected"), height = 150),
@@ -103,10 +102,10 @@ adpServer <- function(lang, data, id = "adp") {
         filter(n_beam %in% !! beam_vals)
     })
 
-    output$velocity <- renderPlot({
+    output$velocity_raw <- renderPlot({
       plot_adp_cell(
         adp_cells(),
-        "velocity", "Velocity [m/s]",
+        "velocity_raw", "Velocity [m/s]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -139,55 +138,46 @@ adpServer <- function(lang, data, id = "adp") {
       )
     })
 
-    output$range_lsb <- renderPlot({
+    output$bottom_range <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "range_lsb", "range_lsb",
+        "bottom_range", "Bottom range [m]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$range_msb <- renderPlot({
+    output$bottom_velocity_raw <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "range_msb", "range_msb",
+        "bottom_velocity_raw", "Bottom velocity [m/s]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$bottom_track_velocity <- renderPlot({
+    output$bottom_correlation <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "bottom_track_velocity", "bottom_track_velocity",
+        "bottom_correlation", "bottom_correlation",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$bc <- renderPlot({
+    output$bottom_amplitude <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "bc", "bc",
+        "bottom_amplitude", "bottom_amplitude",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$ba <- renderPlot({
+    output$bottom_pct_good <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "ba", "ba",
-        datetime_range = data$datetime_range(),
-        lang = lang()
-      )
-    })
-
-    output$bg <- renderPlot({
-      plot_adp_beam(
-        adp_beams(),
-        "bg", "bg",
+        "bottom_pct_good", "bottom_pct_good",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
