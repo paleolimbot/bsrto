@@ -1,5 +1,5 @@
 
-# packages <- c("shiny", "dplyr", "ggplot2", "shiny.i18n", "lubridate", "DT", "ncdf4", "fs", "leaflet")
+# packages <- c("shiny", "dplyr", "ggplot2", "shiny.i18n", "lubridate", "DT", "ncdf4", "fs", "leaflet", "metR", "tidyr")
 # install.packages(packages)
 
 library(shiny)

@@ -352,7 +352,7 @@ dataServer <- function(lang, id = "data") {
         # "sound_speed",  "heading_std", "pitch_std", "roll_std",
         # "pressure_plus", "pressure_minus", "attitude_temp",
         # "transmit_current", "transmit_voltage", "pressure_std",
-        "beam_heading_corrected",
+        "beam_heading_corrected", "bottom_error_velocity",
         "transducer_depth", "heading", "pitch", "roll",
         "salinity", "temperature", "ambient_temperature",
         "attitude",  "contamination_sensor", "pressure"
@@ -487,6 +487,53 @@ dataServer <- function(lang, id = "data") {
       }
     })
 
+    adp_bottom_velocity <- reactive({
+      dt_range <- datetime_range()
+
+      index <- data_adp_nc_date_time
+      n_beam <- data_adp_nc$dim$n_beam$vals
+      distance <- data_adp_nc$dim$distance$vals
+
+      dt_dim_values <- which(
+        (index >= dt_range[1]) &
+          (index < dt_range[2])
+      )
+      stopifnot(all(diff(dt_dim_values) == 1L))
+      dim_min <- suppressWarnings(min(dt_dim_values))
+      dim_count <- length(dt_dim_values)
+
+      if (dim_count == 0) {
+        tibble::tibble(
+          date_time = data_adp_nc_date_time[integer(0)],
+          bottom_velocity_east = double(0),
+          bottom_velocity_north = double(0),
+          bottom_velocity_up = double(0),
+          bottom_velocity = double(0),
+          bottom_velocity_direction = double(0)
+        )
+      } else {
+        values <- ncvar_get(
+          data_adp_nc,
+          "bottom_velocity",
+          start = c(dim_min, 1),
+          count = c(dim_count, -1)
+        )
+
+        tibble::tibble(
+          date_time = data_adp_nc_date_time[dt_dim_values],
+          bottom_velocity_east = values[, 1, drop = TRUE],
+          bottom_velocity_north = values[, 2, drop = TRUE],
+          bottom_velocity_up = values[, 3, drop = TRUE]
+        )  %>%
+          mutate(
+            bottom_velocity = sqrt(bottom_velocity_east ^ 2 + bottom_velocity_north ^ 2),
+            bottom_velocity_direction = headings::hdg_from_uv(
+              headings::uv(bottom_velocity_east, bottom_velocity_north)
+            )
+          )
+      }
+    })
+
     ips_meta <- reactive({
       dt_range <- datetime_range()
 
@@ -582,6 +629,7 @@ dataServer <- function(lang, id = "data") {
       pcm = pcm,
       adp_meta = adp_meta,
       adp_beam_meta = adp_beam_meta,
+      adp_bottom_velocity = adp_bottom_velocity,
       adp_cells = adp_cells,
       ips_meta = ips_meta,
       icl_meta = icl_meta,

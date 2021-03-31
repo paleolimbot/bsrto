@@ -4,6 +4,7 @@ library(shiny)
 
 dashUI <- function(id = "dash") {
   tagList(
+    plotOutput(NS(id, "adp_bottom_velocity"), height = 200),
     plotOutput(NS(id, "ctd_temperature"), height = 200),
     plotOutput(NS(id, "met_temp"), height = 150),
     plotOutput(NS(id, "ips_draft"))
@@ -12,6 +13,28 @@ dashUI <- function(id = "dash") {
 
 dashServer <- function(lang, data, id = "dash") {
   moduleServer(id, function(input, output, session) {
+
+    output$adp_bottom_velocity <- renderPlot({
+      df <- data$adp_bottom_velocity()
+      data_plot_datetime(
+        df,
+        "bottom_velocity", "Water/ice surface velocity [m/s]",
+        datetime_range = data$datetime_range(),
+        lang = lang(),
+        extra = list(
+          if ((nrow(df) < 100) && (nrow(df) > 0)) {
+            metR::geom_arrow(
+              aes(
+                mag = 1,
+                angle = bottom_velocity_direction + 180
+              ),
+              direction = "cw",
+              start = -90
+            )
+          }
+        )
+      )
+    })
 
     output$ctd_temperature <- renderPlot({
       data_plot_datetime(

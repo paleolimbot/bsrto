@@ -1,6 +1,8 @@
 
 library(shiny)
 library(ggplot2)
+library(dplyr)
+library(tidyr)
 
 
 plot_adp_beam <- function(data, var, lab = var,
@@ -57,6 +59,8 @@ adpUI <- function(id = "adp") {
   tagList(
     uiOutput(NS(id, "beam_input")),
 
+    plotOutput(NS(id, "bottom_velocity"), height = 300),
+
     plotOutput(NS(id, "velocity_raw"), height = 150 * 4),
     plotOutput(NS(id, "correlation"), height = 150 * 4),
     plotOutput(NS(id, "echo_intensity"), height = 150 * 4),
@@ -100,6 +104,56 @@ adpServer <- function(lang, data, id = "adp") {
       beam_vals <- as.numeric(gsub("[^0-9]", "", input$beams))
       data$adp_cells() %>%
         filter(n_beam %in% !! beam_vals)
+    })
+
+    output$bottom_velocity_east <- renderPlot({
+      data_plot_datetime(
+        data$adp_bottom_velocity(),
+        "bottom_velocity_east", "Bottom velocity (east) [m/s]",
+        datetime_range = data$datetime_range(),
+        lang = lang()
+      )
+    })
+
+    output$bottom_velocity <- renderPlot({
+      df <- data$adp_bottom_velocity() %>%
+        select(
+          date_time,
+          bottom_velocity_east,
+          bottom_velocity_north,
+          bottom_velocity_up
+        ) %>%
+        pivot_longer(-date_time) %>%
+        rbind(
+          data$adp_meta() %>%
+            transmute(
+              date_time,
+              name = "bottom_velocity_error",
+              value = bottom_error_velocity
+            )
+        ) %>%
+        mutate(
+          name = gsub("^bottom_velocity_", "", name)
+        )
+
+      data_plot_datetime(
+        df,
+        "value", "Bottom velocity [m/s]",
+        mapping = aes(col = name),
+        datetime_range = data$datetime_range(),
+        lang = lang(),
+        extra = list(
+          scale_color_discrete(
+            limits = c("east", "north", "up", "error"),
+            labels = i18n_t(
+              c("East", "North", "Up", "Error"),
+              lang()
+            ),
+            name = NULL
+          ),
+          theme(legend.position = "bottom")
+        )
+      )
     })
 
     output$velocity_raw <- renderPlot({
