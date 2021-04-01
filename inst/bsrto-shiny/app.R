@@ -20,6 +20,7 @@ source("app-ctd.R", encoding = "UTF-8")
 source("app-met.R", encoding = "UTF-8")
 source("app-baro.R", encoding = "UTF-8")
 source("app-lgh.R", encoding = "UTF-8")
+source("app-currents.R", encoding = "UTF-8")
 source("app-adp.R", encoding = "UTF-8")
 source("app-about.R", encoding = "UTF-8")
 source("app-ips.R", encoding = "UTF-8")
@@ -48,7 +49,8 @@ ui <- tags$div(
     navbarMenu(
       i18n$t("Data"),
       tabPanel(i18n$t("Water properties"), ctdUI()),
-      tabPanel(i18n$t("Currents"), adpUI()),
+      tabPanel(i18n$t("Currents"), currentsUI()),
+      tabPanel(i18n$t("ADCP"), adpUI()),
       tabPanel(i18n$t("Barometric pressure"), baroUI()),
       tabPanel(i18n$t("Sound"), iclUI()),
       tabPanel(i18n$t("Ice thickness"), ipsUI()),
@@ -79,6 +81,7 @@ server <- function(input, output, session) {
   dashServer(lang, data)
 
   ctdServer(lang, data)
+  currentsServer(lang, data)
   adpServer(lang, data)
   baroServer(lang, data)
   iclServer(lang, data)

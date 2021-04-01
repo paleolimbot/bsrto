@@ -18,7 +18,7 @@ dashServer <- function(lang, data, id = "dash") {
       df <- data$adp_bottom_velocity()
       data_plot_datetime(
         df,
-        "bottom_velocity", "Water/ice surface velocity [m/s]",
+        "bottom_velocity_total", "Water/ice surface velocity [m/s]",
         datetime_range = data$datetime_range(),
         lang = lang(),
         extra = list(

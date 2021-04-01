@@ -491,7 +491,6 @@ dataServer <- function(lang, id = "data") {
       dt_range <- datetime_range()
 
       index <- data_adp_nc_date_time
-      n_beam <- data_adp_nc$dim$n_beam$vals
       distance <- data_adp_nc$dim$distance$vals
 
       dt_dim_values <- which(
@@ -508,7 +507,7 @@ dataServer <- function(lang, id = "data") {
           bottom_velocity_east = double(0),
           bottom_velocity_north = double(0),
           bottom_velocity_up = double(0),
-          bottom_velocity = double(0),
+          bottom_velocity_total = double(0),
           bottom_velocity_direction = double(0)
         )
       } else {
@@ -526,11 +525,72 @@ dataServer <- function(lang, id = "data") {
           bottom_velocity_up = values[, 3, drop = TRUE]
         )  %>%
           mutate(
-            bottom_velocity = sqrt(bottom_velocity_east ^ 2 + bottom_velocity_north ^ 2),
+            bottom_velocity_total = sqrt(bottom_velocity_east ^ 2 + bottom_velocity_north ^ 2),
             bottom_velocity_direction = headings::hdg_from_uv(
               headings::uv(bottom_velocity_east, bottom_velocity_north)
             )
           )
+      }
+    })
+
+    adp_velocity <- reactive({
+      dt_range <- datetime_range()
+
+      index <- data_adp_nc_date_time
+      east_north_up <- data_adp_nc$dim$east_north_up$vals
+      distance <- data_adp_nc$dim$distance$vals
+
+      dt_dim_values <- which(
+        (index >= dt_range[1]) &
+          (index < dt_range[2])
+      )
+      stopifnot(all(diff(dt_dim_values) == 1L))
+      dim_min <- suppressWarnings(min(dt_dim_values))
+      dim_count <- length(dt_dim_values)
+
+      if (dim_count == 0) {
+        tibble::tibble(
+          date_time = data_adp_nc_date_time[integer(0)],
+          distance = double(0),
+          east_north_up = integer(0),
+          velocity = double(0)
+        )
+      } else {
+        date_agr <- data_agr_time(dt_range)
+
+        dims <- expand.grid(
+          date_time = data_adp_nc_date_time[dt_dim_values],
+          east_north_up = east_north_up,
+          distance = distance
+        )
+
+        dims["velocity"] <- lapply(
+          "velocity",
+          function(x) {
+            as.numeric(
+              ncvar_get(
+                data_adp_nc, x,
+                start = c(dim_min, 1, 1),
+                count = c(dim_count, length(east_north_up), length(distance))
+              )
+            )
+          }
+        )
+
+        agr <- dims %>%
+          mutate(
+            date_time = lubridate::floor_date(date_time, date_agr$date_agr)
+          ) %>%
+          group_by(date_time, east_north_up, distance) %>%
+          summarise(across(everything(), median, na.rm = TRUE), .groups = "drop")
+
+        expand.grid(
+          date_time = date_agr$date_time_grid,
+          east_north_up = east_north_up,
+          distance = distance
+        ) %>%
+          left_join(agr, by = c("date_time", "east_north_up", "distance")) %>%
+          tibble::as_tibble()
       }
     })
 
@@ -630,6 +690,7 @@ dataServer <- function(lang, id = "data") {
       adp_meta = adp_meta,
       adp_beam_meta = adp_beam_meta,
       adp_bottom_velocity = adp_bottom_velocity,
+      adp_velocity = adp_velocity,
       adp_cells = adp_cells,
       ips_meta = ips_meta,
       icl_meta = icl_meta,
