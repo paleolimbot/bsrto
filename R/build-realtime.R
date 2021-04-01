@@ -384,8 +384,19 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   # starboard and forward dimensions.
   velocity <- abind::abind(rdi$velocity, along = 0)
 
-  # also include un-rotated velocity
+  # For both rotated and un-rotated velocity, there are a number of bins
+  # above the water level (according to rdi_meta$transducer_depth). There
+  # may be other reasons to flag values along these dimensions in the future.
+  # Use a margin of 15% of the transducer depth to flag these bins.
+  velocity_raw_flag <- array(bs_flag("probably good data"), dim = dim(velocity))
+  for (i in seq_along(rdi$transducer_depth)) {
+    bad_bins <- n_cell_distance > (0.85 * rdi$transducer_depth[i])
+    velocity_raw_flag[i, , bad_bins] <- bs_flag("ADCP measurement above water")
+  }
+
+  # also include un-rotated velocity + flags along beam + cell dimension
   rdi_n_beams_n_cells$velocity_raw <- velocity
+  rdi_n_beams_n_cells$velocity_raw_flag <- velocity_raw_flag
 
   # do rotation
   for (i in seq_along(rdi_meta$beam_heading_corrected)) {
@@ -399,15 +410,35 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   }
 
   # velocity is in its own dimension family (date_time x enu x distance)
-  rdi_east_north_up_n_cells <- list(velocity = velocity[, 1:3, , drop = FALSE])
+  rdi_east_north_up_n_cells <- list(
+    velocity = velocity[, 1:3, , drop = FALSE],
+    velocity_flag = velocity_raw_flag[, 1:3, , drop = FALSE]
+  )
 
   # error velocity is in its own dimension family (date_time x distance)
-  rdi_n_cells <- list(list(error_velocity = velocity[, 4, , drop = TRUE]))
+  rdi_n_cells <- list(
+    error_velocity = velocity[, 4, , drop = TRUE],
+    error_velocity_flag = velocity_raw_flag[, 4, , drop = TRUE]
+  )
 
+  # process bottom-track velocity
   bottom_velocity <- abind::abind(rdi$bottom_velocity, along = 0)
 
-  # also include un-rotated bottom_velocity
+  # Flag bottom track velocity based on unreasonable velocities
+  # (using 3 m/s component-wise here). Flag the whole date_time rather than
+  # just the bin.
+  bottom_velocity_raw_flag <- array(
+    bs_flag("probably good data"),
+    dim = dim(bottom_velocity)
+  )
+
+  bottom_velocity_unreasonable <- abs(bottom_velocity) > 3
+  bottom_velocity_meas_unreasonable <- apply(bottom_velocity_unreasonable, 1, any)
+  bottom_velocity_raw_flag[bottom_velocity_meas_unreasonable] <- bs_flag("probably bad data")
+
+  # also include un-rotated bottom_velocity along n_beams
   rdi_n_beams$bottom_velocity_raw <- bottom_velocity
+  rdi_n_beams$bottom_velocity_raw_flag <- bottom_velocity_raw_flag
 
   # do rotation
   bottom_velocity[, 1:2] <-
@@ -417,22 +448,23 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
       rdi_meta$beam_heading_corrected
     )
 
-  # bottom velocity is in its own dimension family
-  rdi_east_north_up <- list(bottom_velocity = bottom_velocity[, 1:3, drop = FALSE])
+  # bottom velocity is in its own dimension family (will also host
+  # depth-averaged velocities)
+  rdi_east_north_up <- list(
+    bottom_velocity = bottom_velocity[, 1:3, drop = FALSE],
+    bottom_velocity_flag = bottom_velocity_raw_flag[, 1:3, drop = FALSE]
+  )
 
   # bottom error velocity shares dimensions with rdi_meta (just date_time)
   rdi_meta$bottom_error_velocity <- bottom_velocity[, 4, drop = TRUE]
+  rdi_meta$bottom_error_velocity_flag <- bottom_velocity_raw_flag[, 4, drop = TRUE]
 
-  # Flags ----
+  # Depth-averaged current calculation -----
 
-  # TODO: Can't tell from original code which velocity bins are getting the ax
-  # based on distance to surface. There are also no velocity series that
-  # have >50% NA, which were flagged in the initial version of this code.
-  # https://github.com/richardsc/bsrto/blob/master/adp.R#L61-L71
-
-  # Could likely use error velocities and pct good as a flag
-  # (there's a good guide in the processing repo for adcp data on
-  # gccode)
+  velocity_censor <- rdi_east_north_up_n_cells$velocity
+  velocity_questionable <- rdi_east_north_up_n_cells$velocity_flag != bs_flag("probably good data")
+  velocity_censor[velocity_questionable] <- NA_real_
+  rdi_east_north_up$average_velocity <- apply(velocity_censor, 1:2, mean, na.rm = TRUE)
 
   # Prepare NetCDF ----
 

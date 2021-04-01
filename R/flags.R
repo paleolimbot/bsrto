@@ -41,5 +41,6 @@ bs_flag_scheme_internal <- c(
   "probably good data" = 1L,
   "probably bad data" = 2L,
   "missing" = 3L,
-  "not measured" = 4L
+  "not measured" = 4L,
+  "ADCP measurement above water" = 5L
 )
