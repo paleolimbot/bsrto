@@ -21,14 +21,8 @@ lghServer <- function(lang, data, id = "lgh") {
 
         lgh_sorted() %>%
           transmute(
-            # Not using a locale-specific format here, but in theory
-            # any strftime calls should be wrapped in locale code
-            date_time = suppressWarnings(
-              withr::with_locale(
-                c(LC_TIME = paste0(lang(), "_CA")),
-                strftime(date_time, "%Y-%m-%d %H:%M", tz = "UTC")
-              )
-            ),
+            # Not using a locale-specific format here on purpose
+            date_time =  strftime(date_time, "%Y-%m-%d %H:%M", tz = "UTC"),
             file,
             log_text = substr(log_text, 1, 50)
           )

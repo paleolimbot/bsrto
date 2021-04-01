@@ -24,33 +24,32 @@ plot_adp_cell <- function(data, var, lab = var,
                           datetime_range = range(data$date_time, na.rm = TRUE),
                           lang = "en") {
   facet <- if (nrow(data) > 0) {
-    facet_grid(
-      vars(n_beam),
-      labeller = labeller(
-        n_beam = function(x) sprintf("%s %s", i18n_t("Beam", lang), x)
-      )
+    list(
+      facet_grid(
+        vars(n_beam),
+        labeller = labeller(
+          n_beam = function(x) sprintf("%s %s", i18n_t("Beam", lang), x)
+        )
+      ),
+      theme_bsrto_margins(pad_right = FALSE)
     )
   }
 
-  p <- ggplot(data, aes(date_time, distance)) +
-    geom_raster(aes(fill = .data[[var]])) +
-    scale_fill_viridis_c(oob = scales::squish) +
-    scale_bsrto_datetime(limits = datetime_range) +
-    scale_y_continuous(expand = expansion(0, 0)) +
-    facet +
-    labs(
-      x = NULL,
-      y = i18n_t("Distance [m]", lang),
-      fill = i18n_t(lab, lang)
-    ) +
-    theme(legend.position = "top")
-
-  suppressWarnings(
-    withr::with_locale(
-      c(LC_TIME = paste0(lang, "_CA")),
-      print(p)
-    )
-  )
+  render_with_lang(lang, {
+    ggplot(data, aes(date_time, distance)) +
+      geom_raster(aes(fill = .data[[var]])) +
+      scale_fill_viridis_c(oob = scales::squish) +
+      scale_bsrto_datetime(limits = datetime_range) +
+      scale_y_continuous(expand = expansion(0, 0)) +
+      theme_bsrto_margins(pad_right = TRUE) +
+      facet +
+      labs(
+        x = NULL,
+        y = i18n_t("Distance [m]", lang),
+        fill = i18n_t(lab, lang)
+      ) +
+      theme(legend.position = "top")
+  })
 }
 
 adpUI <- function(id = "adp") {

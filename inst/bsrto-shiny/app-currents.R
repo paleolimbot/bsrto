@@ -8,42 +8,41 @@ plot_adp_cell_enu <- function(data, var, lab = var,
                               datetime_range = range(data$date_time, na.rm = TRUE),
                               lang = "en") {
   facet <- if (nrow(data) > 0) {
-    facet_grid(
-      vars(east_north_up),
-      labeller = labeller(
-        east_north_up = function(x) {
-          i18n_t(c("vEast", "vNorth", "vUp")[as.integer(x)], lang)
-        }
-      )
+    list(
+      facet_grid(
+        vars(east_north_up),
+        labeller = labeller(
+          east_north_up = function(x) {
+            i18n_t(c("vEast", "vNorth", "vUp")[as.integer(x)], lang)
+          }
+        )
+      ),
+      theme_bsrto_margins(pad_right = FALSE)
     )
   }
 
-  p <- ggplot(data, aes(date_time, distance)) +
-    geom_raster(aes(fill = .data[[var]])) +
-    scale_fill_gradient2(
-      limits = function(x) {
-        if (is.null(x)) return(c(-1, 1))
+  render_with_lang(lang, {
+    ggplot(data, aes(date_time, distance)) +
+      geom_raster(aes(fill = .data[[var]])) +
+      scale_fill_gradient2(
+        limits = function(x) {
+          if (is.null(x)) return(c(-1, 1))
 
-        max_mag <- max(abs(x))
-        c(-max_mag, max_mag)
-      }
-    ) +
-    scale_bsrto_datetime(limits = datetime_range) +
-    scale_y_continuous(expand = expansion(0, 0)) +
-    facet +
-    labs(
-      x = NULL,
-      y = i18n_t("Distance [m]", lang),
-      fill = i18n_t(lab, lang)
-    ) +
-    theme(legend.position = "top")
-
-  suppressWarnings(
-    withr::with_locale(
-      c(LC_TIME = paste0(lang, "_CA")),
-      print(p)
-    )
-  )
+          max_mag <- max(abs(x))
+          c(-max_mag, max_mag)
+        }
+      ) +
+      scale_bsrto_datetime(limits = datetime_range) +
+      scale_y_continuous(expand = expansion(0, 0)) +
+      theme_bsrto_margins(pad_right = TRUE) +
+      facet +
+      labs(
+        x = NULL,
+        y = i18n_t("Distance [m]", lang),
+        fill = i18n_t(lab, lang)
+      ) +
+      theme(legend.position = "top")
+  })
 }
 
 currentsUI <- function(id = "currents") {

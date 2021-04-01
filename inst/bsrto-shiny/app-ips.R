@@ -22,23 +22,20 @@ ipsServer <- function(lang, data, id = "ips") {
       # these should get flagged upstream instead of here in the future
       ips_meta$draft_min[ips_meta$draft_min < 0] <- NA_real_
 
-      print(suppressWarnings(
-        withr::with_locale(
-          c(LC_TIME = paste0(lang(), "_CA")),
-
-          ggplot(ips_meta, aes(x = date_time, group = .group)) +
-            geom_ribbon(
-              aes(ymin = draft_min, ymax = draft_max),
-              fill = "grey60",
-              alpha = 0.3
-            ) +
-            geom_line(aes(y = draft_mean), lty = 2) +
-            scale_bsrto_datetime(
-              limits = data$datetime_range()
-            ) +
-            labs(x = NULL, y = i18n_t("Ice draft [m]", lang()))
-        )
-      ))
+      render_with_lang(lang(), {
+        ggplot(ips_meta, aes(x = date_time, group = .group)) +
+          geom_ribbon(
+            aes(ymin = draft_min, ymax = draft_max),
+            fill = "grey60",
+            alpha = 0.3
+          ) +
+          geom_line(aes(y = draft_mean), lty = 2) +
+          scale_bsrto_datetime(
+            limits = data$datetime_range()
+          ) +
+          labs(x = NULL, y = i18n_t("Ice draft [m]", lang())) +
+          theme_bsrto_margins(pad_right = TRUE)
+      })
     })
 
   })

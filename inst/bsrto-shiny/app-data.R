@@ -192,30 +192,46 @@ scale_bsrto_datetime <- function(limits) {
   )
 }
 
+theme_bsrto_margins <- function(pad_right = TRUE) {
+  margin_right_pt <- if (pad_right) 20 else 1
+  theme(plot.margin = grid::unit(c(0, margin_right_pt, 0, 0), units = "pt"))
+}
+
+render_with_lang <- function(lang, p) {
+  locale <- if (isTRUE(Sys.info()["sysname"] == "Windows")) {
+    switch(lang, fr = "French_Canada.1252", "English_United States.1252")
+  } else {
+    switch(lang, fr = "fr_CA", "en_US")
+  }
+
+  suppressWarnings(
+    withr::with_locale(
+      list(LC_TIME = locale),
+      print(p)
+    )
+  )
+}
+
 # one-dimensional time-series plots
 data_plot_datetime <- function(data, var, lab = var,
                                datetime_range = range(data$date_time, na.rm = TRUE),
                                lang = "en",
                                mapping = NULL,
+                               pad_right = TRUE,
                                extra = list()) {
   # occurs on initial load
   if (length(datetime_range) != 2) {
     return()
   }
 
-  # there is no easy way to translate date labels without
-  # explicit LC_TIME support for the other language
-  # (not necessarily the case for my interactive Windows development)
-  print(suppressWarnings(
-    withr::with_locale(
-      c(LC_TIME = paste0(lang, "_CA")),
-      ggplot(data, aes(date_time, .data[[var]])) +
-        geom_point(mapping = mapping, na.rm = TRUE) +
-        scale_bsrto_datetime(datetime_range) +
-        labs(x = NULL, y = i18n_t(lab, lang)) +
-        extra
-    )
-  ))
+  render_with_lang(lang, {
+    ggplot(data, aes(date_time, .data[[var]])) +
+      geom_point(mapping = mapping, na.rm = TRUE) +
+      scale_bsrto_datetime(datetime_range) +
+      labs(x = NULL, y = i18n_t(lab, lang)) +
+      theme_bsrto_margins(pad_right = pad_right) +
+      extra
+  })
 }
 
 dataUI <- function(id = "data") {
