@@ -949,18 +949,18 @@ read_realtime_cached <- function(file_type, build_cache = bs_build_cache_dir("re
 read_realtime_met <- function(previous = NULL) {
   cli::cat_rule("read_realtime_met()")
 
-  if (identical(attr(previous, "date_generated"), Sys.Date())) {
-    cli::cat_line(glue("Using `previous` as it was generated on { Sys.Date() }"))
-    return(previous)
-  }
+  # it's theoretically possible to cache more of these; however,
+  # not downloading the last *two* months results in problems if the
+  # updating isn't run at least once a day (e.g., during local development)
 
   cache_dir <- bs_cache_dir("BSRTO/2019-2020/met")
 
   ec_files <- ec_download_summary_hourly(54199, "2019-08-01", Sys.Date())
   ec_files$dest <- file.path(cache_dir, ec_files$dest)
 
-  # need to re-download updated version for this month (so delete cache file)
-  unlink(ec_files$dest[nrow(ec_files)])
+  # need to re-download updated version for this month and last month
+  last_two <- utils::tail(seq_len(nrow(ec_files)), 2)
+  unlink(ec_files$dest[last_two])
 
   dest_exists <- file.exists(ec_files$dest)
   cli::cat_line(glue("About to download { sum(!dest_exists) } file(s)"))
@@ -987,10 +987,8 @@ read_realtime_met <- function(previous = NULL) {
   station_info <- c("longitude", "latitude", "station_name", "climate_id")
   all <- all[setdiff(names(all), station_info)]
 
-  # this needs to be regenerated every day, so there is no point using
-  # the file list as the cache key (also, there are rarely many of these files
-  # and reading them is fast)
-  attr(all, "date_generated") <- Sys.Date()
+  # keep track of the time generated for possible future cache options
+  attr(all, "date_generated") <- Sys.time()
 
   all
 }
