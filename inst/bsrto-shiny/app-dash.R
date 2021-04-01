@@ -1,9 +1,13 @@
 
 library(shiny)
+library(bsrto)
+library(dplyr)
+library(tidyr)
 
 
 dashUI <- function(id = "dash") {
   tagList(
+    plotOutput(NS(id, "adp_average_velocity"), height = 200),
     plotOutput(NS(id, "adp_bottom_velocity"), height = 200),
     plotOutput(NS(id, "ctd_temperature"), height = 200),
     plotOutput(NS(id, "met_temp"), height = 150),
@@ -14,8 +18,81 @@ dashUI <- function(id = "dash") {
 dashServer <- function(lang, data, id = "dash") {
   moduleServer(id, function(input, output, session) {
 
+    output$adp_average_velocity <- renderPlot({
+      df <- data$adp_bottom_velocity()
+
+      if (nrow(df) > 0) {
+        df <- data$adp_bottom_velocity() %>%
+          mutate(
+            east_north_up = c("east", "north", "up")[east_north_up] %>%
+              factor(levels = c("east", "north", "up"))
+          ) %>%
+          select(date_time, east_north_up, average_velocity) %>%
+          pivot_wider(
+            names_from = east_north_up,
+            values_from = average_velocity,
+          ) %>%
+          mutate(
+            velocity_total = sqrt(east ^ 2 + north ^ 2),
+            velocity_direction = headings::hdg_from_uv(headings::uv(east, north))
+          )
+      } else {
+        df <- tibble::tibble(
+          date_time = as.Date(integer(0)),
+          velocity_total = double(0),
+          velocity_direction = double(0)
+        )
+      }
+
+      data_plot_datetime(
+        df,
+        "velocity_total", "Depth-averaged velocity [m/s]",
+        datetime_range = data$datetime_range(),
+        lang = lang(),
+        extra = list(
+          if ((nrow(df) < 100) && (nrow(df) > 0)) {
+            metR::geom_arrow(
+              aes(
+                mag = 1,
+                angle = velocity_direction + 180
+              ),
+              direction = "cw",
+              start = -90
+            )
+          }
+        )
+      )
+    })
+
     output$adp_bottom_velocity <- renderPlot({
       df <- data$adp_bottom_velocity()
+
+      if (nrow(df) > 0) {
+      df <- data$adp_bottom_velocity() %>%
+        filter(
+          bottom_velocity_flag == bs_flag("probably good data")
+        ) %>%
+        mutate(
+          east_north_up = c("east", "north", "up")[east_north_up] %>%
+            factor(levels = c("east", "north", "up"))
+        ) %>%
+        select(date_time, east_north_up, bottom_velocity) %>%
+        pivot_wider(
+          names_from = east_north_up,
+          values_from = bottom_velocity,
+        ) %>%
+        mutate(
+          bottom_velocity_total = sqrt(east ^ 2 + north ^ 2),
+          bottom_velocity_direction = headings::hdg_from_uv(headings::uv(east, north))
+        )
+      } else {
+        df <- tibble::tibble(
+          date_time = as.Date(integer(0)),
+          bottom_velocity_total = double(0),
+          bottom_velocity_direction = double(0)
+        )
+      }
+
       data_plot_datetime(
         df,
         "bottom_velocity_total", "Water/ice surface velocity [m/s]",
@@ -70,10 +147,10 @@ dashServer <- function(lang, data, id = "dash") {
         return()
       }
 
-      # trick to insert gaps when the distance between measurements
-      # is too large
       ips_meta <- data$ips_meta()
 
+      # trick to insert gaps when the distance between measurements
+      # is too large
       if (nrow(ips_meta) > 0) {
         ips_meta$.group <- c(0, cumsum(
           as.numeric(diff(ips_meta$date_time), units = "hours") > 12

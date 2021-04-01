@@ -51,6 +51,7 @@ currentsUI <- function(id = "currents") {
     uiOutput(NS(id, "enu_input")),
 
     plotOutput(NS(id, "velocity"), height = 400),
+    plotOutput(NS(id, "average_velocity"), height = 300),
     plotOutput(NS(id, "bottom_velocity"), height = 300),
   )
 }
@@ -61,9 +62,9 @@ currentsServer <- function(lang, data, id = "currents") {
     output$enu_input <- renderUI({
       checkboxGroupInput(
         NS(id, "enu"), NULL,
-        choiceNames = i18n_t(c("vEast", "vNorth", "vUp", "vTotal"), lang()),
-        choiceValues = c("east", "north", "up", "total"),
-        selected = c("east", "north", "up", "total"),
+        choiceNames = i18n_t(c("vEast", "vNorth", "vUp"), lang()),
+        choiceValues = c("east", "north", "up"),
+        selected = c("east", "north"),
         inline = TRUE
       )
     })
@@ -80,32 +81,48 @@ currentsServer <- function(lang, data, id = "currents") {
       )
     })
 
-    output$bottom_velocity <- renderPlot({
-      which_enu <- input$enu
-
-      df <- data$adp_bottom_velocity() %>%
-        select(
-          date_time,
-          bottom_velocity_east,
-          bottom_velocity_north,
-          bottom_velocity_up,
-          bottom_velocity_total
-        ) %>%
-        pivot_longer(-date_time) %>%
-        mutate(
-          name = gsub("^bottom_velocity_", "", name)
-        ) %>%
-        filter(name %in% !! which_enu)
+    output$average_velocity <- renderPlot({
+      which_enu <- match(input$enu, c("east", "north", "up"))
 
       data_plot_datetime(
-        df,
-        "value", "Bottom velocity [m/s]",
-        mapping = aes(col = name),
+        data$adp_bottom_velocity() %>%
+          filter(
+            east_north_up %in% !! which_enu
+          ),
+        "average_velocity", "Depth-averaged velocity [m/s]",
+        mapping = aes(col = c("east", "north", "up")[east_north_up]),
         datetime_range = data$datetime_range(),
         lang = lang(),
         extra = list(
           scale_color_discrete(
-            limits = c("east", "north", "up", "total"),
+            limits = c("east", "north", "up"),
+            labels = i18n_t(
+              c("vEast", "vNorth", "vUp", "vTotal"),
+              lang()
+            ),
+            name = NULL
+          ),
+          theme(legend.position = "bottom")
+        )
+      )
+    })
+
+    output$bottom_velocity <- renderPlot({
+      which_enu <- match(input$enu, c("east", "north", "up"))
+
+      data_plot_datetime(
+        data$adp_bottom_velocity() %>%
+          filter(
+            east_north_up %in% !! which_enu,
+            bottom_velocity_flag == bs_flag("probably good data")
+          ),
+        "bottom_velocity", "Bottom velocity [m/s]",
+        mapping = aes(col = c("east", "north", "up")[east_north_up]),
+        datetime_range = data$datetime_range(),
+        lang = lang(),
+        extra = list(
+          scale_color_discrete(
+            limits = c("east", "north", "up"),
             labels = i18n_t(
               c("vEast", "vNorth", "vUp", "vTotal"),
               lang()

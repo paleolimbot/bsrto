@@ -4,6 +4,7 @@ library(readr)
 library(ggplot2)
 library(dplyr, warn.conflicts = FALSE)
 library(ncdf4)
+library(bsrto)
 
 # This is wrapped in a function so that it can be updated while the process
 # is active. None of these loads take very long but could be made faster
@@ -536,8 +537,10 @@ dataServer <- function(lang, id = "data") {
     adp_bottom_velocity <- reactive({
       dt_range <- datetime_range()
 
+      enu_velocity_vars <- c("bottom_velocity", "bottom_velocity_flag", "average_velocity")
+
       index <- data_adp_nc_date_time
-      distance <- data_adp_nc$dim$distance$vals
+      east_north_up <- data_adp_nc$dim$east_north_up$vals
 
       dt_dim_values <- which(
         (index >= dt_range[1]) &
@@ -550,37 +553,38 @@ dataServer <- function(lang, id = "data") {
       if (dim_count == 0) {
         tibble::tibble(
           date_time = data_adp_nc_date_time[integer(0)],
-          bottom_velocity_east = double(0),
-          bottom_velocity_north = double(0),
-          bottom_velocity_up = double(0),
-          bottom_velocity_total = double(0),
-          bottom_velocity_direction = double(0)
+          east_north_up = integer(0),
+          bottom_velocity = double(0),
+          bottom_velocity_flag = double(),
+          average_velocity = double(0)
         )
       } else {
-        values <- ncvar_get(
-          data_adp_nc,
-          "bottom_velocity",
-          start = c(dim_min, 1),
-          count = c(dim_count, -1)
+        dims <- expand.grid(
+          date_time = data_adp_nc_date_time[dt_dim_values],
+          east_north_up = east_north_up
         )
 
-        tibble::tibble(
-          date_time = data_adp_nc_date_time[dt_dim_values],
-          bottom_velocity_east = values[, 1, drop = TRUE],
-          bottom_velocity_north = values[, 2, drop = TRUE],
-          bottom_velocity_up = values[, 3, drop = TRUE]
-        )  %>%
-          mutate(
-            bottom_velocity_total = sqrt(bottom_velocity_east ^ 2 + bottom_velocity_north ^ 2),
-            bottom_velocity_direction = headings::hdg_from_uv(
-              headings::uv(bottom_velocity_east, bottom_velocity_north)
+        dims[enu_velocity_vars] <- lapply(
+          enu_velocity_vars,
+          function(x) {
+            as.numeric(
+              ncvar_get(
+                data_adp_nc, x,
+                start = c(dim_min, 1),
+                count = c(dim_count, length(east_north_up))
+              )
             )
-          )
+          }
+        )
+
+        as_tibble(dims)
       }
     })
 
     adp_velocity <- reactive({
       dt_range <- datetime_range()
+
+      velocity_vars <- c("velocity", "velocity_flag")
 
       index <- data_adp_nc_date_time
       east_north_up <- data_adp_nc$dim$east_north_up$vals
@@ -599,7 +603,8 @@ dataServer <- function(lang, id = "data") {
           date_time = data_adp_nc_date_time[integer(0)],
           distance = double(0),
           east_north_up = integer(0),
-          velocity = double(0)
+          velocity = double(0),
+          velocity_flag = integer(0)
         )
       } else {
         date_agr <- data_agr_time(dt_range)
@@ -610,8 +615,8 @@ dataServer <- function(lang, id = "data") {
           distance = distance
         )
 
-        dims["velocity"] <- lapply(
-          "velocity",
+        dims[velocity_vars] <- lapply(
+          velocity_vars,
           function(x) {
             as.numeric(
               ncvar_get(
@@ -624,6 +629,7 @@ dataServer <- function(lang, id = "data") {
         )
 
         agr <- dims %>%
+          filter(velocity_flag == bs_flag("probably good data")) %>%
           mutate(
             date_time = lubridate::floor_date(date_time, date_agr$date_agr)
           ) %>%
@@ -633,7 +639,11 @@ dataServer <- function(lang, id = "data") {
         expand.grid(
           date_time = date_agr$date_time_grid,
           east_north_up = east_north_up,
-          distance = distance
+
+          # for this particular output we only want below-water cells,
+          # which have already been flagged but show up as grey boxes
+          # unless we cull those values here
+          distance = distance[distance < 60]
         ) %>%
           left_join(agr, by = c("date_time", "east_north_up", "distance")) %>%
           tibble::as_tibble()
