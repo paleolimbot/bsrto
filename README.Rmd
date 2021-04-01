@@ -62,3 +62,21 @@ You can build other products as well, including the [Navigator](https://navigato
 ``` r
 bs_build_navigator()
 ```
+
+## Development workflow
+
+Change something about `bs_build_realtime()`:
+
+``` r
+devtools::load_all(".") # Cmd/Ctrl + Shift + L in RStudio
+bs_build_interactive() # takes ~30 seconds
+# ...step through the write_realtime_*()
+```
+
+Change the Shiny app:
+
+``` r
+bs_build_realtime("inst/bsrto-shiny/build-cache")
+library(shiny)
+runApp("inst/bsrto-shiny")
+```
