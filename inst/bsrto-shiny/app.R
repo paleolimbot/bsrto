@@ -1,9 +1,9 @@
 
 # packages <- c("shiny", "dplyr", "ggplot2", "shiny.i18n", "lubridate", "DT", "ncdf4", "fs", "leaflet", "metR", "tidyr")
 # install.packages(packages)
+# remotes::install_github("paleolimbot/headings")
 
 library(shiny)
-ggplot2::theme_set(ggplot2::theme_bw())
 
 # important: data refresh! (milliseconds)
 options(bsrto.data_refresh_interval = 15 * 60 * 1000)
@@ -81,7 +81,7 @@ server <- function(input, output, session) {
   dashServer(lang, data)
 
   ctdServer(lang, data)
-  currentsServer(lang,)
+  currentsServer(lang, data)
   adpServer(lang, data)
   baroServer(lang, data)
   iclServer(lang, data)

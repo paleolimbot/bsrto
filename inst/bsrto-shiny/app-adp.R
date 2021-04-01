@@ -35,7 +35,7 @@ plot_adp_cell <- function(data, var, lab = var,
   p <- ggplot(data, aes(date_time, distance)) +
     geom_raster(aes(fill = .data[[var]])) +
     scale_fill_viridis_c(oob = scales::squish) +
-    scale_x_datetime(limits = datetime_range) +
+    scale_bsrto_datetime(limits = datetime_range) +
     scale_y_continuous(expand = expansion(0, 0)) +
     facet +
     labs(

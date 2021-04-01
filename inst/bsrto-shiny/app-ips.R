@@ -33,7 +33,7 @@ ipsServer <- function(lang, data, id = "ips") {
               alpha = 0.3
             ) +
             geom_line(aes(y = draft_mean), lty = 2) +
-            scale_x_datetime(
+            scale_bsrto_datetime(
               limits = data$datetime_range()
             ) +
             labs(x = NULL, y = i18n_t("Ice draft [m]", lang()))

@@ -181,8 +181,18 @@ data_agr_time <- function(dt_range) {
   )
 }
 
-# eventually this should be non-ggplot, but this works as a wrapper
-# to get the data needed for the one-dimensional time-series plots
+# ggplot2 components -------------
+
+theme_set(theme_bw() + theme(strip.background = element_blank()))
+
+scale_bsrto_datetime <- function(limits) {
+  scale_x_datetime(
+    limits = limits,
+    expand = expansion(0, 0)
+  )
+}
+
+# one-dimensional time-series plots
 data_plot_datetime <- function(data, var, lab = var,
                                datetime_range = range(data$date_time, na.rm = TRUE),
                                lang = "en",
@@ -201,9 +211,7 @@ data_plot_datetime <- function(data, var, lab = var,
       c(LC_TIME = paste0(lang, "_CA")),
       ggplot(data, aes(date_time, .data[[var]])) +
         geom_point(mapping = mapping, na.rm = TRUE) +
-        scale_x_datetime(
-          limits = datetime_range
-        ) +
+        scale_bsrto_datetime(datetime_range) +
         labs(x = NULL, y = i18n_t(lab, lang)) +
         extra
     )
