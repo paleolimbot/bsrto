@@ -44,20 +44,20 @@ ui <- tags$div(
   i18nStartBody(),
 
   navbarPageWithInputs(
-    i18n$t("Barrow Strait Real-Time Observatory"),
-    tabPanel(i18n$t("Dashboard"), dashUI()),
+    i18n_t_js("Barrow Strait Real-Time Observatory"),
+    tabPanel(i18n_t_js("Dashboard"), dashUI()),
     navbarMenu(
-      i18n$t("Data"),
-      tabPanel(i18n$t("Water properties"), ctdUI()),
-      tabPanel(i18n$t("Currents"), currentsUI()),
-      tabPanel(i18n$t("ADCP"), adpUI()),
-      tabPanel(i18n$t("Barometric pressure"), baroUI()),
-      tabPanel(i18n$t("Sound"), iclUI()),
-      tabPanel(i18n$t("Ice thickness"), ipsUI()),
-      tabPanel(i18n$t("Current conditions at Resolute Airport"), metUI()),
-      tabPanel(i18n$t("Log files"), lghUI())
+      i18n_t_js("Data"),
+      tabPanel(i18n_t_js("Water properties"), ctdUI()),
+      tabPanel(i18n_t_js("Currents"), currentsUI()),
+      tabPanel(i18n_t_js("ADCP"), adpUI()),
+      tabPanel(i18n_t_js("Barometric pressure"), baroUI()),
+      tabPanel(i18n_t_js("Sound"), iclUI()),
+      tabPanel(i18n_t_js("Ice thickness"), ipsUI()),
+      tabPanel(i18n_t_js("Current conditions at Resolute Airport"), metUI()),
+      tabPanel(i18n_t_js("Log files"), lghUI())
     ),
-    tabPanel(i18n$t("About"), aboutUI()),
+    tabPanel(i18n_t_js("About"), aboutUI()),
     inputs = tags$div(
       style = "text-align: right; vertical-align: middle;",
       i18nUI()
@@ -81,7 +81,7 @@ server <- function(input, output, session) {
   dashServer(lang, data)
 
   ctdServer(lang, data)
-  currentsServer(lang, data)
+  currentsServer(lang,)
   adpServer(lang, data)
   baroServer(lang, data)
   iclServer(lang, data)

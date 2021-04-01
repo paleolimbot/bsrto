@@ -4,8 +4,8 @@ library(leaflet)
 
 aboutUI <- function(id = "about") {
   tagList(
-    p(i18n$t("about_text_1")),
-    p(i18n$t("about_text_2")),
+    p(i18n_t_js("about_text_1")),
+    p(i18n_t_js("about_text_2")),
     leafletOutput(NS(id, "map"))
   )
 }

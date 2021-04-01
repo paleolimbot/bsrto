@@ -42,6 +42,12 @@ i18n_t <- function(x, lang) {
   result
 }
 
+# to make it clear that javascript translation is being used, use
+# this function in the UI to mark user-facing text
+i18n_t_js <- function(x) {
+  i18n$translate(x, session = NULL)
+}
+
 # must be before any translated elements (so, start of body)
 i18nStartBody <- function() {
   tagList(
