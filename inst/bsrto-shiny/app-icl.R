@@ -20,6 +20,7 @@ iclServer <- function(lang, data, id = "icl") {
           scale_bsrto_datetime(limits = dt_range) +
           scale_y_continuous(expand = expansion(0, 0)) +
           labs(x = NULL, y = i18n_t("Frequency [Hz]", lang())) +
+          guides(y = guide_axis_fixed_width()) +
           theme_bsrto_margins(pad_right = TRUE)
       })
     })

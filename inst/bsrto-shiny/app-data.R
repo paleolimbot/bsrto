@@ -1,6 +1,7 @@
 
 library(shiny)
 library(readr)
+library(ggplot2)
 library(dplyr, warn.conflicts = FALSE)
 library(ncdf4)
 
@@ -192,9 +193,29 @@ scale_bsrto_datetime <- function(limits) {
   )
 }
 
+# Margin adjustment solves two problems: with date labels they occasionally
+# end up off the edge of the plot to the right; faceted plots need extra
+# space and aren't aligned with non-faceted plots.
 theme_bsrto_margins <- function(pad_right = TRUE) {
   margin_right_pt <- if (pad_right) 20 else 1
-  theme(plot.margin = grid::unit(c(0, margin_right_pt, 0, 0), units = "pt"))
+  theme(plot.margin = grid::unit(c(0, margin_right_pt, 5, 0), units = "pt"))
+}
+
+# Aligning the left-hand side of plots requires a huge hack on the guide
+# axis to make it fixed-width (i.e., not dependent on the values being
+# displayed as breaks). Note that "sound speed" contains the longest
+# y-axis labels.
+guide_axis_fixed_width <- function(fixed_width = grid::unit(1.1, "cm"), ...) {
+  x <- guide_axis(...)
+  x$fixed_width <- fixed_width
+  class(x) <- union("guide_axis_fixed_width", class(x))
+  x
+}
+
+guide_gengrob.guide_axis_fixed_width <- function(guide, theme) {
+  result <- NextMethod()
+  result$width <- guide$fixed_width
+  result
 }
 
 render_with_lang <- function(lang, p) {
@@ -230,6 +251,7 @@ data_plot_datetime <- function(data, var, lab = var,
       scale_bsrto_datetime(datetime_range) +
       labs(x = NULL, y = i18n_t(lab, lang)) +
       theme_bsrto_margins(pad_right = pad_right) +
+      guides(y = guide_axis_fixed_width()) +
       extra
   })
 }

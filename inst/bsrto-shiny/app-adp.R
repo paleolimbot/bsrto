@@ -48,6 +48,7 @@ plot_adp_cell <- function(data, var, lab = var,
         y = i18n_t("Distance [m]", lang),
         fill = i18n_t(lab, lang)
       ) +
+      guides(y = guide_axis_fixed_width()) +
       theme(legend.position = "top")
   })
 }

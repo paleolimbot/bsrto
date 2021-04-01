@@ -97,6 +97,7 @@ dashServer <- function(lang, data, id = "dash") {
             limits = data$datetime_range()
           ) +
           labs(x = NULL, y = i18n_t("Ice draft [m]", lang())) +
+          guides(y = guide_axis_fixed_width()) +
           theme_bsrto_margins(pad_right = TRUE)
       })
     })
