@@ -15,7 +15,7 @@ loadNamespace("shiny.i18n")
 # english version as a "key" is problematic. This requires a bit of shuffling
 # with the translations.json file...really there needs to be a better system
 # for i18n in Shiny
-i18n_translations_json <- jsonlite::read_json("translation.json")
+i18n_translations_json <- yaml::read_yaml("translations.yaml")
 i18n_translations_json$translation <- lapply(
   i18n_translations_json$translation,
   function(x) {
