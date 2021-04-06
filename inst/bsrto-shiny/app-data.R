@@ -259,12 +259,30 @@ data_plot_datetime <- function(data, var, lab = var,
 
 dataUI <- function(id = "data") {
   tagList(
-    div(
-      # Global data filter options
-      div(
-        style = "padding-left: 10px; padding-right: 10px;",
-        uiOutput(NS(id, "date_range"))
-        # possible future filter for data flags?
+    fluidRow(
+      style = "padding-left: 10px; padding-right: 10px;",
+      column(6, uiOutput(NS(id, "date_range"))),
+      column(
+        6,
+        style = "text-align: right; padding-top: 5px; padding-bottom: 5px;",
+        a(href = "javascript: Shiny.setInputValue('data-date_nav', 'all');",
+          i18n_t_js("All")
+        ), span("·"),
+        a(
+          href = "javascript: Shiny.setInputValue('data-date_nav', '1yr');",
+          "1", i18n_t_js("year")
+        ), span("·"),
+        a(
+          href = "javascript: Shiny.setInputValue('data-date_nav', '6mo');",
+          "6", i18n_t_js("months")
+        ), span("·"),
+        a(
+          href = "javascript: Shiny.setInputValue('data-date_nav', '30dy');",
+          "30", i18n_t_js("days")
+        ), span("·"),
+        a(href = "javascript: Shiny.setInputValue('data-date_nav', '7dy');",
+          "7", i18n_t_js("days")
+        )
       )
     )
   )
@@ -290,6 +308,27 @@ dataServer <- function(lang, id = "data") {
       data_refresh()
 
       as.Date(range(data_ctd$date_time))
+    })
+
+    # Shortcuts to set the date range
+    observe({
+      if (!is.null(input$date_nav)) {
+        global_range <- global_date_range()
+
+        range <- switch (
+          input$date_nav,
+          "all" = global_range,
+          "1yr" = c(global_range[2] - 365, global_range[2]),
+          "6mo" = c(global_range[2] - (6 * 30), global_range[2]),
+          "30dy" = c(global_range[2] - (1 * 30), global_range[2]),
+          "7dy" = c(global_range[2] - 7, global_range[2])
+        )
+
+        updateDateRangeInput(
+          session, "date_range",
+          start = range[1], end = range[2]
+        )
+      }
     })
 
     # Reactive on global_date_range() and lang(). When

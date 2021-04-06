@@ -47,8 +47,7 @@ translation:
 - key: Log files
   fr: Les fichier journals
 
-- key: About
-  fr: À notre propos
+# Date navigation
 
 - key: Date
   fr: Date
@@ -56,6 +55,18 @@ translation:
 - key: date_range_sep
   en: to
   fr: à
+
+- key: All
+  fr: Toutes les dates
+
+- key: year
+  fr: an
+
+- key: months
+  fr: mois
+
+- key: days
+  fr: jours
 
 # Plot labels (many are used in multiple tabs)
 
