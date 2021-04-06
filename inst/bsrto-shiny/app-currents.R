@@ -116,7 +116,7 @@ currentsServer <- function(lang, data, id = "currents") {
             east_north_up %in% !! which_enu,
             bottom_velocity_flag == bs_flag("probably good data")
           ),
-        "bottom_velocity", "Bottom velocity [m/s]",
+        "bottom_velocity", "Ice velocity [m/s]",
         mapping = aes(col = c("east", "north", "up")[east_north_up]),
         datetime_range = data$datetime_range(),
         lang = lang(),

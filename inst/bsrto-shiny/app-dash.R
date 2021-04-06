@@ -95,7 +95,7 @@ dashServer <- function(lang, data, id = "dash") {
 
       data_plot_datetime(
         df,
-        "bottom_velocity_total", "Water/ice surface velocity [m/s]",
+        "bottom_velocity_total", "Ice velocity [m/s]",
         datetime_range = data$datetime_range(),
         lang = lang(),
         extra = list(
@@ -125,7 +125,7 @@ dashServer <- function(lang, data, id = "dash") {
             type = "qual", palette = 1,
             limits = factor(c(40, 60, 160)),
             labels = paste(c(40, 60, 160), "m"),
-            name = i18n_t("Mooring Depth", lang())
+            name = i18n_t("Mooring depth", lang())
           ),
           theme(legend.position = "bottom")
         )

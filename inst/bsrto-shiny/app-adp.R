@@ -123,7 +123,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$echo_intensity <- renderPlot({
       plot_adp_cell(
         adp_cells(),
-        "echo_intensity", "Echo intensity [relative units]",
+        "echo_intensity", "Echo intensity",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -132,7 +132,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$pct_good <- renderPlot({
       plot_adp_cell(
         adp_cells(),
-        "pct_good", "Percent made good [%]",
+        "pct_good", "Velocity made good [%]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -159,7 +159,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$bottom_correlation <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "bottom_correlation", "bottom_correlation",
+        "bottom_correlation", "Correlation (ice)",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -168,7 +168,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$bottom_amplitude <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "bottom_amplitude", "bottom_amplitude",
+        "bottom_amplitude", "Echo intensity (ice)",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -177,7 +177,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$bottom_pct_good <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "bottom_pct_good", "bottom_pct_good",
+        "bottom_pct_good", "Velocity made good (ice)",
         datetime_range = data$datetime_range(),
         lang = lang()
       )

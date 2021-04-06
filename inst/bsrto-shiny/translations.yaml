@@ -65,8 +65,53 @@ translation:
 - key: Air temperature [°C]
   fr: Température de l'air [°C]
 
-- key: Mooring Depth
+- key: Mooring depth
   fr: Profondeur des dispositifs de mouillage
+
+- key: Velocity [m/s]
+  fr: Vélocité [m/s]
+
+- key: Distance [m]
+  fr: Distance [m]
+
+- key: Water velocity [m/s]
+  fr: La vitesse d'eau [m/s]
+
+- key: Ice velocity [m/s]
+  fr: La vitesse de la glace [m/s]
+
+- key: Depth-averaged velocity [m/s]
+  fr: La vitesse moyenne sur la hauteur d'eau [m/s]
+
+- key: Velocity made good [%]
+  fr: La vitesse fond ainsi [%]
+
+- key: Echo intensity
+  fr: L'intensité de l'écho
+
+- key: Correlation
+  fr: Corrélation
+
+- key: Echo intensity (ice)
+  fr: L'intensité de l'écho (la glace)
+
+- key: Correlation (ice)
+  fr: Corrélation (ice)
+
+- key: Velocity made good (ice) [%]
+  fr: La vitesse fond ainsi (la glace) [%]
+
+- key: vEast
+  en: East
+  fr: Est
+
+- key: vNorth
+  en: North
+  fr: Nord
+
+- key: vUp
+  en: Up
+  fr: En haut
 
 - key: Temperature [°C]
   fr: Température [°C]
