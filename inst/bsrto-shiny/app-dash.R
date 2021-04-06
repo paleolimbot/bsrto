@@ -50,14 +50,17 @@ dashServer <- function(lang, data, id = "dash") {
         datetime_range = data$datetime_range(),
         lang = lang(),
         extra = list(
-          if ((nrow(df) < 100) && (nrow(df) > 0)) {
-            metR::geom_arrow(
-              aes(
-                mag = 1,
-                angle = velocity_direction + 180
+          if ((nrow(df) < 200) && (nrow(df) > 0)) {
+            list(
+              metR::geom_arrow(
+                aes(
+                  mag = 1,
+                  angle = velocity_direction + 180
+                ),
+                direction = "cw",
+                start = -90
               ),
-              direction = "cw",
-              start = -90
+              metR::scale_mag(max_size = 0.5, guide = FALSE)
             )
           }
         )
@@ -99,14 +102,17 @@ dashServer <- function(lang, data, id = "dash") {
         datetime_range = data$datetime_range(),
         lang = lang(),
         extra = list(
-          if ((nrow(df) < 100) && (nrow(df) > 0)) {
-            metR::geom_arrow(
-              aes(
-                mag = 1,
-                angle = bottom_velocity_direction + 180
+          if ((nrow(df) < 200) && (nrow(df) > 0)) {
+            list(
+              metR::geom_arrow(
+                aes(
+                  mag = 1,
+                  angle = bottom_velocity_direction + 180
+                ),
+                direction = "cw",
+                start = -90
               ),
-              direction = "cw",
-              start = -90
+              metR::scale_mag(max_size = 0.5, guide = FALSE)
             )
           }
         )

@@ -340,7 +340,7 @@ dataServer <- function(lang, id = "data") {
 
         range <- switch (
           input$date_nav,
-          "all" = global_range,
+          "all" = c(global_range[1], global_range[2] + 1L),
           "1yr" = c(global_range[2] - 365, global_range[2]),
           "6mo" = c(global_range[2] - (6 * 30), global_range[2]),
           "30dy" = c(global_range[2] - (1 * 30), global_range[2]),
@@ -367,7 +367,7 @@ dataServer <- function(lang, id = "data") {
 
       range <- c(
         current_range[1] + brush$xmin * current_diff,
-        current_range[1] + brush$xmax * current_diff + 1
+        current_range[1] + brush$xmax * current_diff
       )
 
       updateDateRangeInput(
