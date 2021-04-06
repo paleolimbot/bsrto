@@ -268,8 +268,8 @@ data_plot_datetime <- function(data, var, lab = var,
 
 
 # wrapper around dataBsrtoPlotOutput() that has the right brushing options
-dataBsrtodataBsrtoPlotOutput <- function(...) {
-  dataBsrtoPlotOutput(
+dataBsrtoPlotOutput <- function(...) {
+  plotOutput(
     ...,
     brush = brushOpts(
       id = NS("data", "datetime_plot_brush"),
