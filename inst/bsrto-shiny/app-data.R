@@ -247,9 +247,17 @@ data_plot_datetime <- function(data, var, lab = var,
     return()
   }
 
+  data <- data %>%
+    filter(!is.na(.data[[var]])) %>%
+    mutate(
+      .y_group = cumsum(c(0, diff(date_time)) > 6),
+      .col_group = if (is.null(mapping)) { 1L } else { !! mapping[[1]] },
+      .group = interaction(.y_group, .col_group)
+    )
+
   render_with_lang(lang, {
-    ggplot(data, aes(date_time, .data[[var]])) +
-      geom_point(mapping = mapping, na.rm = TRUE) +
+    ggplot(data, aes(date_time, .data[[var]], group = .group)) +
+      geom_path(mapping = mapping, na.rm = TRUE) +
       scale_bsrto_datetime(datetime_range) +
       labs(x = NULL, y = i18n_t(lab, lang)) +
       theme_bsrto_margins(pad_right = pad_right) +
