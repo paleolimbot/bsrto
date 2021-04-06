@@ -1,13 +1,19 @@
 
-# packages <- c("shiny", "dplyr", "ggplot2", "shiny.i18n", "lubridate", "DT", "ncdf4", "fs", "leaflet", "metR", "tidyr")
+# dependencies:
+# packages <- c("shiny", "dplyr", "ggplot2", "shiny.i18n", "lubridate", "DT", "ncdf4", "fs", "metR", "tidyr")
 # install.packages(packages)
 # remotes::install_github("paleolimbot/headings")
-# remotes::install_github("paleolimbot/bsrto")
 
 library(shiny)
 
 # important: data refresh! (milliseconds)
 options(bsrto.data_refresh_interval = 15 * 60 * 1000)
+
+# the only part of the bsrto package we use here is
+# bs_flag()...unless substantial app code is moved
+# into the package, I think it's easiest to copy the
+# file and source() here.
+source("bs-flag.R", encoding = "UTF-8")
 
 # modules (the encoding bit is for interactive
 # development on Windows, where not specifying this

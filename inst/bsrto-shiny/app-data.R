@@ -4,7 +4,6 @@ library(readr)
 library(ggplot2)
 library(dplyr, warn.conflicts = FALSE)
 library(ncdf4)
-library(bsrto)
 
 # This is wrapped in a function so that it can be updated while the process
 # is active. None of these loads take very long but could be made faster

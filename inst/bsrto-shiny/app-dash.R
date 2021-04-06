@@ -1,6 +1,5 @@
 
 library(shiny)
-library(bsrto)
 library(dplyr)
 library(tidyr)
 
@@ -10,6 +9,7 @@ dashUI <- function(id = "dash") {
     plotOutput(NS(id, "adp_average_velocity"), height = 200),
     plotOutput(NS(id, "adp_bottom_velocity"), height = 200),
     plotOutput(NS(id, "ctd_temperature"), height = 200),
+    plotOutput(NS(id, "ctd_salinity"), height = 200),
     plotOutput(NS(id, "met_temp"), height = 150),
     plotOutput(NS(id, "ips_draft"))
   )
@@ -117,6 +117,24 @@ dashServer <- function(lang, data, id = "dash") {
       data_plot_datetime(
         data$ctd(),
         "temperature", "Water temperature [°C]",
+        data$datetime_range(),
+        lang(),
+        mapping = aes(col = factor(depth_label, levels = c("40", "60", "160"))),
+        extra = list(
+          scale_color_brewer(
+            type = "qual", palette = 1,
+            limits = factor(c(40, 60, 160)),
+            labels = paste(c(40, 60, 160), "m"),
+            guide = FALSE
+          )
+        )
+      )
+    })
+
+    output$ctd_salinity <- renderPlot({
+      data_plot_datetime(
+        data$ctd(),
+        "salinity_calc", "Salinity [psal]",
         data$datetime_range(),
         lang(),
         mapping = aes(col = factor(depth_label, levels = c("40", "60", "160"))),
