@@ -34,17 +34,17 @@ if (FALSE) {
 ctdUI <- function(id = "ctd") {
   tagList(
     checkboxGroupInput(
-      NS(id, "mooring_depths"), i18n$t("Mooring Depth"),
+      NS(id, "mooring_depths"), i18n_t_js("Mooring depth"),
       choices = c("40 m", "60 m", "160 m"),
       selected = c("40 m", "60 m", "160 m"),
       inline = TRUE
     ),
-    plotOutput(NS(id, "temperature"), height = 150),
-    plotOutput(NS(id, "conductivity"), height = 150),
-    plotOutput(NS(id, "pressure"), height = 150),
-    plotOutput(NS(id, "oxygen"), height = 150),
-    plotOutput(NS(id, "salinity"), height = 150),
-    plotOutput(NS(id, "sound_speed"), height = 150)
+    dataBsrtoPlotOutput(NS(id, "temperature"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "conductivity"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "pressure"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "oxygen"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "salinity"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "sound_speed"), height = 150)
   )
 }
 

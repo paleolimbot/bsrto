@@ -1,6 +1,7 @@
 
 library(shiny)
 library(readr)
+library(ggplot2)
 library(dplyr, warn.conflicts = FALSE)
 library(ncdf4)
 
@@ -181,43 +182,130 @@ data_agr_time <- function(dt_range) {
   )
 }
 
-# eventually this should be non-ggplot, but this works as a wrapper
-# to get the data needed for the one-dimensional time-series plots
+# ggplot2 components -------------
+
+theme_set(theme_bw() + theme(strip.background = element_blank()))
+
+scale_bsrto_datetime <- function(limits) {
+  scale_x_datetime(
+    limits = limits,
+    expand = expansion(0, 0)
+  )
+}
+
+# Margin adjustment solves two problems: with date labels they occasionally
+# end up off the edge of the plot to the right; faceted plots need extra
+# space and aren't aligned with non-faceted plots.
+theme_bsrto_margins <- function(pad_right = TRUE) {
+  margin_right_pt <- if (pad_right) 20 else 1
+  theme(plot.margin = grid::unit(c(0, margin_right_pt, 5, 0), units = "pt"))
+}
+
+# Aligning the left-hand side of plots requires a huge hack on the guide
+# axis to make it fixed-width (i.e., not dependent on the values being
+# displayed as breaks). Note that "sound speed" contains the longest
+# y-axis labels.
+guide_axis_fixed_width <- function(fixed_width = grid::unit(1.1, "cm"), ...) {
+  x <- guide_axis(...)
+  x$fixed_width <- fixed_width
+  class(x) <- union("guide_axis_fixed_width", class(x))
+  x
+}
+
+guide_gengrob.guide_axis_fixed_width <- function(guide, theme) {
+  result <- NextMethod()
+  result$width <- guide$fixed_width
+  result
+}
+
+render_with_lang <- function(lang, p) {
+  locale <- if (is.null(lang)) {
+    Sys.getlocale("LC_TIME")
+  } else if (isTRUE(Sys.info()["sysname"] == "Windows")) {
+    switch(lang, fr = "French_Canada.1252", "English_United States.1252")
+  } else {
+    switch(lang, fr = "fr_CA", "en_US")
+  }
+
+  suppressWarnings(
+    withr::with_locale(
+      list(LC_TIME = locale),
+      print(p)
+    )
+  )
+}
+
+# one-dimensional time-series plots
 data_plot_datetime <- function(data, var, lab = var,
                                datetime_range = range(data$date_time, na.rm = TRUE),
                                lang = "en",
                                mapping = NULL,
+                               pad_right = TRUE,
                                extra = list()) {
   # occurs on initial load
   if (length(datetime_range) != 2) {
     return()
   }
 
-  # there is no easy way to translate date labels without
-  # explicit LC_TIME support for the other language
-  # (not necessarily the case for my interactive Windows development)
-  print(suppressWarnings(
-    withr::with_locale(
-      c(LC_TIME = paste0(lang, "_CA")),
-      ggplot(data, aes(date_time, .data[[var]])) +
-        geom_point(mapping = mapping, na.rm = TRUE) +
-        scale_x_datetime(
-          limits = datetime_range
-        ) +
-        labs(x = NULL, y = i18n_t(lab, lang)) +
-        extra
+  data <- data %>%
+    filter(!is.na(.data[[var]])) %>%
+    mutate(
+      .y_group = cumsum(c(0, diff(date_time)) > 6),
+      .col_group = if (is.null(mapping)) { 1L } else { !! mapping[[1]] },
+      .group = interaction(.y_group, .col_group)
     )
-  ))
+
+  render_with_lang(lang, {
+    ggplot(data, aes(date_time, .data[[var]], group = .group)) +
+      geom_path(mapping = mapping, na.rm = TRUE) +
+      scale_bsrto_datetime(datetime_range) +
+      labs(x = NULL, y = i18n_t(lab, lang)) +
+      theme_bsrto_margins(pad_right = pad_right) +
+      guides(y = guide_axis_fixed_width()) +
+      extra
+  })
+}
+
+
+# wrapper around dataBsrtoPlotOutput() that has the right brushing options
+dataBsrtodataBsrtoPlotOutput <- function(...) {
+  dataBsrtoPlotOutput(
+    ...,
+    brush = brushOpts(
+      id = NS("data", "datetime_plot_brush"),
+      direction = "x",
+      delay = 500,
+      resetOnNew = TRUE
+    )
+  )
 }
 
 dataUI <- function(id = "data") {
   tagList(
-    div(
-      # Global data filter options
-      div(
-        style = "padding-left: 10px; padding-right: 10px;",
-        uiOutput(NS(id, "date_range"))
-        # possible future filter for data flags?
+    fluidRow(
+      style = "padding-left: 10px; padding-right: 10px;",
+      column(6, uiOutput(NS(id, "date_range"))),
+      column(
+        6,
+        style = "text-align: right; padding-top: 5px; padding-bottom: 5px;",
+        a(href = "javascript: Shiny.setInputValue('data-date_nav', 'all');",
+          i18n_t_js("All")
+        ), span("·"),
+        a(
+          href = "javascript: Shiny.setInputValue('data-date_nav', '1yr');",
+          "1", i18n_t_js("year")
+        ), span("·"),
+        a(
+          href = "javascript: Shiny.setInputValue('data-date_nav', '6mo');",
+          "6", i18n_t_js("months")
+        ), span("·"),
+        a(
+          href = "javascript: Shiny.setInputValue('data-date_nav', '30dy');",
+          "30", i18n_t_js("days")
+        ), span("·"),
+        a(href = "javascript: Shiny.setInputValue('data-date_nav', '7dy');",
+          "7", i18n_t_js("days")
+        )
       )
     )
   )
@@ -243,6 +331,49 @@ dataServer <- function(lang, id = "data") {
       data_refresh()
 
       as.Date(range(data_ctd$date_time))
+    })
+
+    # Shortcuts to set the date range
+    observeEvent(input$date_nav, {
+      if (!is.null(input$date_nav)) {
+        global_range <- isolate(global_date_range())
+
+        range <- switch (
+          input$date_nav,
+          "all" = c(global_range[1], global_range[2] + 1L),
+          "1yr" = c(global_range[2] - 365, global_range[2]),
+          "6mo" = c(global_range[2] - (6 * 30), global_range[2]),
+          "30dy" = c(global_range[2] - (1 * 30), global_range[2]),
+          "7dy" = c(global_range[2] - 7, global_range[2])
+        )
+
+        updateDateRangeInput(
+          session, "date_range",
+          start = range[1], end = range[2]
+        )
+      }
+    })
+
+    # Plot drag event to update range (all outputs created with
+    # dataBsrtodataBsrtoPlotOutput())
+    observeEvent(input$datetime_plot_brush, {
+      brush <- input$datetime_plot_brush
+
+      # xmin and xmax refer to the relative position [0-1] within the
+      # x-range of the plot area. All plots are unexpanded on the x
+      # axis, so the calculation of the new date range is easier.
+      current_range <- isolate(input$date_range)
+      current_diff <- diff(current_range)
+
+      range <- c(
+        current_range[1] + brush$xmin * current_diff,
+        current_range[1] + brush$xmax * current_diff
+      )
+
+      updateDateRangeInput(
+        session, "date_range",
+        start = range[1], end = range[2]
+      )
     })
 
     # Reactive on global_date_range() and lang(). When
@@ -352,7 +483,7 @@ dataServer <- function(lang, id = "data") {
         # "sound_speed",  "heading_std", "pitch_std", "roll_std",
         # "pressure_plus", "pressure_minus", "attitude_temp",
         # "transmit_current", "transmit_voltage", "pressure_std",
-        "beam_heading_corrected",
+        "beam_heading_corrected", "bottom_error_velocity",
         "transducer_depth", "heading", "pitch", "roll",
         "salinity", "temperature", "ambient_temperature",
         "attitude",  "contamination_sensor", "pressure"
@@ -370,9 +501,9 @@ dataServer <- function(lang, id = "data") {
       dt_range <- datetime_range()
 
       beam_vars <- c(
-        "range_lsb", "range_msb",
-        "bottom_track_velocity", "bc", "ba", "bg",
-        "beam_flag"
+        "bottom_range",
+        "bottom_velocity_raw", "bottom_correlation",
+        "bottom_amplitude", "bottom_pct_good"
       )
 
       index <- data_adp_nc_date_time
@@ -422,8 +553,8 @@ dataServer <- function(lang, id = "data") {
       dt_range <- datetime_range()
 
       cell_vars <- c(
-        "velocity", "correlation", "echo_intensity",
-        "pct_good", "cell_flag"
+        "velocity_raw", "correlation", "echo_intensity",
+        "pct_good"
       )
 
       index <- data_adp_nc_date_time
@@ -483,6 +614,122 @@ dataServer <- function(lang, id = "data") {
           distance = distance
         ) %>%
           left_join(agr, by = c("date_time", "n_beam", "distance")) %>%
+          tibble::as_tibble()
+      }
+    })
+
+    adp_bottom_velocity <- reactive({
+      dt_range <- datetime_range()
+
+      enu_velocity_vars <- c("bottom_velocity", "bottom_velocity_flag", "average_velocity")
+
+      index <- data_adp_nc_date_time
+      east_north_up <- data_adp_nc$dim$east_north_up$vals
+
+      dt_dim_values <- which(
+        (index >= dt_range[1]) &
+          (index < dt_range[2])
+      )
+      stopifnot(all(diff(dt_dim_values) == 1L))
+      dim_min <- suppressWarnings(min(dt_dim_values))
+      dim_count <- length(dt_dim_values)
+
+      if (dim_count == 0) {
+        tibble::tibble(
+          date_time = data_adp_nc_date_time[integer(0)],
+          east_north_up = integer(0),
+          bottom_velocity = double(0),
+          bottom_velocity_flag = double(),
+          average_velocity = double(0)
+        )
+      } else {
+        dims <- expand.grid(
+          date_time = data_adp_nc_date_time[dt_dim_values],
+          east_north_up = east_north_up
+        )
+
+        dims[enu_velocity_vars] <- lapply(
+          enu_velocity_vars,
+          function(x) {
+            as.numeric(
+              ncvar_get(
+                data_adp_nc, x,
+                start = c(dim_min, 1),
+                count = c(dim_count, length(east_north_up))
+              )
+            )
+          }
+        )
+
+        as_tibble(dims)
+      }
+    })
+
+    adp_velocity <- reactive({
+      dt_range <- datetime_range()
+
+      velocity_vars <- c("velocity", "velocity_flag")
+
+      index <- data_adp_nc_date_time
+      east_north_up <- data_adp_nc$dim$east_north_up$vals
+      distance <- data_adp_nc$dim$distance$vals
+
+      dt_dim_values <- which(
+        (index >= dt_range[1]) &
+          (index < dt_range[2])
+      )
+      stopifnot(all(diff(dt_dim_values) == 1L))
+      dim_min <- suppressWarnings(min(dt_dim_values))
+      dim_count <- length(dt_dim_values)
+
+      if (dim_count == 0) {
+        tibble::tibble(
+          date_time = data_adp_nc_date_time[integer(0)],
+          distance = double(0),
+          east_north_up = integer(0),
+          velocity = double(0),
+          velocity_flag = integer(0)
+        )
+      } else {
+        date_agr <- data_agr_time(dt_range)
+
+        dims <- expand.grid(
+          date_time = data_adp_nc_date_time[dt_dim_values],
+          east_north_up = east_north_up,
+          distance = distance
+        )
+
+        dims[velocity_vars] <- lapply(
+          velocity_vars,
+          function(x) {
+            as.numeric(
+              ncvar_get(
+                data_adp_nc, x,
+                start = c(dim_min, 1, 1),
+                count = c(dim_count, length(east_north_up), length(distance))
+              )
+            )
+          }
+        )
+
+        agr <- dims %>%
+          filter(velocity_flag == bs_flag("probably good data")) %>%
+          mutate(
+            date_time = lubridate::floor_date(date_time, date_agr$date_agr)
+          ) %>%
+          group_by(date_time, east_north_up, distance) %>%
+          summarise(across(everything(), median, na.rm = TRUE), .groups = "drop")
+
+        expand.grid(
+          date_time = date_agr$date_time_grid,
+          east_north_up = east_north_up,
+
+          # for this particular output we only want below-water cells,
+          # which have already been flagged but show up as grey boxes
+          # unless we cull those values here
+          distance = distance[distance < 60]
+        ) %>%
+          left_join(agr, by = c("date_time", "east_north_up", "distance")) %>%
           tibble::as_tibble()
       }
     })
@@ -582,6 +829,8 @@ dataServer <- function(lang, id = "data") {
       pcm = pcm,
       adp_meta = adp_meta,
       adp_beam_meta = adp_beam_meta,
+      adp_bottom_velocity = adp_bottom_velocity,
+      adp_velocity = adp_velocity,
       adp_cells = adp_cells,
       ips_meta = ips_meta,
       icl_meta = icl_meta,

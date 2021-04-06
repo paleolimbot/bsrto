@@ -1,12 +1,19 @@
 
-# packages <- c("shiny", "dplyr", "ggplot2", "shiny.i18n", "lubridate", "DT", "ncdf4", "fs", "leaflet")
+# dependencies:
+# packages <- c("shiny", "dplyr", "ggplot2", "shiny.i18n", "lubridate", "DT", "ncdf4", "fs", "metR", "tidyr")
 # install.packages(packages)
+# remotes::install_github("paleolimbot/headings")
 
 library(shiny)
-ggplot2::theme_set(ggplot2::theme_bw())
 
 # important: data refresh! (milliseconds)
 options(bsrto.data_refresh_interval = 15 * 60 * 1000)
+
+# the only part of the bsrto package we use here is
+# bs_flag()...unless substantial app code is moved
+# into the package, I think it's easiest to copy the
+# file and source() here.
+source("bs-flag.R", encoding = "UTF-8")
 
 # modules (the encoding bit is for interactive
 # development on Windows, where not specifying this
@@ -20,8 +27,8 @@ source("app-ctd.R", encoding = "UTF-8")
 source("app-met.R", encoding = "UTF-8")
 source("app-baro.R", encoding = "UTF-8")
 source("app-lgh.R", encoding = "UTF-8")
+source("app-currents.R", encoding = "UTF-8")
 source("app-adp.R", encoding = "UTF-8")
-source("app-about.R", encoding = "UTF-8")
 source("app-ips.R", encoding = "UTF-8")
 source("app-icl.R", encoding = "UTF-8")
 
@@ -43,19 +50,19 @@ ui <- tags$div(
   i18nStartBody(),
 
   navbarPageWithInputs(
-    i18n$t("Barrow Strait Real-Time Observatory"),
-    tabPanel(i18n$t("Dashboard"), dashUI()),
+    i18n_t_js("Barrow Strait Real-Time Observatory"),
+    tabPanel(i18n_t_js("Dashboard"), dashUI()),
     navbarMenu(
-      i18n$t("Data"),
-      tabPanel(i18n$t("Water properties"), ctdUI()),
-      tabPanel(i18n$t("Currents"), adpUI()),
-      tabPanel(i18n$t("Barometric pressure"), baroUI()),
-      tabPanel(i18n$t("Sound"), iclUI()),
-      tabPanel(i18n$t("Ice thickness"), ipsUI()),
-      tabPanel(i18n$t("Current conditions at Resolute Airport"), metUI()),
-      tabPanel(i18n$t("Log files"), lghUI())
+      i18n_t_js("Data"),
+      tabPanel(i18n_t_js("Water properties"), ctdUI()),
+      tabPanel(i18n_t_js("Currents"), currentsUI()),
+      tabPanel(i18n_t_js("ADCP"), adpUI()),
+      tabPanel(i18n_t_js("Barometric pressure"), baroUI()),
+      tabPanel(i18n_t_js("Sound"), iclUI()),
+      tabPanel(i18n_t_js("Ice thickness"), ipsUI()),
+      tabPanel(i18n_t_js("Current conditions at Resolute Airport"), metUI()),
+      tabPanel(i18n_t_js("Log files"), lghUI())
     ),
-    tabPanel(i18n$t("About"), aboutUI()),
     inputs = tags$div(
       style = "text-align: right; vertical-align: middle;",
       i18nUI()
@@ -79,14 +86,13 @@ server <- function(input, output, session) {
   dashServer(lang, data)
 
   ctdServer(lang, data)
+  currentsServer(lang, data)
   adpServer(lang, data)
   baroServer(lang, data)
   iclServer(lang, data)
   ipsServer(lang, data)
   metServer(lang, data)
   lghServer(lang, data)
-
-  aboutServer(lang)
 }
 
 shinyApp(ui, server)

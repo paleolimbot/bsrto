@@ -325,18 +325,15 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   )
 
   # These columns are list(matrix(n_beams * n_cells))
+  # raw (starboard-forward-mast) velocity is added later
   cols_n_beams_n_cells <- c("correlation", "echo_intensity", "pct_good")
 
   # These columns are list(c(n_beams))
+  # raw (starboard-forward-mast) bottom_velocity is added later
   cols_n_beams <- c(
     "bottom_range", "bottom_correlation",
     "bottom_amplitude", "bottom_pct_good"
   )
-
-  # Velocities need to be rotated and including them along the `n_beam`
-  # dimension is disingenuous, since the values are starboard, forward mast,
-  # error velocity, and will be east, north, up, error velocity.
-  cols_velocity <- c("velocity", "bottom_velocity")
 
   # All other columns have one value per profile
   cols_prof_meta <- setdiff(
@@ -381,23 +378,28 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   # correct for beam alignment to the pole compass
   rdi_meta$beam_heading_corrected <- headings::hdg_norm(pc_true_heading_interp + 45)
 
-  # compare to heading from rdi file...you can theoretically predict the error
-  # based on the original heading (bumped slightly for continuity)
-
-  # heading_orig <- ifelse(rdi_meta$heading > 240, rdi_meta$heading - 360, rdi_meta$heading)
-  # beam_heading_diff <- heading_diff(rdi_meta$beam_heading_corrected, heading_orig)
-  # plot(heading_orig, beam_heading_diff)
-  # fit <- lm(beam_heading_diff ~ poly(heading_orig, 5), na.action = na.exclude)
-  # vals <- tibble::tibble(heading_orig, pred = predict(fit))
-  # lines(vals[order(vals$heading_orig), ], col = "red")
-  # sqrt(mean(residuals(fit) ^ 2, na.rm = TRUE)) # ~12 degrees
-
   # Rotate velocity vectors, whose dimensions are starboard, forward, mast,
   # error velocity. Because "mast" has already been corrected to
   # be "up" according to rdi$coord_transform, we only need to rotate the
   # starboard and forward dimensions.
   velocity <- abind::abind(rdi$velocity, along = 0)
-  for (i in seq_len(5)) {
+
+  # For both rotated and un-rotated velocity, there are a number of bins
+  # above the water level (according to rdi_meta$transducer_depth). There
+  # may be other reasons to flag values along these dimensions in the future.
+  # Use a margin of 15% of the transducer depth to flag these bins.
+  velocity_raw_flag <- array(bs_flag("probably good data"), dim = dim(velocity))
+  for (i in seq_along(rdi$transducer_depth)) {
+    bad_bins <- n_cell_distance > (0.85 * rdi$transducer_depth[i])
+    velocity_raw_flag[i, , bad_bins] <- bs_flag("ADCP measurement above water")
+  }
+
+  # also include un-rotated velocity + flags along beam + cell dimension
+  rdi_n_beams_n_cells$velocity_raw <- velocity
+  rdi_n_beams_n_cells$velocity_raw_flag <- velocity_raw_flag
+
+  # do rotation
+  for (i in seq_along(rdi_meta$beam_heading_corrected)) {
     velocity[i, 1:2, ] <- t(
       rotate_about_origin(
         t(velocity[i, 1:2, , drop = TRUE]),
@@ -408,12 +410,37 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
   }
 
   # velocity is in its own dimension family (date_time x enu x distance)
-  rdi_east_north_up_n_cells <- list(velocity = velocity[, 1:3, , drop = FALSE])
+  rdi_east_north_up_n_cells <- list(
+    velocity = velocity[, 1:3, , drop = FALSE],
+    velocity_flag = velocity_raw_flag[, 1:3, , drop = FALSE]
+  )
 
   # error velocity is in its own dimension family (date_time x distance)
-  rdi_n_cells <- list(list(error_velocity = velocity[, 4, , drop = TRUE]))
+  rdi_n_cells <- list(
+    error_velocity = velocity[, 4, , drop = TRUE],
+    error_velocity_flag = velocity_raw_flag[, 4, , drop = TRUE]
+  )
 
+  # process bottom-track velocity
   bottom_velocity <- abind::abind(rdi$bottom_velocity, along = 0)
+
+  # Flag bottom track velocity based on unreasonable velocities
+  # (using 3 m/s component-wise here). Flag the whole date_time rather than
+  # just the bin.
+  bottom_velocity_raw_flag <- array(
+    bs_flag("probably good data"),
+    dim = dim(bottom_velocity)
+  )
+
+  bottom_velocity_unreasonable <- abs(bottom_velocity) > 3
+  bottom_velocity_meas_unreasonable <- apply(bottom_velocity_unreasonable, 1, any)
+  bottom_velocity_raw_flag[bottom_velocity_meas_unreasonable] <- bs_flag("probably bad data")
+
+  # also include un-rotated bottom_velocity along n_beams
+  rdi_n_beams$bottom_velocity_raw <- bottom_velocity
+  rdi_n_beams$bottom_velocity_raw_flag <- bottom_velocity_raw_flag
+
+  # do rotation
   bottom_velocity[, 1:2] <-
     rotate_about_origin(
       bottom_velocity[, 1:2, drop = FALSE],
@@ -421,22 +448,23 @@ write_realtime_adp <- function(rdi, pc, out_dir = ".") {
       rdi_meta$beam_heading_corrected
     )
 
-  # bottom velocity is in its own dimension family
-  rdi_east_north_up <- list(bottom_velocity = bottom_velocity[, 1:3, drop = FALSE])
+  # bottom velocity is in its own dimension family (will also host
+  # depth-averaged velocities)
+  rdi_east_north_up <- list(
+    bottom_velocity = bottom_velocity[, 1:3, drop = FALSE],
+    bottom_velocity_flag = bottom_velocity_raw_flag[, 1:3, drop = FALSE]
+  )
 
   # bottom error velocity shares dimensions with rdi_meta (just date_time)
   rdi_meta$bottom_error_velocity <- bottom_velocity[, 4, drop = TRUE]
+  rdi_meta$bottom_error_velocity_flag <- bottom_velocity_raw_flag[, 4, drop = TRUE]
 
-  # Flags ----
+  # Depth-averaged current calculation -----
 
-  # TODO: Can't tell from original code which velocity bins are getting the ax
-  # based on distance to surface. There are also no velocity series that
-  # have >50% NA, which were flagged in the initial version of this code.
-  # https://github.com/richardsc/bsrto/blob/master/adp.R#L61-L71
-
-  # Could likely use error velocities and pct good as a flag
-  # (there's a good guide in the processing repo for adcp data on
-  # gccode)
+  velocity_censor <- rdi_east_north_up_n_cells$velocity
+  velocity_questionable <- rdi_east_north_up_n_cells$velocity_flag != bs_flag("probably good data")
+  velocity_censor[velocity_questionable] <- NA_real_
+  rdi_east_north_up$average_velocity <- apply(velocity_censor, 1:2, mean, na.rm = TRUE)
 
   # Prepare NetCDF ----
 
@@ -953,18 +981,18 @@ read_realtime_cached <- function(file_type, build_cache = bs_build_cache_dir("re
 read_realtime_met <- function(previous = NULL) {
   cli::cat_rule("read_realtime_met()")
 
-  if (identical(attr(previous, "date_generated"), Sys.Date())) {
-    cli::cat_line(glue("Using `previous` as it was generated on { Sys.Date() }"))
-    return(previous)
-  }
+  # it's theoretically possible to cache more of these; however,
+  # not downloading the last *two* months results in problems if the
+  # updating isn't run at least once a day (e.g., during local development)
 
   cache_dir <- bs_cache_dir("BSRTO/2019-2020/met")
 
   ec_files <- ec_download_summary_hourly(54199, "2019-08-01", Sys.Date())
   ec_files$dest <- file.path(cache_dir, ec_files$dest)
 
-  # need to re-download updated version for this month (so delete cache file)
-  unlink(ec_files$dest[nrow(ec_files)])
+  # need to re-download updated version for this month and last month
+  last_two <- utils::tail(seq_len(nrow(ec_files)), 2)
+  unlink(ec_files$dest[last_two])
 
   dest_exists <- file.exists(ec_files$dest)
   cli::cat_line(glue("About to download { sum(!dest_exists) } file(s)"))
@@ -991,10 +1019,8 @@ read_realtime_met <- function(previous = NULL) {
   station_info <- c("longitude", "latitude", "station_name", "climate_id")
   all <- all[setdiff(names(all), station_info)]
 
-  # this needs to be regenerated every day, so there is no point using
-  # the file list as the cache key (also, there are rarely many of these files
-  # and reading them is fast)
-  attr(all, "date_generated") <- Sys.Date()
+  # keep track of the time generated for possible future cache options
+  attr(all, "date_generated") <- Sys.time()
 
   all
 }

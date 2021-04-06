@@ -24,58 +24,57 @@ plot_adp_cell <- function(data, var, lab = var,
                           datetime_range = range(data$date_time, na.rm = TRUE),
                           lang = "en") {
   facet <- if (nrow(data) > 0) {
-    facet_grid(
-      vars(n_beam),
-      labeller = labeller(
-        n_beam = function(x) sprintf("%s %s", i18n_t("Beam", lang), x)
-      )
+    list(
+      facet_grid(
+        vars(n_beam),
+        labeller = labeller(
+          n_beam = function(x) sprintf("%s %s", i18n_t("Beam", lang), x)
+        )
+      ),
+      theme_bsrto_margins(pad_right = FALSE)
     )
   }
 
-  p <- ggplot(data, aes(date_time, distance)) +
-    geom_raster(aes(fill = .data[[var]])) +
-    scale_fill_viridis_c(oob = scales::squish) +
-    scale_x_datetime(limits = datetime_range) +
-    scale_y_continuous(expand = expansion(0, 0)) +
-    facet +
-    labs(
-      x = NULL,
-      y = i18n_t("Distance [m]", lang),
-      fill = i18n_t(lab, lang)
-    ) +
-    theme(legend.position = "top")
-
-  suppressWarnings(
-    withr::with_locale(
-      c(LC_TIME = paste0(lang, "_CA")),
-      print(p)
-    )
-  )
+  render_with_lang(lang, {
+    ggplot(data, aes(date_time, distance)) +
+      geom_raster(aes(fill = .data[[var]])) +
+      scale_fill_viridis_c(oob = scales::squish) +
+      scale_bsrto_datetime(limits = datetime_range) +
+      scale_y_continuous(expand = expansion(0, 0)) +
+      theme_bsrto_margins(pad_right = TRUE) +
+      facet +
+      labs(
+        x = NULL,
+        y = i18n_t("Distance [m]", lang),
+        fill = i18n_t(lab, lang)
+      ) +
+      guides(y = guide_axis_fixed_width()) +
+      theme(legend.position = "top")
+  })
 }
 
 adpUI <- function(id = "adp") {
   tagList(
     uiOutput(NS(id, "beam_input")),
 
-    plotOutput(NS(id, "velocity"), height = 150 * 4),
-    plotOutput(NS(id, "correlation"), height = 150 * 4),
-    plotOutput(NS(id, "echo_intensity"), height = 150 * 4),
-    plotOutput(NS(id, "pct_good"), height = 150 * 4),
+    dataBsrtoPlotOutput(NS(id, "velocity_raw"), height = 150 * 4),
+    dataBsrtoPlotOutput(NS(id, "correlation"), height = 150 * 4),
+    dataBsrtoPlotOutput(NS(id, "echo_intensity"), height = 150 * 4),
+    dataBsrtoPlotOutput(NS(id, "pct_good"), height = 150 * 4),
 
-    plotOutput(NS(id, "range_lsb"), height = 150),
-    plotOutput(NS(id, "range_msb"), height = 150),
-    plotOutput(NS(id, "bottom_track_velocity"), height = 150),
-    plotOutput(NS(id, "bc"), height = 150),
-    plotOutput(NS(id, "ba"), height = 150),
-    plotOutput(NS(id, "bg"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_range"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_velocity_raw"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_correlation"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_amplitude"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_pct_good"), height = 150),
 
-    plotOutput(NS(id, "transducer_depth"), height = 150),
-    plotOutput(NS(id, "beam_heading_corrected"), height = 150),
-    plotOutput(NS(id, "pitch"), height = 150),
-    plotOutput(NS(id, "roll"), height = 150),
-    plotOutput(NS(id, "pressure"), height = 150),
-    plotOutput(NS(id, "temperature"), height = 150),
-    plotOutput(NS(id, "pc_heading"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "transducer_depth"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "beam_heading_corrected"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "pitch"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "roll"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "pressure"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "temperature"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "pc_heading"), height = 150),
   )
 }
 
@@ -103,10 +102,10 @@ adpServer <- function(lang, data, id = "adp") {
         filter(n_beam %in% !! beam_vals)
     })
 
-    output$velocity <- renderPlot({
+    output$velocity_raw <- renderPlot({
       plot_adp_cell(
         adp_cells(),
-        "velocity", "Velocity [m/s]",
+        "velocity_raw", "Velocity [m/s]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -124,7 +123,7 @@ adpServer <- function(lang, data, id = "adp") {
     output$echo_intensity <- renderPlot({
       plot_adp_cell(
         adp_cells(),
-        "echo_intensity", "Echo intensity [relative units]",
+        "echo_intensity", "Echo intensity",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
@@ -133,61 +132,52 @@ adpServer <- function(lang, data, id = "adp") {
     output$pct_good <- renderPlot({
       plot_adp_cell(
         adp_cells(),
-        "pct_good", "Percent made good [%]",
+        "pct_good", "Velocity made good [%]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$range_lsb <- renderPlot({
+    output$bottom_range <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "range_lsb", "range_lsb",
+        "bottom_range", "Bottom range [m]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$range_msb <- renderPlot({
+    output$bottom_velocity_raw <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "range_msb", "range_msb",
+        "bottom_velocity_raw", "Bottom velocity [m/s]",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$bottom_track_velocity <- renderPlot({
+    output$bottom_correlation <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "bottom_track_velocity", "bottom_track_velocity",
+        "bottom_correlation", "Correlation (ice)",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$bc <- renderPlot({
+    output$bottom_amplitude <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "bc", "bc",
+        "bottom_amplitude", "Echo intensity (ice)",
         datetime_range = data$datetime_range(),
         lang = lang()
       )
     })
 
-    output$ba <- renderPlot({
+    output$bottom_pct_good <- renderPlot({
       plot_adp_beam(
         adp_beams(),
-        "ba", "ba",
-        datetime_range = data$datetime_range(),
-        lang = lang()
-      )
-    })
-
-    output$bg <- renderPlot({
-      plot_adp_beam(
-        adp_beams(),
-        "bg", "bg",
+        "bottom_pct_good", "Velocity made good (ice)",
         datetime_range = data$datetime_range(),
         lang = lang()
       )

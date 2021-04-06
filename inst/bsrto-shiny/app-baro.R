@@ -3,8 +3,8 @@ library(shiny)
 
 baroUI <- function(id = "baro") {
   tagList(
-    plotOutput(NS(id, "shore_temp"), height = 150),
-    plotOutput(NS(id, "shore_press"), height = 150)
+    dataBsrtoPlotOutput(NS(id, "shore_temp"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "shore_press"), height = 150)
   )
 }
 

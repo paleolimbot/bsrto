@@ -15,7 +15,7 @@ loadNamespace("shiny.i18n")
 # english version as a "key" is problematic. This requires a bit of shuffling
 # with the translations.json file...really there needs to be a better system
 # for i18n in Shiny
-i18n_translations_json <- jsonlite::read_json("translation.json")
+i18n_translations_json <- yaml::read_yaml("translations.yaml")
 i18n_translations_json$translation <- lapply(
   i18n_translations_json$translation,
   function(x) {
@@ -40,6 +40,12 @@ i18n_t <- function(x, lang) {
   result <- i18n_translations[x, lang, drop = TRUE]
   result[is.na(result)] <- x
   result
+}
+
+# to make it clear that javascript translation is being used, use
+# this function in the UI to mark user-facing text
+i18n_t_js <- function(x) {
+  i18n$translate(x, session = NULL)
 }
 
 # must be before any translated elements (so, start of body)

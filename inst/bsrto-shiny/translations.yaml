@@ -1,0 +1,191 @@
+
+# The "key" language is the string used in the app to identify the translation
+# and is useful when the same term needs to be translated differently
+# depending on the context. The compilation step in the app automatically
+# assignes the "en" value from the "key" value if it is missing. This is
+# done to minimize redundancy/the effort involved with keeping translations
+# up-to-date.
+languages: [key, en, fr]
+
+translation:
+
+# App globals
+- key: window_title
+  en: Barrow Strait Real-Time Observatory
+  fr: L'Observatoire le détroit de Barrow en temps réel
+
+- key: Barrow Strait Real-Time Observatory
+  fr: L'Observatoire le détroit de Barrow en temps réel
+
+- key: Dashboard
+  fr: Tableau de bord
+
+- key: Data
+  fr: Données
+
+- key: Water properties
+  fr: Propriétés d'eau
+
+- key: Currents
+  fr: Données de courantomètres
+
+- key: ADCP
+  fr: ADCP
+
+- key: Barometric pressure
+  fr: Pression barométrique
+
+- key: Sound
+  fr: Données d'hydrophones
+
+- key: Ice thickness
+  fr: Tirant d’eau glaciel
+
+- key: Current conditions at Resolute Airport
+  fr: Conditions actuelles à Aéroport de Resolute
+
+- key: Log files
+  fr: Les fichier journals
+
+# Date navigation
+
+- key: Date
+  fr: Date
+
+- key: date_range_sep
+  en: to
+  fr: à
+
+- key: All
+  fr: Toutes les dates
+
+- key: year
+  fr: an
+
+- key: months
+  fr: mois
+
+- key: days
+  fr: jours
+
+# Plot labels (many are used in multiple tabs)
+
+- key: Water temperature [°C]
+  fr: Température de l'eau [°C]
+
+- key: Air temperature [°C]
+  fr: Température de l'air [°C]
+
+- key: Mooring depth
+  fr: Profondeur des dispositifs de mouillage
+
+- key: Velocity [m/s]
+  fr: Vélocité [m/s]
+
+- key: Distance [m]
+  fr: Distance [m]
+
+- key: Water velocity [m/s]
+  fr: La vitesse d'eau [m/s]
+
+- key: Ice velocity [m/s]
+  fr: La vitesse de la glace [m/s]
+
+- key: Depth-averaged velocity [m/s]
+  fr: La vitesse moyenne sur la hauteur d'eau [m/s]
+
+- key: Velocity made good [%]
+  fr: La vitesse fond ainsi [%]
+
+- key: Echo intensity
+  fr: L'intensité de l'écho
+
+- key: Correlation
+  fr: Corrélation
+
+- key: Echo intensity (ice)
+  fr: L'intensité de l'écho (la glace)
+
+- key: Correlation (ice)
+  fr: Corrélation (ice)
+
+- key: Velocity made good (ice) [%]
+  fr: La vitesse fond ainsi (la glace) [%]
+
+- key: vEast
+  en: East
+  fr: Est
+
+- key: vNorth
+  en: North
+  fr: Nord
+
+- key: vUp
+  en: Up
+  fr: En haut
+
+- key: Temperature [°C]
+  fr: Température [°C]
+
+- key: Conductivity [S/m]
+  fr: Conductivité [S/m]
+
+- key: Pressure [dbar]
+  fr: Pression [dbar]
+
+- key: Dissolved oxygen [mg/L]
+  fr: Oxygène dissous [mg/L]
+
+- key: Salinity [psal]
+  fr: Salinité [peal]
+
+- key: Sound speed [m/s]
+  fr: Vitesse du son [m/s]
+
+- key: Dew Point [°C]
+  fr: Point de rosée [°C]
+
+- key: Relative Humidity [%]
+  fr: Humidité [%]
+
+- key: Wind Direction [°]
+  fr: Direction du vent [°]
+
+- key: Wind Speed [km/h]
+  fr: La vitesse du vent [km/h]
+
+- key: Wind Chill [°C]
+  fr: Facteur vent [°C]
+
+- key: File name
+  fr: Le nom du ficher
+
+- key: File content
+  fr: Contenu du ficher
+
+- key: <No items selected>
+  fr: <Aucun éléments choisis>
+
+- key: Beam
+  fr: Le faisceau
+
+- key: Depth [m]
+  fr: Profondeur [m]
+
+- key: Heading [°]
+  fr: Cap [°]
+
+- key: Pitch [°]
+  fr: Tangage [°]
+
+- key: Roll [°]
+  fr: Roulis [°]
+
+- key: Heading (pole compass) [°]
+  fr: Cap à la boussole [°]
+
+- key: Ice draft [m]
+  fr: Tirant de l'eau glaciel [m]
+
+- key: Frequency [Hz]
+  fr: Fréquence [Hz]
