@@ -23,7 +23,6 @@ source("app-baro.R", encoding = "UTF-8")
 source("app-lgh.R", encoding = "UTF-8")
 source("app-currents.R", encoding = "UTF-8")
 source("app-adp.R", encoding = "UTF-8")
-source("app-about.R", encoding = "UTF-8")
 source("app-ips.R", encoding = "UTF-8")
 source("app-icl.R", encoding = "UTF-8")
 
@@ -58,7 +57,6 @@ ui <- tags$div(
       tabPanel(i18n_t_js("Current conditions at Resolute Airport"), metUI()),
       tabPanel(i18n_t_js("Log files"), lghUI())
     ),
-    tabPanel(i18n_t_js("About"), aboutUI()),
     inputs = tags$div(
       style = "text-align: right; vertical-align: middle;",
       i18nUI()
@@ -89,8 +87,6 @@ server <- function(input, output, session) {
   ipsServer(lang, data)
   metServer(lang, data)
   lghServer(lang, data)
-
-  aboutServer(lang)
 }
 
 shinyApp(ui, server)
