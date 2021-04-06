@@ -57,24 +57,24 @@ adpUI <- function(id = "adp") {
   tagList(
     uiOutput(NS(id, "beam_input")),
 
-    plotOutput(NS(id, "velocity_raw"), height = 150 * 4),
-    plotOutput(NS(id, "correlation"), height = 150 * 4),
-    plotOutput(NS(id, "echo_intensity"), height = 150 * 4),
-    plotOutput(NS(id, "pct_good"), height = 150 * 4),
+    dataBsrtoPlotOutput(NS(id, "velocity_raw"), height = 150 * 4),
+    dataBsrtoPlotOutput(NS(id, "correlation"), height = 150 * 4),
+    dataBsrtoPlotOutput(NS(id, "echo_intensity"), height = 150 * 4),
+    dataBsrtoPlotOutput(NS(id, "pct_good"), height = 150 * 4),
 
-    plotOutput(NS(id, "bottom_range"), height = 150),
-    plotOutput(NS(id, "bottom_velocity_raw"), height = 150),
-    plotOutput(NS(id, "bottom_correlation"), height = 150),
-    plotOutput(NS(id, "bottom_amplitude"), height = 150),
-    plotOutput(NS(id, "bottom_pct_good"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_range"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_velocity_raw"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_correlation"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_amplitude"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "bottom_pct_good"), height = 150),
 
-    plotOutput(NS(id, "transducer_depth"), height = 150),
-    plotOutput(NS(id, "beam_heading_corrected"), height = 150),
-    plotOutput(NS(id, "pitch"), height = 150),
-    plotOutput(NS(id, "roll"), height = 150),
-    plotOutput(NS(id, "pressure"), height = 150),
-    plotOutput(NS(id, "temperature"), height = 150),
-    plotOutput(NS(id, "pc_heading"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "transducer_depth"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "beam_heading_corrected"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "pitch"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "roll"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "pressure"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "temperature"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "pc_heading"), height = 150),
   )
 }
 

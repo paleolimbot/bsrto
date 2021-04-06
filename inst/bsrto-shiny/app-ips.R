@@ -4,7 +4,7 @@ library(ggplot2)
 
 ipsUI <- function(id = "ips") {
   tagList(
-    plotOutput(NS(id, "draft"), height = 400)
+    dataBsrtoPlotOutput(NS(id, "draft"), height = 400)
   )
 }
 

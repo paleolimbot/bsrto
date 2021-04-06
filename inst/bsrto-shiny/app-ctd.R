@@ -39,12 +39,12 @@ ctdUI <- function(id = "ctd") {
       selected = c("40 m", "60 m", "160 m"),
       inline = TRUE
     ),
-    plotOutput(NS(id, "temperature"), height = 150),
-    plotOutput(NS(id, "conductivity"), height = 150),
-    plotOutput(NS(id, "pressure"), height = 150),
-    plotOutput(NS(id, "oxygen"), height = 150),
-    plotOutput(NS(id, "salinity"), height = 150),
-    plotOutput(NS(id, "sound_speed"), height = 150)
+    dataBsrtoPlotOutput(NS(id, "temperature"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "conductivity"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "pressure"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "oxygen"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "salinity"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "sound_speed"), height = 150)
   )
 }
 

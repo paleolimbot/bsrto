@@ -3,13 +3,13 @@ library(shiny)
 
 metUI <- function(id = "met") {
   tagList(
-    plotOutput(NS(id, "temp"), height = 150),
-    plotOutput(NS(id, "dew_point_temp"), height = 150),
-    plotOutput(NS(id, "rel_hum"), height = 150),
-    plotOutput(NS(id, "wind_dir"), height = 150),
-    plotOutput(NS(id, "wind_spd"), height = 150),
-    plotOutput(NS(id, "stn_press"), height = 150),
-    plotOutput(NS(id, "wind_chill"), height = 150)
+    dataBsrtoPlotOutput(NS(id, "temp"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "dew_point_temp"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "rel_hum"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "wind_dir"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "wind_spd"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "stn_press"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "wind_chill"), height = 150)
   )
 }
 

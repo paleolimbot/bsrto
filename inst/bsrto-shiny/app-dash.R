@@ -6,12 +6,12 @@ library(tidyr)
 
 dashUI <- function(id = "dash") {
   tagList(
-    plotOutput(NS(id, "adp_average_velocity"), height = 200),
-    plotOutput(NS(id, "adp_bottom_velocity"), height = 200),
-    plotOutput(NS(id, "ctd_temperature"), height = 200),
-    plotOutput(NS(id, "ctd_salinity"), height = 200),
-    plotOutput(NS(id, "met_temp"), height = 150),
-    plotOutput(NS(id, "ips_draft"))
+    dataBsrtoPlotOutput(NS(id, "adp_average_velocity"), height = 200),
+    dataBsrtoPlotOutput(NS(id, "adp_bottom_velocity"), height = 200),
+    dataBsrtoPlotOutput(NS(id, "ctd_temperature"), height = 200),
+    dataBsrtoPlotOutput(NS(id, "ctd_salinity"), height = 200),
+    dataBsrtoPlotOutput(NS(id, "met_temp"), height = 150),
+    dataBsrtoPlotOutput(NS(id, "ips_draft"))
   )
 }
 

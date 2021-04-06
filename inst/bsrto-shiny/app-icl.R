@@ -3,7 +3,7 @@ library(shiny)
 
 iclUI <- function(id = "icl") {
   tagList(
-    plotOutput(NS(id, "intensity"))
+    dataBsrtoPlotOutput(NS(id, "intensity"))
   )
 }
 

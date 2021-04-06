@@ -219,7 +219,9 @@ guide_gengrob.guide_axis_fixed_width <- function(guide, theme) {
 }
 
 render_with_lang <- function(lang, p) {
-  locale <- if (isTRUE(Sys.info()["sysname"] == "Windows")) {
+  locale <- if (is.null(lang)) {
+    Sys.getlocale("LC_TIME")
+  } else if (isTRUE(Sys.info()["sysname"] == "Windows")) {
     switch(lang, fr = "French_Canada.1252", "English_United States.1252")
   } else {
     switch(lang, fr = "fr_CA", "en_US")
@@ -254,6 +256,20 @@ data_plot_datetime <- function(data, var, lab = var,
       guides(y = guide_axis_fixed_width()) +
       extra
   })
+}
+
+
+# wrapper around dataBsrtoPlotOutput() that has the right brushing options
+dataBsrtodataBsrtoPlotOutput <- function(...) {
+  dataBsrtoPlotOutput(
+    ...,
+    brush = brushOpts(
+      id = NS("data", "datetime_plot_brush"),
+      direction = "x",
+      delay = 500,
+      resetOnNew = TRUE
+    )
+  )
 }
 
 dataUI <- function(id = "data") {
@@ -310,9 +326,9 @@ dataServer <- function(lang, id = "data") {
     })
 
     # Shortcuts to set the date range
-    observe({
+    observeEvent(input$date_nav, {
       if (!is.null(input$date_nav)) {
-        global_range <- global_date_range()
+        global_range <- isolate(global_date_range())
 
         range <- switch (
           input$date_nav,
@@ -328,6 +344,28 @@ dataServer <- function(lang, id = "data") {
           start = range[1], end = range[2]
         )
       }
+    })
+
+    # Plot drag event to update range (all outputs created with
+    # dataBsrtodataBsrtoPlotOutput())
+    observeEvent(input$datetime_plot_brush, {
+      brush <- input$datetime_plot_brush
+
+      # xmin and xmax refer to the relative position [0-1] within the
+      # x-range of the plot area. All plots are unexpanded on the x
+      # axis, so the calculation of the new date range is easier.
+      current_range <- isolate(input$date_range)
+      current_diff <- diff(current_range)
+
+      range <- c(
+        current_range[1] + brush$xmin * current_diff,
+        current_range[1] + brush$xmax * current_diff + 1
+      )
+
+      updateDateRangeInput(
+        session, "date_range",
+        start = range[1], end = range[2]
+      )
     })
 
     # Reactive on global_date_range() and lang(). When

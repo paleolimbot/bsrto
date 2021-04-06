@@ -50,9 +50,9 @@ currentsUI <- function(id = "currents") {
   tagList(
     uiOutput(NS(id, "enu_input")),
 
-    plotOutput(NS(id, "velocity"), height = 400),
-    plotOutput(NS(id, "average_velocity"), height = 300),
-    plotOutput(NS(id, "bottom_velocity"), height = 300),
+    dataBsrtoPlotOutput(NS(id, "velocity"), height = 400),
+    dataBsrtoPlotOutput(NS(id, "average_velocity"), height = 300),
+    dataBsrtoPlotOutput(NS(id, "bottom_velocity"), height = 300),
   )
 }
 
