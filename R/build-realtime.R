@@ -222,7 +222,7 @@ write_realtime_mc <- function(built, out_dir = ".") {
     flag_cols <- paste0(cols, "_flag")
     mcx[flag_cols] <- lapply(
       mcx[cols], function(x)
-        ifelse(is.na(x), bs_flag("missing"), bs_flag("not assessed"))
+        ifelse(is.na(x), bs_flag("missing"), bs_flag("probably good data"))
     )
     mcx
   })
@@ -237,8 +237,9 @@ write_realtime_mc <- function(built, out_dir = ".") {
     mc$temperature,
     mc$pressure
   )
-  mc$salinity_calc_flag <- bs_flag("not assessed")
-  # RMSE: ~0.01
+  mc$salinity_calc_flag <- bs_flag("probably good data")
+
+  # Sanity check
   stopifnot(
     mean(
       (mc$salinity - mc$salinity_calc) ^ 2,
@@ -251,14 +252,14 @@ write_realtime_mc <- function(built, out_dir = ".") {
     mc$temperature,
     mc$pressure
   )
-  # Check ballpark values (mostly as a guard against unit problems)
+  # Check ballpark values (sanity check for unit problems)
   stopifnot(
     mean(
       (mc$sound_speed - mc$sound_speed_calc) ^ 2,
       na.rm = TRUE
     ) < 1
   )
-  mc$sound_speed_calc_flag <- bs_flag("not assessed")
+  mc$sound_speed_calc_flag <- bs_flag("probably good data")
 
   # flag out-of-range values for some parameters
   temp_out_of_range <- (mc$temperature < -2) | (mc$temperature > 20)
@@ -282,6 +283,11 @@ write_realtime_mc <- function(built, out_dir = ".") {
     psal_calc_out_of_range,
     bs_flag("probably bad data")
   )
+
+  # in addition to sanity check above, flag
+  # ~1 calculated salinity that occurs due to low conductivity
+  mc$salinity_calc_flag[mc$salinity_calc < 20] <- bs_flag("probably bad data")
+  mc$conductivity_flag[mc$salinity_calc < 20] <- bs_flag("probably bad data")
 
   out_file <- file.path(out_dir, "ctd.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
