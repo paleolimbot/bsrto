@@ -823,12 +823,29 @@ write_realtime_icl <- function(icl, out_dir = ".") {
 write_realtime_ips <- function(ips, baro, out_dir = ".") {
   cli::cat_rule("write_realtime_ips()")
 
+  # correct draft for atmospheric pressure
   resampled_pressure <- resample_nearest(
     baro$date_time,
     baro$shore_press,
     ips$date_time,
     max_distance = 60 * 120 # constrain to ~2 hours
   )
+
+  assumed_depth <- -gsw::gsw_z_from_p(
+    (ips$pressure_max + ips$pressure_min) / 2,
+    latitude = 74.605
+  )
+
+  resampled_depth <- -gsw::gsw_z_from_p(
+    (ips$pressure_max + ips$pressure_min) / 2 - resampled_pressure,
+    latitude = 74.605
+  )
+
+  resampled_depth_correct <- assumed_depth - resampled_depth
+
+  ips$draft_max_corrected <- ips$draft_max - resampled_depth_correct
+  ips$draft_min_corrected <- ips$draft_min - resampled_depth_correct
+  ips$draft_mean_corrected <- ips$draft_mean - resampled_depth_correct
 
   # redundant vars that don't get used later
   ips$secs_since_1970 <- NULL
@@ -838,6 +855,24 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   bin_lengths <- vapply(ips$bins, length, integer(1))
   distance <- seq(9, by = 0.1, length.out = 130)
   ips$bins <- lapply(ips$bins, "[", 1:130)
+
+  # Correcting bins for atmospheric pressure is tricky because we want the
+  # bins to align so they can be plotted as a raster/saved as a NetCDF.
+  # Strategy is to calculate a "bin shift" based on the resolution of the bins
+  # (0.1 m)
+  distance_corrected <- distance - 9
+  resampled_pressure_bin_shift <- round((resampled_depth_correct - 9) / 0.1)
+
+  bin_indices <- 1:130
+  bins_empty <- rep(NA_integer_, 130)
+  ips$bins_corrected <- lapply(seq_along(ips$bins), function(i) {
+    old_indices <- bin_indices
+    new_indices <- bin_indices + resampled_pressure_bin_shift[i]
+    new_indices_valid <- !is.na(new_indices) & (new_indices >= 1) & (new_indices <= 130)
+    new_bins <- bins_empty
+    new_bins[new_indices[new_indices_valid]] <- ips$bins[[i]][old_indices[new_indices_valid]]
+    new_bins
+  })
 
   # define NetCDF dimensions and variables
   compression <- 5
@@ -856,8 +891,14 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
 
   dim_distance <- ncdf4::ncdim_def(
     "distance",
-    units = "meters",
+    units = "count",
     vals = distance
+  )
+
+  dim_distance_corrected <- ncdf4::ncdim_def(
+    "distance_corrected",
+    units = "count",
+    vals = distance_corrected
   )
 
   file_var <- ncdf4::ncvar_def(
@@ -896,6 +937,14 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
     compression = compression
   )
 
+  bins_corrected_var <- ncdf4::ncvar_def(
+    "ips_count_corrected",
+    units = "counts",
+    dim = list(dim_date_time, dim_distance_corrected),
+    prec = "integer",
+    compression = compression
+  )
+
   # Write NetCDF
 
   out_file <- file.path(out_dir, "ips.nc")
@@ -916,6 +965,7 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   }
 
   ncdf4::ncvar_put(nc, "ips_count", unlist(ips$bins))
+  ncdf4::ncvar_put(nc, "ips_count_corrected", unlist(ips$bins_corrected))
 
   # on.exit() takes care of nc_close(nc)
 }
