@@ -804,16 +804,16 @@ dataServer <- function(lang, id = "data") {
         date_agr <- data_agr_time(dt_range)
 
         dims <- expand.grid(
-          date_time = data_icl_nc_date_time[dt_dim_values],
-          frequency = frequency
+          frequency = frequency,
+          date_time = data_icl_nc_date_time[dt_dim_values]
         )
 
         dims$intensity <- as.integer(
           ncvar_get(
             data_icl_nc,
             "icl_intensity",
-            start = c(dim_min, 1),
-            count = c(dim_count, -1)
+            start = c(1, dim_min),
+            count = c(-1, dim_count)
           )
         )
 

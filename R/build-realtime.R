@@ -798,7 +798,7 @@ write_realtime_icl <- function(icl, out_dir = ".") {
       ncdf4::ncvar_def(
         "icl_intensity",
         units = "Relative intensity",
-        dim = list(dim_date_time, dim_frequency),
+        dim = list(dim_frequency, dim_date_time),
         # note that using "short" here doesn't result in a smaller file
         # if compression is enabled
         prec = "integer",
@@ -807,7 +807,7 @@ write_realtime_icl <- function(icl, out_dir = ".") {
       ncdf4::ncvar_def(
         "icl_intensity_flag",
         units = "Non-zero for possible bad data",
-        dim = list(dim_date_time, dim_frequency),
+        dim = list(dim_frequency, dim_date_time),
         prec = "short",
         compression = compression
       )
