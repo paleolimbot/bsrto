@@ -314,6 +314,18 @@ dataUI <- function(id = "data") {
 dataServer <- function(lang, id = "data") {
   moduleServer(id, function(input, output, session) {
 
+    # Provide message handler to reset the date nav link input so that a user can
+    # click on the same link twice (possibly after navigating using some
+    # other method)
+    shinyjs::runjs("
+      Shiny.addCustomMessageHandler(
+        'dataResetDateNav',
+        function(x) {
+          Shiny.setInputValue('data-date_nav', null);
+        }
+      );
+    ")
+
     # this is a user-specific timer, so the worst-case refresh lag
     # would be the refresh interval * 2 if the user loads the app
     # just before a data refresh and lets it sit open for a while
@@ -351,6 +363,10 @@ dataServer <- function(lang, id = "data") {
           session, "date_range",
           start = range[1], end = range[2]
         )
+
+        # resets the input value to NULL so that any click will
+        # fire this observer
+        session$sendCustomMessage("dataResetDateNav", TRUE)
       }
     })
 
@@ -503,7 +519,7 @@ dataServer <- function(lang, id = "data") {
       beam_vars <- c(
         "bottom_range",
         "bottom_velocity_raw", "bottom_correlation",
-        "bottom_amplitude", "bottom_pct_good"
+        "bottom_amplitude", "bottom_pct_good", "bottom_velocity_raw_flag"
       )
 
       index <- data_adp_nc_date_time
@@ -738,7 +754,7 @@ dataServer <- function(lang, id = "data") {
       dt_range <- datetime_range()
 
       meta_vars <- c(
-        "draft_max", "draft_min", "draft_mean", "draft_sd",
+        "draft_max_corrected", "draft_min_corrected", "draft_mean_corrected", "draft_sd",
         "n_ranges", "n_partial_ranges", "sound_speed", "density", "gravity",
         "pressure_max", "pressure_min", "temp_max", "temp_min", "max_pitch",
         "max_roll_pitch", "max_roll", "max_pitch_roll", "max_inclination"
@@ -788,16 +804,16 @@ dataServer <- function(lang, id = "data") {
         date_agr <- data_agr_time(dt_range)
 
         dims <- expand.grid(
-          date_time = data_icl_nc_date_time[dt_dim_values],
-          frequency = frequency
+          frequency = frequency,
+          date_time = data_icl_nc_date_time[dt_dim_values]
         )
 
         dims$intensity <- as.integer(
           ncvar_get(
             data_icl_nc,
             "icl_intensity",
-            start = c(dim_min, 1),
-            count = c(dim_count, -1)
+            start = c(1, dim_min),
+            count = c(-1, dim_count)
           )
         )
 

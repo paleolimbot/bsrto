@@ -222,7 +222,7 @@ write_realtime_mc <- function(built, out_dir = ".") {
     flag_cols <- paste0(cols, "_flag")
     mcx[flag_cols] <- lapply(
       mcx[cols], function(x)
-        ifelse(is.na(x), bs_flag("missing"), bs_flag("not assessed"))
+        ifelse(is.na(x), bs_flag("missing"), bs_flag("probably good data"))
     )
     mcx
   })
@@ -237,8 +237,9 @@ write_realtime_mc <- function(built, out_dir = ".") {
     mc$temperature,
     mc$pressure
   )
-  mc$salinity_calc_flag <- bs_flag("not assessed")
-  # RMSE: ~0.01
+  mc$salinity_calc_flag <- bs_flag("probably good data")
+
+  # Sanity check
   stopifnot(
     mean(
       (mc$salinity - mc$salinity_calc) ^ 2,
@@ -251,14 +252,14 @@ write_realtime_mc <- function(built, out_dir = ".") {
     mc$temperature,
     mc$pressure
   )
-  # Check ballpark values (mostly as a guard against unit problems)
+  # Check ballpark values (sanity check for unit problems)
   stopifnot(
     mean(
       (mc$sound_speed - mc$sound_speed_calc) ^ 2,
       na.rm = TRUE
     ) < 1
   )
-  mc$sound_speed_calc_flag <- bs_flag("not assessed")
+  mc$sound_speed_calc_flag <- bs_flag("probably good data")
 
   # flag out-of-range values for some parameters
   temp_out_of_range <- (mc$temperature < -2) | (mc$temperature > 20)
@@ -282,6 +283,11 @@ write_realtime_mc <- function(built, out_dir = ".") {
     psal_calc_out_of_range,
     bs_flag("probably bad data")
   )
+
+  # in addition to sanity check above, flag
+  # ~1 calculated salinity that occurs due to low conductivity
+  mc$salinity_calc_flag[mc$salinity_calc < 20] <- bs_flag("probably bad data")
+  mc$conductivity_flag[mc$salinity_calc < 20] <- bs_flag("probably bad data")
 
   out_file <- file.path(out_dir, "ctd.csv")
   cli::cat_line(glue("Writing '{ out_file }'"))
@@ -792,7 +798,7 @@ write_realtime_icl <- function(icl, out_dir = ".") {
       ncdf4::ncvar_def(
         "icl_intensity",
         units = "Relative intensity",
-        dim = list(dim_date_time, dim_frequency),
+        dim = list(dim_frequency, dim_date_time),
         # note that using "short" here doesn't result in a smaller file
         # if compression is enabled
         prec = "integer",
@@ -801,7 +807,7 @@ write_realtime_icl <- function(icl, out_dir = ".") {
       ncdf4::ncvar_def(
         "icl_intensity_flag",
         units = "Non-zero for possible bad data",
-        dim = list(dim_date_time, dim_frequency),
+        dim = list(dim_frequency, dim_date_time),
         prec = "short",
         compression = compression
       )
@@ -823,12 +829,29 @@ write_realtime_icl <- function(icl, out_dir = ".") {
 write_realtime_ips <- function(ips, baro, out_dir = ".") {
   cli::cat_rule("write_realtime_ips()")
 
+  # correct draft for atmospheric pressure
   resampled_pressure <- resample_nearest(
     baro$date_time,
     baro$shore_press,
     ips$date_time,
     max_distance = 60 * 120 # constrain to ~2 hours
   )
+
+  assumed_depth <- -gsw::gsw_z_from_p(
+    (ips$pressure_max + ips$pressure_min) / 2,
+    latitude = 74.605
+  )
+
+  resampled_depth <- -gsw::gsw_z_from_p(
+    (ips$pressure_max + ips$pressure_min) / 2 - resampled_pressure,
+    latitude = 74.605
+  )
+
+  resampled_depth_correct <- assumed_depth - resampled_depth
+
+  ips$draft_max_corrected <- ips$draft_max - resampled_depth_correct
+  ips$draft_min_corrected <- ips$draft_min - resampled_depth_correct
+  ips$draft_mean_corrected <- ips$draft_mean - resampled_depth_correct
 
   # redundant vars that don't get used later
   ips$secs_since_1970 <- NULL
@@ -838,6 +861,28 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   bin_lengths <- vapply(ips$bins, length, integer(1))
   distance <- seq(9, by = 0.1, length.out = 130)
   ips$bins <- lapply(ips$bins, "[", 1:130)
+
+  # Correcting bins for atmospheric pressure is tricky because we want the
+  # bins to align so they can be plotted as a raster/saved as a NetCDF.
+  # Strategy is to calculate a "bin shift" based on the resolution of the bins
+  # (0.1 m). Give A few meters leeway so that small negative drafts are not
+  # obliterated (max correction is ~11 m).
+  distance_corrected <- seq(9 - 12, by = 0.1, length.out = 130)
+  distance_corrected_bin_shift <- 12 / 0.1
+  # these values are negative indicating a shift right (because we are leaving
+  # more room at the low end of the range)
+  resampled_pressure_bin_shift <- round(resampled_depth_correct / 0.1) - distance_corrected_bin_shift
+
+  bin_indices <- 1:130
+  bins_empty <- rep(NA_integer_, 130)
+  ips$bins_corrected <- lapply(seq_along(ips$bins), function(i) {
+    old_indices <- bin_indices
+    new_indices <- bin_indices - resampled_pressure_bin_shift[i]
+    new_indices_valid <- !is.na(new_indices) & (new_indices >= 1) & (new_indices <= 130)
+    new_bins <- bins_empty
+    new_bins[new_indices[new_indices_valid]] <- ips$bins[[i]][old_indices[new_indices_valid]]
+    new_bins
+  })
 
   # define NetCDF dimensions and variables
   compression <- 5
@@ -856,8 +901,14 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
 
   dim_distance <- ncdf4::ncdim_def(
     "distance",
-    units = "meters",
+    units = "count",
     vals = distance
+  )
+
+  dim_distance_corrected <- ncdf4::ncdim_def(
+    "distance_corrected",
+    units = "count",
+    vals = distance_corrected
   )
 
   file_var <- ncdf4::ncvar_def(
@@ -870,7 +921,7 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   )
 
   meta_vars <- lapply(
-    setdiff(names(ips), c("file", "date_time", "bins")),
+    setdiff(names(ips), c("file", "date_time", "bins", "bins_corrected")),
     function(col) {
       val <- ips[[col]]
       ncdf4::ncvar_def(
@@ -891,7 +942,15 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   bins_var <- ncdf4::ncvar_def(
     "ips_count",
     units = "counts",
-    dim = list(dim_date_time, dim_distance),
+    dim = list(dim_distance, dim_date_time),
+    prec = "integer",
+    compression = compression
+  )
+
+  bins_corrected_var <- ncdf4::ncvar_def(
+    "ips_count_corrected",
+    units = "counts",
+    dim = list(dim_distance_corrected, dim_date_time),
     prec = "integer",
     compression = compression
   )
@@ -906,16 +965,17 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
     c(
       list(file_var),
       meta_vars,
-      list(bins_var)
+      list(bins_var, bins_corrected_var)
     )
   )
   on.exit(ncdf4::nc_close(nc))
 
-  for (col in setdiff(names(ips), c("date_time", "bins"))) {
+  for (col in setdiff(names(ips), c("date_time", "bins", "bins_corrected"))) {
     ncdf4::ncvar_put(nc, col, ips[[col]])
   }
 
   ncdf4::ncvar_put(nc, "ips_count", unlist(ips$bins))
+  ncdf4::ncvar_put(nc, "ips_count_corrected", unlist(ips$bins_corrected))
 
   # on.exit() takes care of nc_close(nc)
 }

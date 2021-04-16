@@ -148,8 +148,11 @@ adpServer <- function(lang, data, id = "adp") {
     })
 
     output$bottom_velocity_raw <- renderPlot({
+      df <- adp_beams() %>%
+        filter(bottom_velocity_raw_flag == bs_flag("probably good data"))
+
       plot_adp_beam(
-        adp_beams(),
+        df,
         "bottom_velocity_raw", "Bottom velocity [m/s]",
         datetime_range = data$datetime_range(),
         lang = lang()
