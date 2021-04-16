@@ -503,7 +503,7 @@ dataServer <- function(lang, id = "data") {
       beam_vars <- c(
         "bottom_range",
         "bottom_velocity_raw", "bottom_correlation",
-        "bottom_amplitude", "bottom_pct_good"
+        "bottom_amplitude", "bottom_pct_good", "bottom_velocity_raw_flag"
       )
 
       index <- data_adp_nc_date_time
