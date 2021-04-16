@@ -173,6 +173,8 @@ dashServer <- function(lang, data, id = "dash") {
 
       ips_meta <- data$ips_meta()
 
+      names(ips_meta) <- gsub("_corrected$", "", names(ips_meta))
+
       # trick to insert gaps when the distance between measurements
       # is too large
       if (nrow(ips_meta) > 0) {

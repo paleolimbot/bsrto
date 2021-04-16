@@ -738,7 +738,7 @@ dataServer <- function(lang, id = "data") {
       dt_range <- datetime_range()
 
       meta_vars <- c(
-        "draft_max", "draft_min", "draft_mean", "draft_sd",
+        "draft_max_corrected", "draft_min_corrected", "draft_mean_corrected", "draft_sd",
         "n_ranges", "n_partial_ranges", "sound_speed", "density", "gravity",
         "pressure_max", "pressure_min", "temp_max", "temp_min", "max_pitch",
         "max_roll_pitch", "max_roll", "max_pitch_roll", "max_inclination"

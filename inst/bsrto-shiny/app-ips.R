@@ -15,6 +15,9 @@ ipsServer <- function(lang, data, id = "ips") {
       # trick to insert gaps when the distance between measurements
       # is too large
       ips_meta <- data$ips_meta()
+
+      names(ips_meta) <- gsub("_corrected$", "", names(ips_meta))
+
       ips_meta$.group <- c(0, cumsum(
         as.numeric(diff(ips_meta$date_time), units = "hours") > 12
       ))

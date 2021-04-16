@@ -865,9 +865,10 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   # Correcting bins for atmospheric pressure is tricky because we want the
   # bins to align so they can be plotted as a raster/saved as a NetCDF.
   # Strategy is to calculate a "bin shift" based on the resolution of the bins
-  # (0.1 m)
-  distance_corrected <- distance - 9
-  resampled_pressure_bin_shift <- round((resampled_depth_correct - 9) / 0.1)
+  # (0.1 m). Give A few meters leeway so that small negative drafts are not
+  # obliterated.
+  distance_corrected <- distance - 12
+  resampled_pressure_bin_shift <- round((resampled_depth_correct - 12) / 0.1)
 
   bin_indices <- 1:130
   bins_empty <- rep(NA_integer_, 130)
@@ -917,7 +918,7 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   )
 
   meta_vars <- lapply(
-    setdiff(names(ips), c("file", "date_time", "bins")),
+    setdiff(names(ips), c("file", "date_time", "bins", "bins_corrected")),
     function(col) {
       val <- ips[[col]]
       ncdf4::ncvar_def(
@@ -961,12 +962,12 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
     c(
       list(file_var),
       meta_vars,
-      list(bins_var)
+      list(bins_var, bins_corrected_var)
     )
   )
   on.exit(ncdf4::nc_close(nc))
 
-  for (col in setdiff(names(ips), c("date_time", "bins"))) {
+  for (col in setdiff(names(ips), c("date_time", "bins", "bins_corrected"))) {
     ncdf4::ncvar_put(nc, col, ips[[col]])
   }
 
