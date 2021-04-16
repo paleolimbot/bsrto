@@ -314,6 +314,18 @@ dataUI <- function(id = "data") {
 dataServer <- function(lang, id = "data") {
   moduleServer(id, function(input, output, session) {
 
+    # Provide message handler to reset the date nav link input so that a user can
+    # click on the same link twice (possibly after navigating using some
+    # other method)
+    shinyjs::runjs("
+      Shiny.addCustomMessageHandler(
+        'dataResetDateNav',
+        function(x) {
+          Shiny.setInputValue('data-date_nav', null);
+        }
+      );
+    ")
+
     # this is a user-specific timer, so the worst-case refresh lag
     # would be the refresh interval * 2 if the user loads the app
     # just before a data refresh and lets it sit open for a while
@@ -351,6 +363,10 @@ dataServer <- function(lang, id = "data") {
           session, "date_range",
           start = range[1], end = range[2]
         )
+
+        # resets the input value to NULL so that any click will
+        # fire this observer
+        session$sendCustomMessage("dataResetDateNav", TRUE)
       }
     })
 

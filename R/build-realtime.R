@@ -866,15 +866,18 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   # bins to align so they can be plotted as a raster/saved as a NetCDF.
   # Strategy is to calculate a "bin shift" based on the resolution of the bins
   # (0.1 m). Give A few meters leeway so that small negative drafts are not
-  # obliterated.
-  distance_corrected <- distance - 12
-  resampled_pressure_bin_shift <- round((resampled_depth_correct - 12) / 0.1)
+  # obliterated (max correction is ~11 m).
+  distance_corrected <- seq(9 - 12, by = 0.1, length.out = 130)
+  distance_corrected_bin_shift <- 12 / 0.1
+  # these values are negative indicating a shift right (because we are leaving
+  # more room at the low end of the range)
+  resampled_pressure_bin_shift <- round(resampled_depth_correct / 0.1) - distance_corrected_bin_shift
 
   bin_indices <- 1:130
   bins_empty <- rep(NA_integer_, 130)
   ips$bins_corrected <- lapply(seq_along(ips$bins), function(i) {
     old_indices <- bin_indices
-    new_indices <- bin_indices + resampled_pressure_bin_shift[i]
+    new_indices <- bin_indices - resampled_pressure_bin_shift[i]
     new_indices_valid <- !is.na(new_indices) & (new_indices >= 1) & (new_indices <= 130)
     new_bins <- bins_empty
     new_bins[new_indices[new_indices_valid]] <- ips$bins[[i]][old_indices[new_indices_valid]]
@@ -939,7 +942,7 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   bins_var <- ncdf4::ncvar_def(
     "ips_count",
     units = "counts",
-    dim = list(dim_date_time, dim_distance),
+    dim = list(dim_distance, dim_date_time),
     prec = "integer",
     compression = compression
   )
@@ -947,7 +950,7 @@ write_realtime_ips <- function(ips, baro, out_dir = ".") {
   bins_corrected_var <- ncdf4::ncvar_def(
     "ips_count_corrected",
     units = "counts",
-    dim = list(dim_date_time, dim_distance_corrected),
+    dim = list(dim_distance_corrected, dim_date_time),
     prec = "integer",
     compression = compression
   )

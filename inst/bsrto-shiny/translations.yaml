@@ -187,5 +187,12 @@ translation:
 - key: Ice draft [m]
   fr: Tirant de l'eau glaciel [m]
 
+- key: ice_draft_histogram_instructions
+  en: Double click a date with data to display a histogram of measurements
+  fr: Double-cliquez sur une date avec des données pour afficher un histogramme des mesures
+
+- key: Number of measurements
+  fr: Nombre de mesures
+
 - key: Frequency [Hz]
   fr: Fréquence [Hz]
