@@ -12,7 +12,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
 
 # Freezes packages to CRAN at a specific date
 # Update here: https://packagemanager.rstudio.com/client/#/repos/1/overview
-ENV CRAN=https://packagemanager.rstudio.com/all/__linux__/focal/1265616
+ENV CRAN=https://packagemanager.rstudio.com/all/__linux__/focal/2380008
 
 # Set up cache directories (runners should mount these caches)
 RUN mkdir -p /bsrto/built
@@ -26,6 +26,9 @@ WORKDIR /bsrto
 
 ## Start install
 RUN R -e 'install.packages(c("remotes", "rlang", "glue", "readr", "tibble", "vctrs", "stringr", "curl", "hms", "progress", "cli", "ncdf4", "dplyr", "abind", "sessioninfo", "gsw", "testthat", "withr", "tidyr"), repos = Sys.getenv("CRAN"))'
-RUN R -e 'remotes::install_github("paleolimbot/bsrto@fa5013c", repos = Sys.getenv("CRAN"))'
+RUN R -e 'remotes::install_github("paleolimbot/readrdi@f85f8bf", repos = Sys.getenv("CRAN"))'
+RUN R -e 'remotes::install_github("paleolimbot/headings@e7489d8", repos = Sys.getenv("CRAN"))'
+RUN R -e 'remotes::install_github("paleolimbot/nmea@ff70d0a", repos = Sys.getenv("CRAN"))'
+RUN R -e 'remotes::install_github("paleolimbot/bsrto@f44949e", repos = Sys.getenv("CRAN"))'
 ## End install
 

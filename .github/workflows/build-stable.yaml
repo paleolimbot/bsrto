@@ -21,14 +21,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /bsrto/cache
-          restore-keys: bsrto-cache-dir-1
-          key: bsrto-cache-dir-2
+          restore-keys: bsrto-cache-dir-2
+          key: bsrto-cache-dir-3
 
       - name: Cache built raw data
         uses: actions/cache@v2
         with:
           path: /bsrto/build-cache
-          key: bsrto-build-cache-dir-4
+          key: bsrto-build-cache-dir-5
 
       - name: Build updated data
         run: |
