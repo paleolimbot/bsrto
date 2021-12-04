@@ -43,7 +43,7 @@ test_that("read_mc() works for mcI files", {
   # malformed file should not error
   expect_warning(
     read_mc(bs_example("mcI/20010323.mcI"), col_names = mci_col_names(2018)),
-    "parsing failure"
+    "parsing issues"
   )
 })
 

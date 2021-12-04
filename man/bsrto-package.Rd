@@ -6,8 +6,7 @@
 \alias{bsrto-package}
 \title{bsrto: Access Data from the Barrow Strait Real Time Observatory}
 \description{
-Provides functions to access data from the Barrow Strait
-  Real Time Observatory.
+Provides functions to access data from the Barrow Strait Real Time Observatory.
 }
 \seealso{
 Useful links:

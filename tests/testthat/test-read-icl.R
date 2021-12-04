@@ -27,28 +27,34 @@ test_that("read_icl() works on malformed files", {
     "parsing failures"
   )
 
-  expect_message(
-    expect_identical(
-      read_icl(bs_example("icl/SAF2564_20191225_01.txt")),
-      tibble::tibble()
-    ),
-    "Unexpected column names in file"
+  suppressWarnings(
+    expect_message(
+      expect_identical(
+        read_icl(bs_example("icl/SAF2564_20191225_01.txt")),
+        tibble::tibble()
+      ),
+      "Unexpected column names in file"
+    )
   )
 
-  expect_message(
-    expect_identical(
-      read_icl(bs_example("icl/SAF2564_20191225_01.txt")),
-      tibble::tibble()
-    ),
-    "Unexpected column names in file"
+  suppressWarnings(
+    expect_message(
+      expect_identical(
+        read_icl(bs_example("icl/SAF2564_20191225_01.txt")),
+        tibble::tibble()
+      ),
+      "Unexpected column names in file"
+    )
   )
 
-  expect_message(
-    expect_identical(
-      read_icl(bs_example("icl/SAF2564_20200227_17.txt")),
-      tibble::tibble()
-    ),
-    "Unexpected column names in file"
+  suppressWarnings(
+    expect_message(
+      expect_identical(
+        read_icl(bs_example("icl/SAF2564_20200227_17.txt")),
+        tibble::tibble()
+      ),
+      "Unexpected column names in file"
+    )
   )
 })
 
